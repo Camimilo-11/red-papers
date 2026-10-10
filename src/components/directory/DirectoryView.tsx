@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TeacherUser, ScientificProduct } from '../../types';
+import { AcademicDegree, TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { ProductDetailModal } from '../catalog/ProductDetailModal';
@@ -7,7 +7,16 @@ import { Search, ExternalLink, Mail, Download, BarChart3, ArrowLeft, ChevronRigh
 import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
 import diegoPhoto from '../../assets/researchers/diego-peluffo.png';
 import eugenioPhoto from '../../assets/researchers/eugenio-morocho.png';
+const degreeLabels:Record<AcademicDegree,string>={PhD:'Doctorado (PhD)',MSc:'Maestría (MSc)',BSc:'Licenciatura o Ingeniería',Other:'Otro título'};
+const academicTitle = (teacher:TeacherUser) => {
+ if(!teacher.academicDegree) return undefined;
+ const label=degreeLabels[teacher.academicDegree];
+ return teacher.academicField
+  ? teacher.academicDegree==='Other'?`${label}: ${teacher.academicField}`:`${label} en ${teacher.academicField}`
+  : label;
+};
 const portrait = (teacher: TeacherUser) => {
+ if(teacher.profileImage) return teacher.profileImage;
  const name=teacher.name.toLowerCase();
  if(name.includes('juan pablo') && name.includes('astudillo')) return juanPhoto;
  if(name.includes('diego') && name.includes('peluffo')) return diegoPhoto;
@@ -85,6 +94,8 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     return (
       t.name.toLowerCase().includes(q) ||
       t.rank.toLowerCase().includes(q) ||
+      (t.academicDegree&&degreeLabels[t.academicDegree].toLowerCase().includes(q)) ||
+      (t.academicField&&t.academicField.toLowerCase().includes(q)) ||
       t.email.toLowerCase().includes(q) ||
       (t.bio && t.bio.toLowerCase().includes(q))
     );
@@ -138,14 +149,14 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
     <div className="academic-directory-layout" data-mobile-profile-open={mobileProfileOpen}>
       <nav className="academic-people" aria-label="Seleccionar docente">
-        {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
+        {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank}{academicTitle(t)?` · ${academicTitle(t)}`:''}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
         {!filteredTeachers.length&&<p className="academic-empty">No se encontraron docentes.</p>}
       </nav>
       {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id} ref={profileRef}>
         <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
-          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p><p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p></div>
+          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p></div>
         </header>
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">

@@ -24,6 +24,8 @@ export type OfficialResearchLine =
   | 'Tecnologías de la información'
   | 'Ciencia, Tecnología y Sociedad';
 
+export type AcademicDegree = 'PhD' | 'MSc' | 'BSc' | 'Other';
+
 export interface ScientificProduct {
   id: string; // ej. prod-001
   type: ProductType;
@@ -58,6 +60,9 @@ export interface TeacherUser {
   name: string;
   email: string; // Debe pertenecer al dominio @yachaytech.edu.ec
   rank: string; // Escalafón docente (Profesor Principal, Profesor Auxiliar, etc.)
+  academicDegree?: AcademicDegree;
+  academicField?: string;
+  profileImage?: string; // Imagen optimizada en formato data URL
   researchLine?: OfficialResearchLine;
   orcid?: string; // Formato 0000-000X-XXXX-XXXX
   githubUrl?: string;

@@ -1,4 +1,4 @@
-import { ScientificProduct, TeacherUser, UserNotification } from '../types';
+import { AcademicDegree, ScientificProduct, TeacherUser, UserNotification } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
 
 const STORAGE_KEYS = {
@@ -18,6 +18,35 @@ export interface PublicVisibilityConfig {
 const DEFAULT_CONFIG: PublicVisibilityConfig = {
   showOnlyVerifiedForVisitors: true,
 };
+
+function academicDegreeFrom(value?: string): AcademicDegree | undefined {
+  if (!value) return undefined;
+  if (/\b(?:ph\.?\s*d|doctorad[oa]?|doctora?)\b/i.test(value)) return 'PhD';
+  if (/\b(?:m\.?\s*sc|master|maestr[ií]a|mag[ií]ster)\b/i.test(value)) return 'MSc';
+  if (/\b(?:b\.?\s*sc|ingenier[oa]|licenciatur[ao])\b/i.test(value)) return 'BSc';
+  return undefined;
+}
+
+function academicFieldFrom(value?: string): string | undefined {
+  const match = value?.match(/\b(?:en|de)\s+(.+)$/i);
+  return match?.[1]?.trim() || undefined;
+}
+
+function normalizeTeacher(teacher: TeacherUser): TeacherUser {
+  const name = teacher.name || '';
+  const namePrefix = name.match(/^\s*((?:m\.?\s*sc|ph\.?\s*d|dr|dra|ing|mag)\.?)\s+/i)?.[1];
+  const cleanName = name.replace(/^\s*(?:(?:m\.?\s*sc|ph\.?\s*d|dr|dra|ing|mag)\.?)\s+/i, '').trim();
+  const rankParts = (teacher.rank || 'Profesor').split(/\s*\/\s*/);
+  const credentialIndex = rankParts.findIndex(part => academicDegreeFrom(part));
+  const credential = credentialIndex >= 0 ? rankParts[credentialIndex] : undefined;
+  const academicDegree = teacher.academicDegree || academicDegreeFrom(credential) || academicDegreeFrom(namePrefix);
+  const academicField = teacher.academicField || academicFieldFrom(credential);
+  const rank = credential
+    ? rankParts.filter((_, index) => index !== credentialIndex).join(' / ').trim() || 'Profesor'
+    : teacher.rank || 'Profesor';
+
+  return { ...teacher, name: cleanName, rank, academicDegree, academicField };
+}
 
 export const storageService = {
   getProducts(): ScientificProduct[] {
@@ -45,12 +74,16 @@ export const storageService = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TEACHERS);
       if (!data) {
-        this.saveTeachers(INITIAL_TEACHERS);
-        return INITIAL_TEACHERS;
+        const teachers = INITIAL_TEACHERS.map(normalizeTeacher);
+        this.saveTeachers(teachers);
+        return teachers;
       }
-      return JSON.parse(data);
+      const storedTeachers: TeacherUser[] = JSON.parse(data);
+      const teachers = storedTeachers.map(normalizeTeacher);
+      if (JSON.stringify(teachers) !== JSON.stringify(storedTeachers)) this.saveTeachers(teachers);
+      return teachers;
     } catch {
-      return INITIAL_TEACHERS;
+      return INITIAL_TEACHERS.map(normalizeTeacher);
     }
   },
 
@@ -86,7 +119,11 @@ export const storageService = {
   getCurrentUser(): TeacherUser | null {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      const storedUser: TeacherUser = JSON.parse(data);
+      const user = normalizeTeacher(storedUser);
+      if (JSON.stringify(user) !== JSON.stringify(storedUser)) this.setCurrentUser(user);
+      return user;
     } catch {
       return null;
     }
@@ -124,7 +161,7 @@ export const storageService = {
   resetToSeed(): void {
     try {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHERS));
+      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHERS.map(normalizeTeacher)));
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(INITIAL_NOTIFICATIONS));
       localStorage.setItem(STORAGE_KEYS.PUBLIC_VISIBILITY_CONFIG, JSON.stringify(DEFAULT_CONFIG));
     } catch (err) {

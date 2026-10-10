@@ -22,6 +22,8 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
       tm.teacher.name.toLowerCase().includes(q) ||
       tm.teacher.email.toLowerCase().includes(q) ||
       tm.teacher.rank.toLowerCase().includes(q) ||
+      (tm.teacher.academicDegree&&tm.teacher.academicDegree.toLowerCase().includes(q)) ||
+      (tm.teacher.academicField&&tm.teacher.academicField.toLowerCase().includes(q)) ||
       (tm.teacher.orcid && tm.teacher.orcid.includes(q))
     );
   });
@@ -95,7 +97,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                         {tm.teacher.name}
                       </div>
                       <div className="text-[11px] text-neutral-500">
-                        {tm.teacher.rank} • <span className="font-mono text-[10px]">{tm.teacher.email}</span>
+                        {tm.teacher.rank}{tm.teacher.academicDegree?` · ${tm.teacher.academicDegree}${tm.teacher.academicField?` en ${tm.teacher.academicField}`:''}`:''} • <span className="font-mono text-[10px]">{tm.teacher.email}</span>
                       </div>
                     </button>
                   </td>

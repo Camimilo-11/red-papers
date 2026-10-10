@@ -225,10 +225,12 @@ button:disabled { cursor:wait; }
 .profile-settings-page { max-width:1120px; margin:0 auto; }
 .profile-settings-page .reviewer-heading { margin-bottom:26px; }
 .profile-settings-identity { display:flex; align-items:center; gap:14px; padding:18px 22px; margin-bottom:20px; border:1px solid #e5dfd8; border-radius:8px; background:#f4f0eb; }
-.profile-settings-avatar { width:48px; height:48px; flex-shrink:0; display:grid; place-items:center; border-radius:50%; background:#fff; color:var(--accent); }
+.profile-settings-avatar { width:48px; height:48px; flex-shrink:0; display:grid; place-items:center; overflow:hidden; border-radius:50%; background:#fff; color:var(--accent); }
+.profile-settings-avatar img { width:100%; height:100%; object-fit:cover; }
 .profile-settings-identity strong,.profile-settings-identity span { display:block; }
 .profile-settings-identity strong { font-size:17px; }
 .profile-settings-identity span { margin-top:2px; color:var(--muted); font-size:14px; overflow-wrap:anywhere; }
+.profile-settings-identity small { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
 .profile-settings-card { background:#fff; border:1px solid #e5dfd8; border-radius:8px; padding:26px 28px; margin-bottom:20px; }
 .profile-settings-card-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; padding-bottom:18px; margin-bottom:20px; border-bottom:1px solid #eee9e3; }
 .profile-settings-card-heading .eyebrow { margin:0 0 5px; font-size:10px; }
@@ -243,6 +245,19 @@ button:disabled { cursor:wait; }
 .profile-settings-field input[readonly] { background:#f4f1ed; color:#625d58; }
 .profile-settings-field small { color:var(--muted); font-size:12px; line-height:1.4; }
 .profile-settings-field-wide { grid-column:1/-1; }
+.profile-settings-photo-field { display:flex; flex-direction:column; gap:9px; min-width:0; }
+.profile-settings-photo-field>span { font-size:15px; font-weight:650; }
+.profile-settings-photo-editor { display:flex; align-items:center; gap:18px; padding:16px; border:1px solid #e5dfd8; border-radius:7px; background:#faf8f5; }
+.profile-settings-avatar-large { width:76px; height:76px; }
+.profile-settings-photo-controls { display:flex; flex:1; flex-direction:column; align-items:flex-start; gap:5px; min-width:0; }
+.profile-settings-photo-controls>strong { font-size:14px; }
+.profile-settings-photo-controls>small { color:var(--muted); font-size:12px; line-height:1.4; }
+.profile-settings-photo-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:5px; }
+.profile-photo-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:38px; padding:8px 12px; border:1px solid #cfc8c0; border-radius:5px; background:#fff; color:var(--ink); font-size:13px; font-weight:600; }
+.profile-photo-button:hover { border-color:var(--accent); color:var(--accent); }
+.profile-photo-button.is-secondary { color:var(--muted); }
+.profile-image-input { display:none; }
+.profile-photo-error { color:#a5221a; font-size:13px; }
 .profile-settings-actions { display:flex; justify-content:flex-end; margin-top:22px; padding-top:18px; border-top:1px solid #eee9e3; }
 .profile-settings-actions .primary-button { display:inline-flex; align-items:center; justify-content:center; gap:9px; }
 .profile-form-message { display:flex; align-items:center; gap:8px; margin-top:18px; padding:12px 15px; border-radius:5px; font-size:14px; }
@@ -419,6 +434,7 @@ html, body {
 .academic-initial { display:grid; place-items:center; background:#e9e3dc; color:#625950; font-size:30px; }
 .academic-profile-heading h3 { font-size:clamp(22px,2vw,29px); font-weight:600; line-height:1.3; margin-bottom:10px; }
 .academic-profile-heading p { font-size:16px; color:#55504b; line-height:1.5; }
+.academic-profile-heading .academic-degree { color:#a92b22; font-size:14px; font-weight:600; }
 .academic-profile-heading .academic-school { font-size:14px; color:var(--muted); margin-top:5px; }
 .academic-profile-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,1fr); gap:30px; align-items:stretch; margin-top:24px; }
 .academic-research-section { margin-bottom:0; }
