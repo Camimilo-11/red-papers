@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { ResearchStage } from './ResearchStage';
+import { useMascotHandoff } from './mascotHandoff';
+import type { MascotHandoff } from './mascotHandoff';
+import './MascotHandoff.css';
 
 const INTRO_TIMING_MS = {
   intro: 1500,
@@ -119,18 +122,66 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
   );
 }
 
-function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion }: {
+const handoffEase = cubicBezier(.22, 1, .36, 1);
+
+function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, handoff }: {
   school: SchoolConfig;
   index: number;
   visible: boolean;
   scrollY: MotionValue<number>;
   reducedMotion: boolean;
+  handoff: MascotHandoff;
 }) {
   const position = emblemPositions[index];
-  const y = useTransform(scrollY, (value) => reducedMotion ? 0 : Math.min(value, window.innerHeight * 1.2) * position.parallax);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const sourceX = useMotionValue(0);
+  const sourceY = useMotionValue(0);
+  const sourceSize = useMotionValue<number>(position.size);
+  const travel = useTransform(handoff.progress, [.02, .84 + index * .012], [0, 1], { ease: handoffEase });
+  const angle = parseFloat(position.rotation) * Math.PI / 180;
+  const travelAt = (progress: number) => handoffEase(Math.min(1, Math.max(0, (progress - .02) / (.82 + index * .012))));
+  // Subscribe after arrival is resolved, avoiding a stale travel value on reverse scroll.
+  const positionInputs = [handoff.progress, handoff.targetX, handoff.targetY, sourceX, sourceY];
+  // The enclosing reveal keeps its original rotation; compensate its coordinates
+  // so all seven centers still arrive at the exact same point in the stage.
+  const x = useTransform<number, number>(positionInputs, ([progress, targetX, targetY, originX, originY]) => {
+    if (reducedMotion) return 0;
+    const dx = targetX - originX;
+    const dy = scrollY.get() + targetY - originY;
+    return (dx * Math.cos(angle) + dy * Math.sin(angle)) * travelAt(progress);
+  });
+  const y = useTransform<number, number>(positionInputs, ([progress, targetX, targetY, originX, originY]) => {
+    if (reducedMotion) return 0;
+    const amount = travelAt(progress);
+    const dx = targetX - originX;
+    const dy = scrollY.get() + targetY - originY;
+    return (-dx * Math.sin(angle) + dy * Math.cos(angle)) * amount;
+  });
+  const scale = useTransform(() => reducedMotion ? 1 : 1 + (40 / sourceSize.get() - 1) * travel.get());
+  const rotate = useTransform(() => reducedMotion ? 0 : -parseFloat(position.rotation) * travel.get());
+  const opacity = useTransform(handoff.progress, [0, .82, .96, 1], [1, 1, 0, 0]);
+
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    const overlay = anchor?.parentElement;
+    const root = overlay?.offsetParent as HTMLElement | null;
+    if (!anchor || !overlay || !root) return;
+    const measure = () => {
+      const rootRect = root.getBoundingClientRect();
+      sourceX.set(rootRect.left + overlay.offsetLeft + anchor.offsetLeft);
+      sourceY.set(rootRect.top + window.scrollY + overlay.offsetTop + anchor.offsetTop);
+      sourceSize.set(anchor.offsetWidth || position.size);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(overlay);
+    observer.observe(anchor);
+    measure();
+    return () => observer.disconnect();
+  }, [position.size, sourceSize, sourceX, sourceY]);
 
   return (
     <span
+      ref={anchorRef}
       className={`institutional-landing-hero-emblem ${visible ? 'is-visible' : ''}`}
       data-school={school.code}
       style={{
@@ -143,7 +194,7 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion 
         '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg',
       } as React.CSSProperties}
     >
-      <motion.span className="institutional-landing-hero-emblem-parallax" style={{ y }}>
+      <motion.span className="institutional-landing-hero-emblem-parallax" style={{ x, y, scale, rotate, opacity: reducedMotion ? 1 : opacity }}>
         <span className={`institutional-landing-hero-emblem-float ${visible ? 'is-floating' : ''}`}>
           <LandingEmblem school={school} size={position.size} />
         </span>
@@ -170,9 +221,11 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const [logosReady, setLogosReady] = useState(false);
   const reducedMotion = useReducedMotion();
   const scrollY = useMotionValue(window.scrollY);
+  const handoff = useMascotHandoff();
   const [scrollReady, setScrollReady] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
+  const emblemsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const introTimersRef = useRef<number[]>([]);
   const introActiveRef = useRef(phase === 'intro');
@@ -192,17 +245,39 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   }, []);
 
   useEffect(() => {
+    const hero = heroRef.current;
+    const overlay = emblemsRef.current;
+    if (!hero || !overlay) return;
+    const measure = () => {
+      // Static layout geometry only: scrolling updates motion values, not styles.
+      overlay.style.top = `${hero.offsetTop}px`;
+      overlay.style.left = `${hero.offsetLeft}px`;
+      overlay.style.width = `${hero.offsetWidth}px`;
+      overlay.style.height = `${hero.offsetHeight}px`;
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(hero);
+    measure();
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const footer = footerRef.current;
     const hero = heroRef.current;
+    const overlay = emblemsRef.current;
     if (!footer || !hero) return;
     if (!('IntersectionObserver' in window)) {
       footer.dataset.revealed = 'true';
       hero.dataset.inView = 'true';
+      if (overlay) overlay.dataset.inView = 'true';
       return;
     }
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.target === hero) hero.dataset.inView = String(entry.isIntersecting);
+        if (entry.target === hero) {
+          hero.dataset.inView = String(entry.isIntersecting);
+          if (overlay) overlay.dataset.inView = String(entry.isIntersecting);
+        }
         if (entry.target === footer && entry.isIntersecting) {
           footer.dataset.revealed = 'true';
           observer.unobserve(footer);
@@ -314,12 +389,6 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
       )}
 
       <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
-        <div className="institutional-landing-hero-emblems" aria-hidden="true">
-          {SCHOOLS.map((school, index) => (
-            <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} />
-          ))}
-        </div>
-
         <div className="institutional-landing-hero-copy">
           <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>UNIVERSIDAD YACHAY TECH · SIMAPC</p>
           <h1 id="landing-title" className="institutional-landing-title">
@@ -335,7 +404,13 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         </div>
       </section>
 
-      <ResearchStage onSelect={onSelect} scrollY={scrollY} />
+      <div ref={emblemsRef} className="institutional-landing-hero-emblems mascot-handoff-logos" aria-hidden="true" data-in-view="false">
+        {SCHOOLS.map((school, index) => (
+          <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} handoff={handoff} />
+        ))}
+      </div>
+
+      <ResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} />
 
       <footer ref={footerRef} className="institutional-landing-footer" data-revealed="false" aria-label="Enlaces institucionales">
         <div className="institutional-landing-footer-ribbon" aria-hidden="true">

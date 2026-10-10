@@ -150,3 +150,35 @@
 .research-stage-school-emblem img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .research-stage-card-emblem { aspect-ratio: 1; background: #fff; }
 
+/* A single reserved footprint for the base robot and every school outfit. */
+.research-stage-mascot-slot { position: absolute; z-index: 3; left: 64%; top: 16%; width: min(33vw, 450px); aspect-ratio: 1; pointer-events: none; }
+.research-stage-mascot-slot img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; }
+.research-stage-mascot-shadow { position: absolute; left: 20%; bottom: 3%; width: 60%; height: 8%; border-radius: 50%; background: radial-gradient(ellipse at center, rgb(0 0 0 / 25%), rgb(0 0 0 / 0%) 72%); }
+.research-stage-mascot-measure { visibility: hidden; }
+.research-stage-base-mascot { z-index: 5; }
+.research-stage-mascot-flash { z-index: 6; background: radial-gradient(circle at center, #fff 0%, rgb(255 255 255 / 90%) 15%, rgb(255 255 255 / 0%) 58%); }
+.research-stage-title-row { display: flex; align-items: flex-start; gap: 14px; }
+.research-stage-title-row h2 { min-width: 0; overflow-wrap: break-word; }
+.research-stage-title-emblem { display: grid; flex: 0 0 44px; width: 44px; aspect-ratio: 1; margin-top: 7px; background: #fff; }
+.research-stage-title-emblem img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.research-stage-slide .research-stage-copy-stack { width: min(760px, 58%); }
+.research-stage-navigation .is-active .research-stage-school-button { background: #fff; }
+.research-stage-school-emblem { border-radius: 4px; background: #fff; }
+@media (max-width: 1000px) and (min-width: 769px) {
+  .research-stage-mascot-slot { left: 65%; width: 33vw; top: 22%; }
+}
+@media (max-width: 768px) {
+  .research-stage-mascot-slot { --mascot-size: min(66vw, 280px); left: calc((100% - var(--mascot-size)) / 2); top: 68px; width: var(--mascot-size); }
+  .research-stage-slide .research-stage-copy-stack { top: max(350px, 52%); bottom: 72px; width: calc(100% - 40px); }
+  .research-stage-title-row { gap: 9px; }
+  .research-stage-title-emblem { flex-basis: 32px; width: 32px; margin-top: 4px; }
+  .research-stage-counter { font-size: 11px; margin-bottom: 10px; }
+  .research-stage-copy-stack h2 { font-size: clamp(32px, 8.7vw, 44px); }
+  .research-stage-line-selector { margin-top: 2px; }
+}
+@media (max-width: 768px) and (max-height: 700px) {
+  .research-stage-mascot-slot { --mascot-size: min(48vw, 200px); top: 64px; }
+  .research-stage-slide .research-stage-copy-stack { top: 270px; }
+  .research-stage-copy-stack h2 { font-size: 30px; }
+}
+
