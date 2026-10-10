@@ -244,6 +244,8 @@ export default function App() {
       <>
         <AccessScreen
           school={selectedSchool}
+          schoolMetrics={schoolMetrics}
+          teacherCount={schoolTeachers.length}
           onLogin={handleLogin}
           onExploreAsGuest={handleExploreAsGuest}
           onChangeSchool={() => setSelectedSchool(null)}
