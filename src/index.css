@@ -751,7 +751,7 @@ html, body {
 }
 
 /* Emblema 3D de la escuela seleccionada en la portada de acceso. */
-.welcome-art{width:340px;height:374px;right:30px;bottom:14%;opacity:.08;perspective:1100px;overflow:visible;transform:none;}
+.welcome-art{width:340px;height:374px;right:30px;bottom:14%;opacity:.18;perspective:1100px;overflow:visible;transform:none;}
 .welcome-emblem-tilt{width:100%;height:100%;transform:rotateZ(-28deg) rotateX(12deg);transform-style:preserve-3d;}
 .welcome-emblem-solid{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:welcome-solid-turn 9s linear infinite;}
 .welcome-emblem-layer{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:visible;}
@@ -766,7 +766,7 @@ html, body {
 .welcome-emblem-layer.emblem-face .school-emblem-ecmc svg [fill]:not([fill="none"]){fill:#c95e54;}
 @keyframes welcome-solid-turn{from{transform:rotateY(25deg);}to{transform:rotateY(385deg);}}
 @media(max-width:1100px){.welcome-art{right:-180px;bottom:16%;}}
-@media(max-width:600px){.welcome-art{width:min(250px,70vw);height:auto;aspect-ratio:340/374;right:14px;bottom:24%;opacity:.07;}.welcome-emblem-tilt{transform:rotateZ(-28deg) rotateX(12deg);}}
+@media(max-width:600px){.welcome-art{width:min(250px,70vw);height:auto;aspect-ratio:340/374;right:14px;bottom:24%;opacity:.16;}.welcome-emblem-tilt{transform:rotateZ(-28deg) rotateX(12deg);}}
 @media(prefers-reduced-motion:reduce){.welcome-emblem-solid{animation:none;transform:rotateY(25deg);}}
 
 /* Separación compacta cuando el visitante no tiene acciones rápidas. */
