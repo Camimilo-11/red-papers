@@ -18,25 +18,16 @@ export const metricsService = {
     // Para indicadores institucionales oficiales, tomamos los productos verificados
     // (siguiendo la política de visualización y trazabilidad)
     const verifiedProducts = products.filter((p) => p.status === 'verificado');
-    const totalProductsCount = products.length;
-    const verifiedCount = verifiedProducts.length;
-
     const publications = verifiedProducts.filter((p) => p.type === 'publicacion');
     const projects = verifiedProducts.filter((p) => p.type === 'proyecto');
 
     const totalCitations = publications.reduce((acc, p) => acc + (p.citations || 0), 0);
 
-    const verificationRate = totalProductsCount > 0
-      ? Math.round((verifiedCount / totalProductsCount) * 100)
-      : 0;
-
     return {
       totalPublications: publications.length,
       totalProjects: projects.length,
       totalCitations,
-      verificationRate,
-      verifiedCount,
-      totalProductsCount,
+      researchLinesWithProduction: new Set(verifiedProducts.map((product) => product.researchLine)).size,
     };
   },
 

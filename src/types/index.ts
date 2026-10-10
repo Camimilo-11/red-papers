@@ -170,9 +170,7 @@ export interface SchoolMetrics {
   totalPublications: number;
   totalProjects: number;
   totalCitations: number;
-  verificationRate: number; // Porcentaje redondeado (ej. 79)
-  verifiedCount: number;
-  totalProductsCount: number;
+  researchLinesWithProduction: number;
 }
 
 export interface AgileHU {
