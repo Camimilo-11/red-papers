@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
+import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { RESEARCH_LINE_MOTIFS } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
@@ -53,20 +54,8 @@ const schoolStyle = (school: SchoolConfig) => ({
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
 } as React.CSSProperties);
 
-// These transparent vector marks belong to the research-stage artwork. The
-// high-resolution JPGs remain specific to the school-selection cards.
-const STAGE_EMBLEMS: Record<SchoolCode, string> = {
-  ECIAA: './assets/school-emblems/ECIAA.svg',
-  ECBI: './assets/school-emblems/ECBI.svg',
-  ECFN: './assets/school-emblems/ECFN.svg',
-  ECTEA: './assets/school-emblems/ECTEA.svg',
-  ECMC: './assets/school-symbols/ECMC.svg',
-  ECQI: './assets/school-emblems/ECQI.svg',
-  YTLC: './assets/school-emblems/YTLC.svg',
-};
-
 function Emblem({ school }: { school: SchoolConfig }) {
-  return <img src={STAGE_EMBLEMS[school.code]} alt="" draggable={false} />;
+  return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} />;
 }
 
 /** Geometry stays in ResearchLineBackdrop. Only its tracing attributes change here. */
@@ -157,13 +146,12 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
 function StageEmblems({ progress }: { progress: MotionValue<number> }) {
   const root = useRef<HTMLDivElement>(null);
   const update = (value: number) => {
-    root.current?.querySelectorAll<HTMLElement>('[data-stage-emblem]').forEach((emblem, index) => {
+    root.current?.querySelectorAll<HTMLImageElement>('[data-stage-emblem] img').forEach((emblem, index) => {
       const start = SCHOOL_LINE_OFFSETS[index] * STAGE_TIMING.step;
       const end = (SCHOOL_LINE_OFFSETS[index] + stageLinesFor(SCHOOLS[index]).length) * STAGE_TIMING.step;
       const entrance = index === 0 ? 1 : clamp((value - start + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
       const departure = index === SCHOOLS.length - 1 ? 0 : clamp((value - end + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
-      const opacity = entrance * (1 - departure);
-      emblem.style.opacity = String(opacity);
+      emblem.style.opacity = String(entrance * (1 - departure));
     });
   };
   useLayoutEffect(() => update(progress.get()), [progress]);
@@ -213,11 +201,12 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
             key={line}
             type="button"
             className={plane.lineIndex === lineIndex ? 'is-active' : ''}
+            aria-label={`Mostrar ${line}`}
             aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
             onClick={() => onSelectLine(plane.school, lineIndex)}
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') onPreviewLine(planeIndex); }}
             onPointerLeave={() => onPreviewLine(null)}
-          >{line}</button>;
+          ><span aria-hidden="true" /></button>;
         })}
       </nav>}
     </article>
@@ -366,9 +355,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
   const baseRendered = manualIndex !== null
     ? [manualIndex, manualIndex + 1]
     : [pairStart, pairStart + 1];
-  const rendered = hoveredIndex !== null
-    ? [baseRendered[0], hoveredIndex]
-    : baseRendered;
+  const rendered = hoveredIndex !== null ? [baseRendered[0], hoveredIndex] : baseRendered;
   return (
       <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
         <div className="research-stage-snap-markers" aria-hidden="true">
