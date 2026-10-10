@@ -692,6 +692,8 @@ const MOTIFS: Record<OfficialResearchLine, () => Node> = {
   'Language Assessment': LanguageAssessment,
 };
 
+export const RESEARCH_LINE_MOTIFS = MOTIFS;
+
 /** Motivo decorativo de una línea. Es puramente visual: no recibe foco ni se anuncia. */
 export function ResearchLineBackdrop({ researchLine }: { researchLine: OfficialResearchLine }) {
   const Motif = MOTIFS[researchLine];

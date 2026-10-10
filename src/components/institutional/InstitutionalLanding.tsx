@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
+import { ResearchStage } from './ResearchStage';
 
 const INTRO_TIMING_MS = {
   intro: 1500,
@@ -63,16 +64,6 @@ function getInitialPhase(): IntroPhase {
   return reducedMotion ? 'reduced' : 'intro';
 }
 
-const schoolKeywords: Record<SchoolConfig['code'], string> = {
-  ECIAA: 'Agropecuarias',
-  ECBI: 'Biológicas',
-  ECFN: 'Físicas',
-  ECTEA: 'Tierra',
-  ECMC: 'Matemáticas',
-  ECQI: 'Químicas',
-  YTLC: 'Language',
-};
-
 const emblemPositions = [
   { left: '6%', top: '18%', size: 94, rotation: '-17deg', parallax: 0.035 },
   { left: '25%', top: '4%', size: 74, rotation: '12deg', parallax: 0.055 },
@@ -92,20 +83,6 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
       draggable={false}
       style={{ width: size, height: size }}
     />
-  );
-}
-
-function HighlightedSchoolName({ school }: { school: SchoolConfig }) {
-  const keyword = schoolKeywords[school.code];
-  const start = school.name.toLocaleLowerCase().indexOf(keyword.toLocaleLowerCase());
-  if (start < 0) return <>{school.name}</>;
-
-  return (
-    <>
-      {school.name.slice(0, start)}
-      <span className="institutional-landing-highlight">{school.name.slice(start, start + keyword.length)}</span>
-      {school.name.slice(start + keyword.length)}
-    </>
   );
 }
 
@@ -279,49 +256,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         </div>
       </section>
 
-      <div id="escuelas" className="institutional-landing-section-heading">
-        <p>INVESTIGACIÓN QUE CONECTA</p>
-        <h2>Conoce nuestras <span>escuelas</span></h2>
-      </div>
-
-      <div className="institutional-landing-scenes">
-        {SCHOOLS.map((school, index) => (
-          <section
-            className={`institutional-landing-school-scene ${index % 2 ? 'is-reversed' : ''}`}
-            data-school={school.code}
-            key={school.code}
-            style={{
-              '--school-accent': school.accent,
-              '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
-              '--school-wash': `color-mix(in srgb, ${school.accent} 10%, #ffffff)`,
-            } as React.CSSProperties}
-            aria-labelledby={`school-title-${school.code}`}
-          >
-            <div className="institutional-landing-school-copy">
-              <p className="institutional-landing-school-code">{school.code} · LÍNEAS DE INVESTIGACIÓN</p>
-              <h2 id={`school-title-${school.code}`}><HighlightedSchoolName school={school} /></h2>
-              <p className="institutional-landing-school-description">Explora la producción y las líneas que impulsan el trabajo de {school.shortName}.</p>
-              <ul className="institutional-landing-lines">
-                {school.researchLines.map((line) => <li key={line}>{line}</li>)}
-              </ul>
-              <div className="institutional-landing-progress" role="progressbar" aria-label={`Escuela ${index + 1} de ${SCHOOLS.length}`} aria-valuemin={1} aria-valuemax={SCHOOLS.length} aria-valuenow={index + 1}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <span className="institutional-landing-progress-track"><span style={{ width: `${((index + 1) / SCHOOLS.length) * 100}%` }} /></span>
-                <span>{String(SCHOOLS.length).padStart(2, '0')}</span>
-              </div>
-              <button className="institutional-landing-school-button" type="button" onClick={() => onSelect(school)}>
-                Explorar esta escuela <span aria-hidden="true">→</span>
-              </button>
-            </div>
-            <div className="institutional-landing-school-art" data-parallax-emblem data-parallax-speed="0.025" aria-hidden="true">
-              <span className="institutional-landing-school-wash" />
-              <span className="institutional-landing-school-emblem-float">
-                <LandingEmblem school={school} size={320} />
-              </span>
-            </div>
-          </section>
-        ))}
-      </div>
+      <ResearchStage onSelect={onSelect} />
 
       <footer className="institutional-landing-footer">
         <span>SIMAPC · Sistema de Manejo de Producción Científica</span>
