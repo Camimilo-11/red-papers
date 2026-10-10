@@ -1327,7 +1327,6 @@ body {
 .featured-publications-heading > div { min-width: 0; }
 .featured-publications-kicker { margin: 0 0 5px; color: #bd3027; font-size: 10px; font-weight: 800; letter-spacing: 1.65px; }
 .featured-publications-heading h2 { color: #262321; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(22px, 2.15vw, 28px); font-weight: 500; letter-spacing: -.35px; line-height: 1.18; }
-.featured-publications-heading > div > p:last-child { margin-top: 5px; color: #625b55; font-size: 13px; line-height: 1.4; }
 .featured-publications-selection { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid #e5d9ce; border-radius: 999px; background: #fffdfa; color: #5f5148; font-size: 11px; font-weight: 650; }
 .featured-publications-selection svg { color: #bd3027; }
 
@@ -1350,7 +1349,8 @@ body {
 .featured-paper-rank { display: flex; align-items: center; gap: 7px; }
 .featured-paper-rank svg { flex: 0 0 auto; color: var(--feature-line-color); }
 .featured-paper-controls { flex-wrap: wrap; row-gap: 8px; }
-.featured-paper-controls > button { flex: 0 0 32px; }
+.featured-paper-controls > button { flex: 0 0 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; max-height: 32px; padding: 0; line-height: 0; }
+.featured-paper-dots button { flex: 0 0 24px; width: 24px; min-width: 24px; max-width: 24px; height: 10px; min-height: 10px; max-height: 10px; padding: 0; line-height: 0; }
 .featured-paper-controls > .featured-paper-pause { border-color: #bd3027; background: #bd3027; color: #fff; box-shadow: 0 3px 9px rgba(150, 37, 29, .2); }
 .featured-paper-controls > .featured-paper-pause:hover { border-color: #a92b22; background: #a92b22; color: #fff; transform: translateY(-1px); }
 .featured-paper-progress { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 3px; transform: scaleX(0); transform-origin: left center; background: var(--feature-line-color); animation-name: featured-paper-progress; animation-timing-function: linear; animation-fill-mode: both; pointer-events: none; }
@@ -1359,8 +1359,9 @@ body {
 @media (max-width: 760px) {
   .featured-publications-heading { align-items: flex-start; flex-direction: column; gap: 9px; margin-bottom: 10px; }
   .featured-publications-heading h2 { font-size: 24px; }
-  .featured-publications-heading > div > p:last-child { font-size: 12px; }
   .featured-publications-selection { padding: 6px 9px; font-size: 10px; }
+  .featured-paper-controls > button { flex-basis: 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; max-height: 32px; }
+  .featured-paper-dots button { flex-basis: 20px; width: 20px; min-width: 20px; max-width: 20px; height: 8px; min-height: 8px; max-height: 8px; }
   .featured-paper-backdrop { --bd-opacity: .3; }
   .featured-paper-actions { align-items: flex-start; }
   .featured-paper-link { min-height: 42px; }

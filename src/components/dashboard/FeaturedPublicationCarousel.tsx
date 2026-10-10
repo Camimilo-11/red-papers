@@ -107,7 +107,6 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
           <div>
             <p className="featured-publications-kicker">PRODUCCIÓN CIENTÍFICA · ECMC</p>
             <h2 id="featured-publications-title">Publicaciones con mayor repercusión</h2>
-            <p>Una publicación verificada destacada por cada línea de investigación.</p>
           </div>
         </header>
         <div className="featured-paper-empty">Aún no hay publicaciones verificadas para destacar.</div>
@@ -127,7 +126,6 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
         <div>
           <p className="featured-publications-kicker">PRODUCCIÓN CIENTÍFICA · ECMC</p>
           <h2 id="featured-publications-title">Publicaciones con mayor repercusión</h2>
-          <p>Una publicación verificada destacada por cada línea de investigación.</p>
         </div>
         <span className="featured-publications-selection"><Award size={16} aria-hidden="true" />Selección por citas registradas</span>
       </header>
