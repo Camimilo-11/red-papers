@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolConfig } from '../../constants/schools';
+import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { RESEARCH_LINE_MOTIFS } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
@@ -45,7 +46,7 @@ const schoolStyle = (school: SchoolConfig) => ({
 } as React.CSSProperties);
 
 function Emblem({ school }: { school: SchoolConfig }) {
-  return <img src={`./assets/school-symbols/${school.code}.png`} alt="" draggable={false} />;
+  return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} style={{ mixBlendMode: 'multiply' }} />;
 }
 
 /** Geometry stays in ResearchLineBackdrop. Only its tracing attributes change here. */
