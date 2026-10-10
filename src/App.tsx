@@ -23,7 +23,7 @@ import { DirectoryView } from './components/directory/DirectoryView';
 import { TraceabilityView } from './components/traceability/TraceabilityView';
 import { RegisterProductModal } from './components/register/RegisterProductModal';
 import { ReviewerConsoleModal } from './components/reviewer/ReviewerConsoleModal';
-import { SchoolSelector } from './components/institutional/SchoolSelector';
+import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
 import { getSchoolByCode } from './constants/schools';
 
 export default function App() {
@@ -235,7 +235,7 @@ export default function App() {
   };
 
   if (!selectedSchool) {
-    return <SchoolSelector onSelect={handleSchoolSelect} />;
+    return <InstitutionalLanding onSelect={handleSchoolSelect} />;
   }
 
   // Si se encuentra en la pantalla de acceso del boceto 03
