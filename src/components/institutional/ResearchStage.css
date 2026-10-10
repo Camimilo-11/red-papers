@@ -16,11 +16,11 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 .research-stage-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .research-stage-svg [data-trace] { --shape-progress: clamp(0, calc((var(--plane-draw, 0) - var(--trace-delay, 0)) / (1 - var(--trace-delay, 0))), 1); stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--shape-progress)); stroke-width: .65; }
 .research-stage-svg [data-filled] { fill-opacity: calc(var(--original-fill-opacity, 1) * var(--shape-progress)); }
-.research-stage-emblems { position: absolute; inset: 0; z-index: 7; }
+.research-stage-emblems { position: absolute; inset: 0; z-index: 7; mix-blend-mode: multiply; }
 .research-stage-emblem-camera { position: absolute; width: var(--emblem-width); height: var(--emblem-height); left: var(--emblem-left); top: var(--emblem-top); }
 .research-stage-emblem-ambient { width: 100%; height: 100%; }
 .research-stage-emblem-ambient img, .research-stage-card-emblem img { width: 100%; height: 100%; object-fit: contain; }
-.research-stage-emblem-ambient img { mix-blend-mode: multiply; will-change: opacity; }
+.research-stage-emblem-ambient img { will-change: opacity; }
 .research-stage-eyebrow { position: absolute; z-index: 3; top: 19%; left: var(--stage-gutter); margin: 0; color: #40474d; font-size: 12px; font-weight: 800; letter-spacing: .17em; }
 .research-stage-copy-stack { position: absolute; left: var(--stage-gutter); top: 24%; width: min(850px, 69%); height: auto; max-height: 68%; z-index: 4; pointer-events: none; }
 .research-stage-copy-stack::before { content: ''; position: absolute; z-index: -1; inset: -30px -80px -22px -20px; background: linear-gradient(90deg, #fff 0%, rgb(255 255 255 / 96%) 60%, rgb(255 255 255 / 0%) 100%); pointer-events: none; }
