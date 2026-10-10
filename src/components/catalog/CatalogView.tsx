@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ScientificProduct, TeacherUser, FilterState, ProductType, OfficialResearchLine, ProductStatus } from '../../types';
-import { OFFICIAL_RESEARCH_LINES, ACADEMIC_SEMESTERS } from '../../constants/researchLines';
+import { ACADEMIC_SEMESTERS } from '../../constants/researchLines';
 import { productService } from '../../services/productService';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { ProductCard } from './ProductCard';
@@ -30,6 +30,8 @@ interface CatalogViewProps {
   onOpenRegister: () => void;
   onEditProduct?: (product: ScientificProduct) => void;
   onProjectUpdated?: (product: ScientificProduct) => void;
+  researchLines: readonly OfficialResearchLine[];
+  schoolName: string;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
@@ -42,6 +44,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   onOpenRegister,
   onEditProduct,
   onProjectUpdated,
+  researchLines,
+  schoolName,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<ScientificProduct | null>(null);
   const [trackingProject, setTrackingProject] = useState<ScientificProduct | null>(null);
@@ -62,7 +66,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
   // Productos visibles según sesión
   const visibleProducts = useMemo(() => {
-    const visible = productService.getVisibleProducts(currentUserId);
+    const schoolProductIds = new Set(allProducts.map(product => product.id));
+    const visible = productService.getVisibleProducts(currentUserId).filter(product => schoolProductIds.has(product.id));
     return onlyMine ? visible.filter(p=>p.ownerId===currentUserId) : visible;
   }, [allProducts, currentUserId, onlyMine]);
 
@@ -116,7 +121,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       totalRecords: filteredProducts.length,
       generatedAt: new Date().toLocaleString('es-EC'),
       institution: 'Universidad Yachay Tech',
-      school: 'Escuela de Ciencias Matemáticas y Computacionales (ECMC)',
+      school: schoolName,
     };
 
     let success = false;
@@ -320,7 +325,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               className="w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800 focus:ring-1 focus:ring-[#EF4035]"
             >
               <option value="todas">Todas las áreas</option>
-              {OFFICIAL_RESEARCH_LINES.map((line) => (
+              {researchLines.map((line) => (
                 <option key={line} value={line}>
                   {line}
                 </option>

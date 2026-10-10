@@ -1,21 +1,16 @@
 import { OfficialResearchLine } from '../types';
+import { SCHOOLS } from './schools';
 
 /**
  * 6 Líneas de investigación oficiales y centralizadas de la Escuela de Ciencias
  * Matemáticas y Computacionales (ECMC) de Yachay Tech.
  * Conforme a la sección 4 de requerimientos: usar exclusivamente estos nombres.
  */
-export const OFFICIAL_RESEARCH_LINES: readonly OfficialResearchLine[] = [
-  'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización',
-  'Ciencia de datos',
-  'Computación científica',
-  'Inteligencia artificial',
-  'Tecnologías de la información',
-  'Ciencia, Tecnología y Sociedad',
-] as const;
+export const OFFICIAL_RESEARCH_LINES: readonly OfficialResearchLine[] = SCHOOLS.find((school) => school.code === 'ECMC')!.researchLines;
+export const ALL_OFFICIAL_RESEARCH_LINES: readonly OfficialResearchLine[] = [...new Set(SCHOOLS.flatMap((school) => school.researchLines))];
 
 /** Sub-líneas demostrativas para que cada docente pueda precisar su perfil. */
-export const OFFICIAL_RESEARCH_SUBLINES: Record<OfficialResearchLine, readonly string[]> = {
+export const OFFICIAL_RESEARCH_SUBLINES: Partial<Record<OfficialResearchLine, readonly string[]>> = {
   'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización': [
     'Ecuaciones diferenciales parciales',
     'Análisis numérico y métodos computacionales',

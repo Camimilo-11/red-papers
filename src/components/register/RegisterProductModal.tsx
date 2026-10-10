@@ -9,7 +9,7 @@ import {
   TeacherUser,
   ProductAttachment,
 } from '../../types';
-import { OFFICIAL_RESEARCH_LINES } from '../../constants/researchLines';
+import { getSchoolByCode } from '../../constants/schools';
 import { doiService, OrcidWorkItem } from '../../services/doiService';
 import { pdfExtractorService } from '../../services/pdfExtractorService';
 import { productService, DuplicateCheckResult } from '../../services/productService';
@@ -61,6 +61,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   onClose,
   onProductSaved,
 }) => {
+  const researchLines = getSchoolByCode(currentUser?.school)?.researchLines || [];
   const [activeTab, setActiveTab] = useState<RegisterTab>('manual');
   const [productType, setProductType] = useState<ProductType>(initialProduct?.type||initialType);
   useEffect(()=>{if(productType==='proyecto' && activeTab==='identifier')setActiveTab('manual');},[productType,activeTab]);
@@ -356,7 +357,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       type: productType,
       title: title.trim(),
       authors,
-      school: 'ECMC',
+      school: currentUser?.school || 'ECMC',
       year: Number(productDate.slice(0,4)),
       semester: semesterForDate(productDate),
       publicationDate: productType === 'publicacion' ? productDate : undefined,
@@ -708,7 +709,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                   onChange={(e) => setResearchLine(e.target.value as OfficialResearchLine)}
                   className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white"
                 >
-                  {OFFICIAL_RESEARCH_LINES.map((line) => (
+                  {researchLines.map((line) => (
                     <option key={line} value={line}>
                       {line}
                     </option>
@@ -778,7 +779,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     type="text"
                     value={projectCode}
                     onChange={(e) => setProjectCode(e.target.value)}
-                    placeholder="Ej. ECMC-INV-2024-008"
+                    placeholder={`Ej. ${currentUser?.school || 'ECMC'}-INV-2024-008`}
                     className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs font-mono focus:ring-1 focus:ring-[#EF4035]"
                   />
                 </div>

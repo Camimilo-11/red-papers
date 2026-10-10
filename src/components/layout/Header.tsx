@@ -1,18 +1,20 @@
 import { canDevelop } from '../../constants/demoAccounts';
 import React, { useState, useEffect, useRef } from 'react';
-import { EcmcLogo } from '../../assets/EcmcLogo';
 import { TeacherUser, UserNotification } from '../../types';
+import { getSchoolByCode, SchoolConfig } from '../../constants/schools';
+import { SchoolLogo } from '../institutional/SchoolLogo';
 import { NotificationsPopover } from './NotificationsPopover';
 import { Home, BookOpen, Users, FolderOpen, Bell, LogOut, LogIn, Menu, X, ShieldCheck, GitBranch, Settings } from 'lucide-react';
 export type ActiveTab = 'dashboard' | 'catalog' | 'directory' | 'mine' | 'settings' | 'traceability' | 'reviewer' | 'roles';
 interface HeaderProps {
   activeTab: ActiveTab; onTabChange: (tab: ActiveTab) => void;
-  currentUser: TeacherUser | null; teachers: TeacherUser[]; notifications: UserNotification[];
+  currentUser: TeacherUser | null; teachers: TeacherUser[]; notifications: UserNotification[]; school?: SchoolConfig;
   onLoginClick: () => void; onLogoutClick: () => void; onSwitchUser: (id: string) => void;
   onOpenRegisterModal: () => void; onOpenReviewerConsole: () => void;
   onMarkNotificationAsRead: (id: string) => void; onMarkAllNotificationsAsRead: () => void;
 }
 export const Header: React.FC<HeaderProps> = (p) => {
+ const school=p.school||getSchoolByCode('ECMC')!;
  const [mobileOpen,setMobileOpen]=useState(false);
  const [notificationsOpen,setNotificationsOpen]=useState(false);
  const notificationRef=useRef<HTMLDivElement>(null);
@@ -35,7 +37,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   <a href="#main-content" className="skip-link">Ir al contenido</a>
   <header className="portal-topbar">
    <button className="mobile-menu" aria-label={mobileOpen?'Cerrar menú':'Abrir menú'} aria-expanded={mobileOpen} onClick={()=>setMobileOpen(!mobileOpen)}>{mobileOpen?<X/>:<Menu/>}</button>
-   <div className="topbar-context"><span>YACHAY TECH</span><span>Escuela de Ciencias Matemáticas y Computacionales</span></div>
+   <div className="topbar-context"><span>YACHAY TECH</span><span>{school.name}</span></div>
    <div className="topbar-actions">
     {p.currentUser ? <>
      <div className="relative" ref={notificationRef}><button className="notification-button" aria-label={`Avisos, ${unread} sin leer`} onClick={()=>setNotificationsOpen(!notificationsOpen)} aria-expanded={notificationsOpen}><Bell size={20}/><span>Avisos</span>{unread>0&&<b>{unread}</b>}</button>
@@ -46,7 +48,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   </header>
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
-   <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="RED PAPERS, ir al inicio"><EcmcLogo size={44}/><span>RED PAPERS<small>Investigación · ECMC</small></span></button>
+   <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="RED PAPERS, ir al inicio"><SchoolLogo school={school} scale={.48}/><span>RED PAPERS<small>Investigación · {school.code}</small></span></button>
    <div className="sidebar-section-label">TU ESPACIO DE INVESTIGACIÓN</div>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
    <div className="sidebar-bottom">

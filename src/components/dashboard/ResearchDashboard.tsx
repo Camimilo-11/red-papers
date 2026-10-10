@@ -1,10 +1,10 @@
 import React, {useMemo, useState} from 'react';
 import {BarChart3, ChartPie, Quote} from 'lucide-react';
 import {ScientificProduct, TeacherMetrics, TeacherUser} from '../../types';
-import {OFFICIAL_RESEARCH_LINES} from '../../constants/researchLines';
 import {metricsService} from '../../services/metricsService';
 import type {TemporalDataPoint} from '../../services/metricsService';
 import {TemporalEvolutionChart} from './TemporalEvolutionChart';
+import {SchoolConfig} from '../../constants/schools';
 
 type RankingMetric='citations'|'publications'|'scholarHIndex'|'scopusHIndex';
 const rankingOptions:{id:RankingMetric;label:string}[]=[
@@ -56,14 +56,14 @@ function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];product
  </section>;
 }
 
-function ResearchLineChart({products}:{products:ScientificProduct[]}) {
+function ResearchLineChart({products,school}:{products:ScientificProduct[];school:SchoolConfig}) {
  const verified=products.filter(product=>product.status==='verificado');
- const values=OFFICIAL_RESEARCH_LINES.map((line,index)=>({line,index,count:verified.filter(product=>product.researchLine===line).length}))
+ const values=school.researchLines.map((line,index)=>({line,index,count:verified.filter(product=>product.researchLine===line).length}))
   .sort((a,b)=>b.count-a.count||a.index-b.index);
  const max=Math.max(1,...values.map(item=>item.count));
  return <section className="research-chart-card research-line-chart" aria-labelledby="research-lines-chart-title">
   <header className="research-chart-heading">
-   <div><p className="eyebrow">ÁREAS · ECMC</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
+   <div><p className="eyebrow">ÁREAS · {school.code}</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
    <BarChart3 size={21} aria-hidden="true"/>
   </header>
   <ol className="research-line-bars">{values.map(item=><li key={item.line}>
@@ -74,12 +74,12 @@ function ResearchLineChart({products}:{products:ScientificProduct[]}) {
  </section>;
 }
 
-export function ResearchDashboard({teachers,products,temporalData}:{teachers:TeacherUser[];products:ScientificProduct[];temporalData:TemporalDataPoint[]}) {
- return <section className="research-dashboard" aria-label="Indicadores de investigación de la ECMC">
+export function ResearchDashboard({teachers,products,temporalData,school}:{teachers:TeacherUser[];products:ScientificProduct[];temporalData:TemporalDataPoint[];school:SchoolConfig}) {
+ return <section className="research-dashboard" aria-label={`Indicadores de investigación de ${school.name}`}>
   <div className="research-dashboard-grid">
    <TemporalEvolutionChart data={temporalData}/>
    <TeacherRankingChart teachers={teachers} products={products}/>
-   <ResearchLineChart products={products}/>
+   <ResearchLineChart products={products} school={school}/>
   </div>
  </section>;
 }

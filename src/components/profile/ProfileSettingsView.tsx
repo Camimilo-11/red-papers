@@ -1,8 +1,9 @@
 import React, {ChangeEvent, FormEvent, useRef, useState} from 'react';
 import {CircleCheck, ExternalLink, ImagePlus, Save, Trash2, UserRound} from 'lucide-react';
 import {AcademicDegree, OfficialResearchLine, TeacherResearchSublines, TeacherUser} from '../../types';
-import {OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES} from '../../constants/researchLines';
+import {OFFICIAL_RESEARCH_SUBLINES} from '../../constants/researchLines';
 import {authService} from '../../services/authService';
+import {getSchoolByCode} from '../../constants/schools';
 
 type Props={currentUser:TeacherUser; onUpdated:(user:TeacherUser)=>void};
 type AcademicDegreeValue=AcademicDegree|'';
@@ -53,6 +54,7 @@ async function optimizeProfileImage(file:File):Promise<string>{
 }
 
 export function ProfileSettingsView({currentUser,onUpdated}:Props) {
+ const researchLineOptions=getSchoolByCode(currentUser.school)?.researchLines||[];
  const [name,setName]=useState(currentUser.name);
  const [rank,setRank]=useState(currentUser.rank);
  const [academicDegree,setAcademicDegree]=useState<AcademicDegreeValue>(currentUser.academicDegree||'');
@@ -90,7 +92,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
 
  return <section className="profile-settings-page" aria-labelledby="profile-settings-title">
   <div className="reviewer-heading">
-   <p className="eyebrow">MI CUENTA · ECMC</p>
+   <p className="eyebrow">MI CUENTA · {currentUser.school}</p>
    <h1 id="profile-settings-title">Configuración del perfil</h1>
    <p>Actualice su cargo, formación académica y perfiles de investigación.</p>
   </div>
@@ -111,7 +113,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
     <label className="profile-settings-field"><span>Cargo</span><input required maxLength={100} value={rank} onChange={e=>setRank(e.target.value)} placeholder="Profesor titular, agregado, auxiliar…"/></label>
     <label className="profile-settings-field"><span>Grado académico</span><select required value={academicDegree} onChange={e=>setAcademicDegree(e.target.value as AcademicDegreeValue)}><option value="">Seleccione su formación</option>{degreeOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select><small>Se mostrará separado de su nombre en el perfil público.</small></label>
     <label className="profile-settings-field"><span>{academicDegree==='Other'?'Especifique su título':'Área o especialidad del título'}</span><input maxLength={100} value={academicField} onChange={e=>setAcademicField(e.target.value)} placeholder="Ej. Ciencias de la Computación"/><small>Opcional, salvo que seleccione «Otro título».</small></label>
-    <fieldset className="profile-settings-field-wide profile-research-lines-field"><legend>Líneas de investigación</legend><small>Seleccione las líneas y sublíneas que describen su trabajo; aparecerán en su perfil público.</small><div className="profile-research-line-options">{OFFICIAL_RESEARCH_LINES.map(line=><label className="profile-research-line-option" key={line}><input type="checkbox" checked={researchLines.includes(line)} onChange={event=>{if(event.target.checked)setResearchLines(selected=>[...selected,line]);else{setResearchLines(selected=>selected.filter(item=>item!==line));setResearchSublines(selected=>{const next={...selected};delete next[line];return next;});}}}/><span>{line}</span></label>)}</div>{researchLines.map(line=><div className="profile-research-subline-group" key={line}><strong>{line}</strong><div className="profile-research-subline-options">{OFFICIAL_RESEARCH_SUBLINES[line].map(subline=><label className="profile-research-subline-option" key={subline}><input type="checkbox" checked={researchSublines[line]?.includes(subline)||false} onChange={event=>setResearchSublines(selected=>{const current=selected[line]||[];const values=event.target.checked?[...current,subline]:current.filter(item=>item!==subline);return {...selected,[line]:values};})}/><span>{subline}</span></label>)}</div></div>)}<small>{researchLines.length===0?'Aún no ha seleccionado líneas.':`${researchLines.length} ${researchLines.length===1?'línea seleccionada':'líneas seleccionadas'}.`}</small></fieldset>
+    <fieldset className="profile-settings-field-wide profile-research-lines-field"><legend>Líneas de investigación</legend><small>Seleccione las líneas y sublíneas que describen su trabajo; aparecerán en su perfil público.</small><div className="profile-research-line-options">{researchLineOptions.map(line=><label className="profile-research-line-option" key={line}><input type="checkbox" checked={researchLines.includes(line)} onChange={event=>{if(event.target.checked)setResearchLines(selected=>[...selected,line]);else{setResearchLines(selected=>selected.filter(item=>item!==line));setResearchSublines(selected=>{const next={...selected};delete next[line];return next;});}}}/><span>{line}</span></label>)}</div>{researchLines.map(line=>{const sublineOptions=OFFICIAL_RESEARCH_SUBLINES[line]||[];return sublineOptions.length>0&&<div className="profile-research-subline-group" key={line}><strong>{line}</strong><div className="profile-research-subline-options">{sublineOptions.map(subline=><label className="profile-research-subline-option" key={subline}><input type="checkbox" checked={researchSublines[line]?.includes(subline)||false} onChange={event=>setResearchSublines(selected=>{const current=selected[line]||[];const values=event.target.checked?[...current,subline]:current.filter(item=>item!==subline);return {...selected,[line]:values};})}/><span>{subline}</span></label>)}</div></div>;})}<small>{researchLines.length===0?'Aún no ha seleccionado líneas.':`${researchLines.length} ${researchLines.length===1?'línea seleccionada':'líneas seleccionadas'}.`}</small></fieldset>
     <label className="profile-settings-field"><span>Correo institucional</span><input value={currentUser.email} readOnly aria-describedby="profile-email-note"/><small id="profile-email-note">Para corregir el correo, solicite el cambio al administrador.</small></label>
     <label className="profile-settings-field"><span>ORCID iD</span><input placeholder="0000-0002-1825-0097" autoComplete="off" value={orcid} onChange={e=>setOrcid(e.target.value)}/><small>Acepte su iD o el enlace de ORCID.</small></label>
     <label className="profile-settings-field"><span>GitHub</span><input placeholder="usuario o github.com/usuario" autoComplete="url" value={githubUrl} onChange={e=>setGithubUrl(e.target.value)}/><small>Enlace a su perfil público.</small></label>

@@ -14,7 +14,7 @@ for(const {user,password} of DEMO_ACCOUNTS){
   assert.equal(authService.getCurrentUser()?.role,user.role);
   const html=renderToStaticMarkup(<Header activeTab="dashboard" currentUser={user} teachers={[]} notifications={[]} onTabChange={()=>{}} onLoginClick={()=>{}} onLogoutClick={()=>{}} onSwitchUser={()=>{}} onOpenRegisterModal={()=>{}} onOpenReviewerConsole={()=>{}} onMarkNotificationAsRead={()=>{}} onMarkAllNotificationsAsRead={()=>{}}/>);
   assert.equal(html.includes('Otras herramientas'),user.role==='developer');
-  assert.equal(html.includes('Comité revisor</span></button>'),user.role==='reviewer_demo');
+  assert.equal(html.includes('Comité Científico'),user.role!=='teacher');
   assert.equal(canReview(user),user.role!=='teacher');
   assert.equal(canDevelop(user),user.role==='developer');
   if(user.role==='teacher')assert.equal(html.includes('Trazabilidad del proyecto'),false);

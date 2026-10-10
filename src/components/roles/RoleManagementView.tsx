@@ -18,7 +18,7 @@ export function RoleManagementView({onChanged,currentUser}:{onChanged:()=>void;c
  };
  const filtered=users.filter(u=>u.role==='teacher'||(developer&&u.role==='reviewer_demo')).filter(u=>`${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
  return <section className="roles-page">
-  <div className="reviewer-heading"><p className="eyebrow">ADMINISTRACIÓN · ECMC</p><h1>{developer?'Asignar comité':'Asignar roles'}</h1><p>{developer?'Asigne miembros al comité o devuélvales el perfil de profesor.':'Asigne a cada usuario el perfil de profesor.'}</p></div>
+  <div className="reviewer-heading"><p className="eyebrow">ADMINISTRACIÓN · {currentUser.school}</p><h1>{developer?'Asignar comité':'Asignar roles'}</h1><p>{developer?'Asigne miembros al comité o devuélvales el perfil de profesor.':'Asigne a cada usuario el perfil de profesor.'}</p></div>
   <input className="roles-search" aria-label="Buscar usuario" placeholder="Nombre o correo · Enter" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/>
   {message&&<p role="status" className="save-notice">{message}</p>}
   {pending&&<div className="role-confirm" role="region" aria-label="Confirmar cambio de rol"><p><strong>{pending.user.name}</strong> pasará de {ROLE_LABELS[pending.user.role]} a <strong>{ROLE_LABELS[pending.role]}</strong>.</p><p>El nuevo perfil determina las herramientas disponibles al iniciar sesión.</p><div><button className="primary-button" onClick={save}>Confirmar cambio</button><button onClick={()=>setPending(null)}>Cancelar</button></div></div>}

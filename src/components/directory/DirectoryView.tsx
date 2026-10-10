@@ -5,6 +5,7 @@ import { exportService, ExportMetadata } from '../../services/exportService';
 import { productDateLabel } from '../../services/productPresentation';
 import { ProductDetailModal } from '../catalog/ProductDetailModal';
 import { Search, ExternalLink, Mail, Download, BarChart3, ArrowLeft, ChevronRight } from 'lucide-react';
+import { getSchoolByCode } from '../../constants/schools';
 import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
 import diegoPhoto from '../../assets/researchers/diego-peluffo.png';
 import eugenioPhoto from '../../assets/researchers/eugenio-morocho.png';
@@ -39,6 +40,7 @@ interface DirectoryViewProps {
   allProducts: ScientificProduct[];
   selectedTeacherId?: string;
   onFilterInCatalog: (teacherId: string) => void;
+  schoolCode?: string;
 }
 
 export const DirectoryView: React.FC<DirectoryViewProps> = ({
@@ -46,7 +48,9 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   allProducts,
   selectedTeacherId,
   onFilterInCatalog,
+  schoolCode = 'ECMC',
 }) => {
+  const schoolName=getSchoolByCode(schoolCode)?.name||schoolCode;
   const [activeTeacherId, setActiveTeacherId] = useState<string>(
     selectedTeacherId || teachers[0]?.id || 'doc-001'
   );
@@ -131,7 +135,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
       totalRecords: teacherProducts.length,
       generatedAt: new Date().toLocaleString('es-EC'),
       institution: 'Universidad Yachay Tech',
-      school: `Historial de ${activeTeacher.name} - ECMC`,
+      school: `Historial de ${activeTeacher.name} - ${schoolCode}`,
     };
 
     let success = false;
@@ -166,7 +170,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
-          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p>{activeTeacher.yachayEntryYear&&<p className="academic-entry-year">En Yachay Tech desde {activeTeacher.yachayEntryYear}</p>}</div>
+          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">{schoolName}</p>{activeTeacher.yachayEntryYear&&<p className="academic-entry-year">En Yachay Tech desde {activeTeacher.yachayEntryYear}</p>}</div>
         </header>
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">

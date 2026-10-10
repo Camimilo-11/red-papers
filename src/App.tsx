@@ -10,7 +10,6 @@ import { TeacherUser, ScientificProduct, UserNotification, ProductStatus } from 
 
 // Componentes de Layout
 import { Header, ActiveTab } from './components/layout/Header';
-import { Footer } from './components/layout/Footer';
 
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
@@ -24,12 +23,15 @@ import { DirectoryView } from './components/directory/DirectoryView';
 import { TraceabilityView } from './components/traceability/TraceabilityView';
 import { RegisterProductModal } from './components/register/RegisterProductModal';
 import { ReviewerConsoleModal } from './components/reviewer/ReviewerConsoleModal';
+import { SchoolSelector } from './components/institutional/SchoolSelector';
+import { getSchoolByCode } from './constants/schools';
 
 export default function App() {
   // Estado de autenticación y sesión
   const [currentUser, setCurrentUser] = useState<TeacherUser | null>(() => authService.getCurrentUser());
   const [teachers, setTeachers] = useState<TeacherUser[]>(() => storageService.getTeachers());
   const [products, setProducts] = useState<ScientificProduct[]>(() => storageService.getProducts());
+  const [selectedSchool, setSelectedSchool] = useState(() => getSchoolByCode(authService.getCurrentUser()?.school) || null);
 
   // Navegación
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -53,8 +55,11 @@ export default function App() {
   const [catalogTeacherFilter, setCatalogTeacherFilter] = useState<string>('todos');
   const [directorySelectedTeacherId, setDirectorySelectedTeacherId] = useState<string>('doc-001');
 
+  const schoolTeachers = useMemo(() => selectedSchool ? teachers.filter(teacher => teacher.school === selectedSchool.code) : [], [teachers, selectedSchool]);
+  const schoolProducts = useMemo(() => selectedSchool ? products.filter(product => product.school === selectedSchool.code) : [], [products, selectedSchool]);
+
   // Each portal screen is an ordinary browser history entry.
-  const navigation = {activeTab, showAccessScreen, isRegisterProductOpen,
+  const navigation = {activeTab, showAccessScreen, selectedSchoolCode: selectedSchool?.code || null, isRegisterProductOpen,
     editingProductId: editingProduct?.id ?? null, isReviewerConsoleOpen, registerType, registerTypeLocked, catalogTeacherFilter, directorySelectedTeacherId};
   const navigationKey = JSON.stringify(navigation);
   const lastNavigation = useRef<string | null>(null);
@@ -80,6 +85,7 @@ export default function App() {
       lastNavigation.current = JSON.stringify(next);
       setActiveTab(next.activeTab);
       setShowAccessScreen(next.showAccessScreen);
+      setSelectedSchool(getSchoolByCode(next.selectedSchoolCode) || null);
       setIsRegisterProductOpen(next.isRegisterProductOpen);
       setEditingProduct(next.editingProductId ? storageService.getProducts().find(product => product.id === next.editingProductId) || null : null);
       setIsReviewerConsoleOpen(next.isReviewerConsoleOpen);
@@ -107,23 +113,27 @@ export default function App() {
 
   // Métricas agregadas de la escuela
   const schoolMetrics = useMemo(() => {
-    return metricsService.calculateSchoolMetrics(products);
-  }, [products]);
+    return metricsService.calculateSchoolMetrics(schoolProducts);
+  }, [schoolProducts]);
 
   // Métricas por docente para la tabla del dashboard
   const teacherMetricsList = useMemo(() => {
-    return teachers.map((t) => metricsService.calculateTeacherMetrics(t, products));
-  }, [teachers, products]);
+    return schoolTeachers.map((t) => metricsService.calculateTeacherMetrics(t, schoolProducts));
+  }, [schoolTeachers, schoolProducts]);
 
   // Datos para el gráfico temporal de evolución
   const temporalData = useMemo(() => {
-    return metricsService.getTemporalEvolutionData(products);
-  }, [products]);
+    return metricsService.getTemporalEvolutionData(schoolProducts);
+  }, [schoolProducts]);
 
   // Manejo de inicio de sesión
   const handleLogin = (email: string, pass: string) => {
     const res = authService.login(email, pass);
     if (res.success && res.user) {
+      if (res.user.school !== selectedSchool?.code) {
+        authService.logout();
+        return { success: false, error: 'Esta cuenta pertenece a otra escuela. Seleccione la escuela asociada a su cuenta.' };
+      }
       setCurrentUser(res.user);
       setShowAccessScreen(false);
       setActiveTab('dashboard');
@@ -138,10 +148,17 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
+  const handleSchoolSelect = (school: NonNullable<typeof selectedSchool>) => {
+    setSelectedSchool(school);
+    setShowAccessScreen(true);
+    setActiveTab('dashboard');
+  };
+
   // Cierre de sesión (HU02)
   const handleLogout = () => {
     authService.logout();
     setCurrentUser(null);
+    setSelectedSchool(null);
     setNotice('');
     // Volver al acceso y cerrar cualquier vista privada de la sesión anterior.
     setIsRegisterProductOpen(false);
@@ -217,13 +234,19 @@ export default function App() {
     setActiveTab('directory');
   };
 
+  if (!selectedSchool) {
+    return <SchoolSelector onSelect={handleSchoolSelect} />;
+  }
+
   // Si se encuentra en la pantalla de acceso del boceto 03
   if (showAccessScreen) {
     return (
       <>
         <AccessScreen
+          school={selectedSchool}
           onLogin={handleLogin}
           onExploreAsGuest={handleExploreAsGuest}
+          onChangeSchool={() => setSelectedSchool(null)}
         />
       </>
     );
@@ -234,6 +257,7 @@ export default function App() {
     <div className="portal-app min-h-screen font-sans">
       {/* 1. Encabezado Horizontal */}
       <Header
+        school={selectedSchool}
         activeTab={activeTab}
         onTabChange={(tab) => {
           setActiveTab(tab);
@@ -242,7 +266,7 @@ export default function App() {
           }
         }}
         currentUser={currentUser}
-        teachers={teachers}
+        teachers={schoolTeachers}
         notifications={userNotifications}
         onLoginClick={() => setShowAccessScreen(true)}
         onLogoutClick={handleLogout}
@@ -252,7 +276,7 @@ export default function App() {
           if (!currentUser) {
             // Si el visitante intenta registrar, le informamos que requiere inicio de sesión docente
             const proceed = confirm(
-              'El registro de producción científica requiere iniciar sesión como docente de la ECMC. ¿Deseas ingresar a tu cuenta institucional?'
+              `El registro de producción científica requiere iniciar sesión como docente de ${selectedSchool.shortName}. ¿Deseas ingresar a tu cuenta institucional?`
             );
             if (proceed) setShowAccessScreen(true);
           } else {
@@ -273,17 +297,18 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
             {/* Banner Institucional con CTA */}
-            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            <InstitutionalBanner school={selectedSchool} showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
 
-            <FeaturedPublicationCarousel products={products}/>
+            <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
             <MetricCards metrics={schoolMetrics}/>
 
             {/* Tablero: evolución semestral, ranking y líneas de investigación */}
-            <ResearchDashboard teachers={teachers} products={products} temporalData={temporalData} />
+            <ResearchDashboard teachers={schoolTeachers} products={schoolProducts} temporalData={temporalData} school={selectedSchool} />
 
             {/* Directorio e Indicadores por Docente */}
             <TeacherMetricsTable
               teacherMetrics={teacherMetricsList}
+              schoolCode={selectedSchool.code}
               onSelectTeacher={handleSelectTeacherInDirectory}
               onViewTeacherProducts={handleViewTeacherProducts}
             />
@@ -296,10 +321,12 @@ export default function App() {
             key={activeTab + catalogTeacherFilter}
             onlyMine={activeTab === 'mine'}
             allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'}
-            allProducts={products}
-            teachers={teachers}
+            allProducts={schoolProducts}
+            teachers={schoolTeachers}
             currentUserId={currentUser ? currentUser.id : null}
             initialTeacherFilter={catalogTeacherFilter}
+            researchLines={selectedSchool.researchLines}
+            schoolName={`${selectedSchool.name} (${selectedSchool.code})`}
             onEditProduct={product => {
               setEditingProduct(product);
               setRegisterType(product.type);
@@ -318,9 +345,10 @@ export default function App() {
         {/* Pestaña: Docentes Investigadores (Directorio y Perfil) */}
         {activeTab === 'directory' && (
           <DirectoryView
-            teachers={teachers}
-            allProducts={products}
+            teachers={schoolTeachers}
+            allProducts={schoolProducts}
             selectedTeacherId={directorySelectedTeacherId}
+            schoolCode={selectedSchool.code}
             onFilterInCatalog={handleViewTeacherProducts}
           />
         )}
@@ -328,7 +356,8 @@ export default function App() {
         {/* Pestaña: Trazabilidad Ágil (RF01 - RF09, HU01 - HU11) */}
         {activeTab === 'traceability' && canDevelop(currentUser) && <TraceabilityView />}
         {activeTab === 'reviewer' && canReview(currentUser) && <ReviewerConsoleModal
-          products={products}
+          products={schoolProducts}
+          schoolCode={selectedSchool.code}
           onUpdateStatus={handleUpdateProductStatus}
         />}
         {activeTab==='roles' && canDevelop(currentUser) && <RoleManagementView currentUser={currentUser!} onChanged={()=>setCurrentUser(authService.getCurrentUser())}/> }
@@ -336,7 +365,7 @@ export default function App() {
       </main>
 
       {/* 3. Pie de Página Institucional */}
-      <footer className="portal-footer"><span>RED PAPERS · ECMC</span><span>Universidad Yachay Tech</span></footer>
+      <footer className="portal-footer"><span>RED PAPERS · {selectedSchool.code}</span><span>Universidad Yachay Tech</span></footer>
 
       {/* 4. Modales Globales */}
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}

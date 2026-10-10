@@ -1,6 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Award, ChevronLeft, ChevronRight, ExternalLink, Pause, Play } from 'lucide-react';
-import { OFFICIAL_RESEARCH_LINES } from '../../constants/researchLines';
 import { normalizeDoi } from '../../services/doiService';
 import { OfficialResearchLine, ScientificProduct } from '../../types';
 import { FeaturedPublicationBackdrop, ResearchTheme } from './FeaturedPublicationBackdrop';
@@ -35,7 +34,7 @@ function useCountUp(value: number, resetKey: string | undefined) {
   return shown;
 }
 
-const themeByLine: Record<OfficialResearchLine, ResearchTheme> = {
+const themeByLine: Partial<Record<OfficialResearchLine, ResearchTheme>> = {
   'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización': 'mathematics',
   'Ciencia de datos': 'data',
   'Computación científica': 'computing',
@@ -44,7 +43,7 @@ const themeByLine: Record<OfficialResearchLine, ResearchTheme> = {
   'Ciencia, Tecnología y Sociedad': 'society',
 };
 
-function getMostCitedByResearchLine(products: ScientificProduct[]) {
+function getMostCitedByResearchLine(products: ScientificProduct[], researchLines: readonly OfficialResearchLine[]) {
   const topByLine = new Map<OfficialResearchLine, ScientificProduct>();
 
   products.forEach((product) => {
@@ -56,14 +55,14 @@ function getMostCitedByResearchLine(products: ScientificProduct[]) {
     }
   });
 
-  return OFFICIAL_RESEARCH_LINES
+  return researchLines
     .map((line) => topByLine.get(line))
     .filter((product): product is ScientificProduct => Boolean(product))
     .sort((a, b) => b.citations - a.citations || b.year - a.year);
 }
 
-export function FeaturedPublicationCarousel({ products }: { products: ScientificProduct[] }) {
-  const publications = useMemo(() => getMostCitedByResearchLine(products), [products]);
+export function FeaturedPublicationCarousel({ products, researchLines }: { products: ScientificProduct[]; researchLines: readonly OfficialResearchLine[] }) {
+  const publications = useMemo(() => getMostCitedByResearchLine(products, researchLines), [products, researchLines]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -113,7 +112,7 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
     );
   }
 
-  const theme = themeByLine[publication.researchLine];
+  const theme = themeByLine[publication.researchLine] || 'mathematics';
   const cleanDoi = normalizeDoi(publication.doi);
   const goTo = (offset: number) => {
     setActiveIndex((index) => (index + offset + publications.length) % publications.length);

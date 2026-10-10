@@ -2,7 +2,8 @@ import { resolveRole } from './roleService';
 import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
 import { AcademicDegree, OfficialResearchLine, TeacherResearchSublines, TeacherUser } from '../types';
 import { storageService } from './storage';
-import { ALLOWED_EMAIL_DOMAIN, OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
+import { ALLOWED_EMAIL_DOMAIN, ALL_OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
+import { getSchoolByCode } from '../constants/schools';
 
 export interface RegisterFormData {
   name: string;
@@ -270,7 +271,7 @@ export const authService = {
     const researchSublines:TeacherResearchSublines={};
     for(const line of researchLines){
       const selected=[...new Set(data.researchSublines?.[line]||[])];
-      if(selected.some(subline=>!OFFICIAL_RESEARCH_SUBLINES[line].includes(subline))) return {success:false,error:'Seleccione sublíneas válidas para cada línea de investigación.'};
+      if(selected.some(subline=>!(OFFICIAL_RESEARCH_SUBLINES[line]||[]).includes(subline))) return {success:false,error:'Seleccione sublíneas válidas para cada línea de investigación.'};
       if(selected.length) researchSublines[line]=selected;
     }
     const orcid=normalizeOrcid(data.orcid);
@@ -284,7 +285,8 @@ export const authService = {
     if(data.academicDegree==='Other'&&!academicField) return {success:false,error:'Especifique su título académico.'};
     if((academicField?.length||0)>100) return {success:false,error:'El área de especialidad debe tener 100 caracteres o menos.'};
     if(data.profileImage&&(!/^data:image\/jpeg;base64,[a-z\d+/]+=*$/i.test(data.profileImage)||data.profileImage.length>1_500_000)) return {success:false,error:'La imagen de perfil no tiene un formato válido o es demasiado grande.'};
-    if(researchLines.some(line=>!OFFICIAL_RESEARCH_LINES.includes(line))) return {success:false,error:'Seleccione líneas de investigación válidas.'};
+    const schoolLines=getSchoolByCode(current.school)?.researchLines||ALL_OFFICIAL_RESEARCH_LINES;
+    if(researchLines.some(line=>!schoolLines.includes(line))) return {success:false,error:'Seleccione líneas de investigación válidas para su escuela.'};
     if(data.orcid?.trim() && !orcid) return {success:false,error:'El ORCID no tiene un formato válido.'};
     if(orcid && !isValidOrcid(orcid)) return {success:false,error:'El ORCID debe tener el formato 0000-0002-1825-0097.'};
     if(data.githubUrl?.trim() && !githubUrl) return {success:false,error:'Ingrese un usuario o enlace válido de GitHub.'};

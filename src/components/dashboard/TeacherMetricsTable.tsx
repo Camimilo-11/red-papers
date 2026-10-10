@@ -4,12 +4,14 @@ import { Users, Search, ExternalLink, ChevronRight } from 'lucide-react';
 
 interface TeacherMetricsTableProps {
   teacherMetrics: TeacherMetrics[];
+  schoolCode?: string;
   onSelectTeacher: (teacherId: string) => void;
   onViewTeacherProducts: (teacherId: string) => void;
 }
 
 export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
   teacherMetrics,
+  schoolCode = 'ECMC',
   onSelectTeacher,
   onViewTeacherProducts,
 }) => {
@@ -38,7 +40,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-base text-neutral-900 tracking-tight">
-              Directorio e Indicadores por Docente (ECMC)
+              Directorio e Indicadores por Docente ({schoolCode})
             </h3>
             <p className="text-xs text-neutral-500">
               Publicaciones, proyectos, citas registradas e índices h reportados por plataformas externas.

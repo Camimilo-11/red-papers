@@ -17,6 +17,7 @@ import { downloadArticleAttachment } from '../../services/articleAttachmentServi
 
 interface ReviewerConsoleModalProps {
   products: ScientificProduct[];
+  schoolCode?: string;
   onUpdateStatus: (
     productId: string,
     newStatus: ProductStatus,
@@ -28,6 +29,7 @@ type ReviewerFilter = 'pendientes' | 'verificados' | 'todos';
 
 export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
   products,
+  schoolCode = 'ECMC',
   onUpdateStatus,
 }) => {
   const [filterMode, setFilterMode] = useState<ReviewerFilter>('pendientes');
@@ -97,7 +99,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
     <section className="reviewer-page" aria-labelledby="reviewer-title">
       <div>
         <div className="reviewer-heading">
-          <p className="eyebrow">REVISIÓN ACADÉMICA · ECMC</p>
+          <p className="eyebrow">REVISIÓN ACADÉMICA · {schoolCode}</p>
           <h1 id="reviewer-title">Comité Científico</h1>
           <p>Verifique la información registrada y comunique sus observaciones al docente.</p>
         </div>

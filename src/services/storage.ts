@@ -1,6 +1,6 @@
 import { AcademicDegree, OfficialResearchLine, ScientificProduct, TeacherUser, UserNotification } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
-import { OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
+import { ALL_OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
 const SEED_PRODUCT_BY_ID = new Map(INITIAL_PRODUCTS.map((product) => [product.id, product]));
 const SEED_TEACHER_BY_ID = new Map(INITIAL_TEACHERS.map((teacher) => [teacher.id, teacher]));
@@ -163,7 +163,7 @@ function normalizeTeacher(teacher: TeacherUser): TeacherUser {
   const academicDegree = teacher.academicDegree || academicDegreeFrom(credential) || academicDegreeFrom(namePrefix);
   const academicField = teacher.academicField || academicFieldFrom(credential);
   const savedResearchLines = Array.isArray(teacher.researchLines) ? teacher.researchLines : teacher.researchLine ? [teacher.researchLine] : [];
-  const researchLines = [...new Set(savedResearchLines)].filter((line): line is OfficialResearchLine => OFFICIAL_RESEARCH_LINES.includes(line));
+  const researchLines = [...new Set(savedResearchLines)].filter((line): line is OfficialResearchLine => ALL_OFFICIAL_RESEARCH_LINES.includes(line));
   const rank = credential
     ? rankParts.filter((_, index) => index !== credentialIndex).join(' / ').trim() || 'Profesor'
     : teacher.rank || 'Profesor';

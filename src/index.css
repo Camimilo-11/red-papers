@@ -532,6 +532,70 @@ html, body {
 @media(max-width:600px){.welcome-access{padding:24px 22px;}.welcome-access-header{align-items:flex-start;flex-direction:column;gap:22px;}.welcome-access-brand>span{font-size:23px;}.welcome-access-header nav{width:100%;}.welcome-access-header button{padding:10px 15px;}.welcome-access-header .welcome-login-trigger{width:100%;}.welcome-access-main{padding:40px 0;}.welcome-access-description{font-size:17px;}.welcome-public{padding:20px;}.welcome-access-footer>span:last-child{display:none;}.welcome-login-dialog{padding:28px 22px;}}
 @media(min-width:601px) and (max-height:760px){.welcome-access{padding-top:22px;padding-bottom:20px;}.welcome-access-main{padding:24px 0;}.welcome-access-main h1{font-size:48px;}.welcome-access-description{margin-top:16px;}.welcome-public{margin-top:22px;padding:18px 24px;}}
 
+/* Selección de escuela previa al acceso. */
+.school-logo-crop{position:relative;display:inline-block;flex:none;overflow:hidden;background:#fff;vertical-align:middle;}
+.school-logo-sheet{position:absolute!important;width:1282px!important;height:238px!important;max-width:none!important;object-fit:initial!important;}
+.university-logo-link{display:inline-flex;align-items:center;gap:10px;color:#315f82;font-size:13px;font-weight:650;text-decoration:none;white-space:nowrap;}
+.university-logo-link:hover{text-decoration:underline;}
+.university-logo-crop{display:inline-block;position:relative;width:136px;height:50px;overflow:hidden;background:#f0f0f0;flex:none;}
+.university-logo-crop img{position:absolute;width:219px!important;height:96px!important;max-width:none!important;left:-31px;top:-22px;}
+.school-selector-page{min-height:100dvh;background:#f7f5f1;color:#292522;display:flex;flex-direction:column;padding:22px clamp(20px,5vw,76px) 18px;}
+.school-selector-header{width:min(1280px,100%);margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px;border-bottom:1px solid #e4ddd5;padding-bottom:14px;}
+.school-selector-brand{display:flex;align-items:center;gap:12px;color:#202d3a;text-decoration:none;font-size:20px;font-weight:800;letter-spacing:.4px;}
+.school-selector-brand-mark{width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#ef4035;color:white;font-family:Georgia,serif;font-size:26px;}
+.school-selector-brand small{display:block;margin-top:3px;font-size:11px;letter-spacing:.6px;font-weight:500;color:#6d6862;}
+.school-selector-main{width:min(1280px,100%);margin:0 auto;padding:34px 0 30px;}
+.school-selector-eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#ad3228;margin-bottom:8px;}
+.school-selector-main>h1{font:400 clamp(32px,4vw,48px)/1.1 Georgia,serif;letter-spacing:-.7px;color:#272421;}
+.school-selector-intro{max-width:700px;margin-top:10px;color:#655f59;font-size:16px;line-height:1.55;}
+.school-selector-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px;}
+.school-selector-card{min-width:0;background:#fff;border:1px solid #e5ded6;border-top:3px solid var(--school-accent);border-radius:11px;padding:18px;box-shadow:0 5px 18px #33291d08;}
+.school-selector-logo{height:70px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.school-selector-code{font-size:10px;font-weight:800;letter-spacing:1.4px;color:var(--school-accent);}
+.school-selector-card h2{min-height:48px;margin-top:5px;font-size:16px;line-height:1.45;font-weight:750;color:#292522;}
+.school-selector-enter{width:100%;min-height:42px;margin-top:12px;border:1px solid color-mix(in srgb,var(--school-accent) 42%,white);border-radius:7px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#38332f;background:color-mix(in srgb,var(--school-accent) 8%,white);font-size:13px;font-weight:700;text-align:left;transition:background .15s,transform .15s;}
+.school-selector-enter:hover{background:color-mix(in srgb,var(--school-accent) 16%,white);transform:translateY(-1px);}
+.school-selector-lines{margin-top:12px;border-top:1px solid #eee8e1;padding-top:10px;}
+.school-selector-lines summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#625d57;font-size:12px;font-weight:650;}
+.school-selector-lines summary::-webkit-details-marker{display:none;}
+.school-selector-lines[open] summary svg{transform:rotate(180deg);}
+.school-selector-lines ul{margin:10px 0 0;padding-left:17px;display:grid;gap:6px;color:#615c57;font-size:12px;line-height:1.4;}
+.school-selector-footer{width:min(1280px,100%);margin:auto auto 0;padding-top:14px;border-top:1px solid #e4ddd5;display:flex;justify-content:space-between;align-items:center;gap:16px;color:#716b64;font-size:12px;}
+.school-selector-footer-link{font-size:11px;}
+.school-selector-footer-link .university-logo-crop{display:none;}
+.welcome-access-header nav{align-items:center;}
+.welcome-access-header .welcome-school-switch{display:inline-flex;align-items:center;gap:7px;border:1px solid #ddd5cc;background:#fffdfa;color:#554e48;font-size:13px;font-weight:650;}
+.welcome-access-header .welcome-university-link{padding:0 4px;font-size:11px;}
+.welcome-access-header .welcome-university-link .university-logo-crop{width:90px;height:34px;}
+.welcome-access-header .welcome-university-link .university-logo-crop img{transform:scale(.66);transform-origin:top left;}
+.welcome-access .welcome-access-kicker{color:var(--school-accent,#a82d25);}
+.welcome-access-main h1 em{color:var(--school-accent,#b92e24);}
+.welcome-access-header .welcome-login-trigger{border-color:var(--school-accent,#b92e24);background:var(--school-accent,#b92e24);}
+.welcome-access-header .welcome-login-trigger:hover{background:color-mix(in srgb,var(--school-accent,#b92e24) 86%,black);}
+.welcome-seal:not([data-school="ECMC"]){display:grid;place-items:center;background:var(--school-accent,#b92e24);color:#fff;border-radius:10px 10px 40px 10px;font-size:24px;font-weight:800;letter-spacing:.5px;}
+@media(max-width:900px){.school-selector-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){
+ .school-selector-page{padding:16px 16px 14px;}
+ .school-selector-header{align-items:flex-start;}
+ .school-selector-header>.university-logo-link{gap:0;font-size:0;}
+ .school-selector-header>.university-logo-link .university-logo-crop{width:110px;height:42px;}
+ .school-selector-main{padding:25px 0 22px;}
+ .school-selector-intro{font-size:14px;}
+ .school-selector-grid{grid-template-columns:1fr;gap:11px;margin-top:20px;}
+ .school-selector-card{padding:15px;}
+ .school-selector-logo{height:58px;margin-bottom:8px;}
+ .school-selector-card h2{min-height:0;font-size:15px;}
+ .school-selector-footer-link{display:none;}
+ .welcome-access-header{align-items:flex-start;flex-direction:row;flex-wrap:wrap;gap:14px;}
+ .welcome-access-brand{max-width:100%;}
+ .welcome-access-header nav{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+ .welcome-access-header nav .welcome-school-switch{grid-column:1;grid-row:1;justify-content:center;min-height:40px;padding:7px 8px;font-size:12px;}
+ .welcome-access-header nav .welcome-university-link{grid-column:2;grid-row:1;justify-content:center;}
+ .welcome-access-header nav .welcome-university-link>span:last-child{display:none;}
+ .welcome-access-header nav .welcome-login-trigger{grid-column:1 / -1;grid-row:2;width:100%;}
+ .welcome-access-footer{align-items:start;flex-direction:column;gap:4px;}
+}
+
 /* Acceso público compacto y emblema con giro horizontal. */
 .welcome-public{width:min(440px,100%);margin:28px auto 0;padding:17px 22px;justify-content:center;text-align:center;position:relative;}
 .welcome-public>span{padding:0 18px;}.welcome-public strong{font-size:17px;}.welcome-public small{font-size:14px;line-height:1.45;}.welcome-public>svg{position:absolute;right:14px;width:18px;}

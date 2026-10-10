@@ -51,14 +51,8 @@ export type AcademicSemester =
   | '2025-1' | '2025-2'
   | '2026-1' | '2026-2';
 
-// 6 Líneas oficiales de investigación de la ECMC
-export type OfficialResearchLine =
-  | 'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización'
-  | 'Ciencia de datos'
-  | 'Computación científica'
-  | 'Inteligencia artificial'
-  | 'Tecnologías de la información'
-  | 'Ciencia, Tecnología y Sociedad';
+export type { OfficialResearchLine, SchoolCode } from '../constants/schools';
+import type { OfficialResearchLine } from '../constants/schools';
 
 export type TeacherResearchSublines = Partial<Record<OfficialResearchLine, string[]>>;
 export type SyntheticAcademicProfileField = 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId';
