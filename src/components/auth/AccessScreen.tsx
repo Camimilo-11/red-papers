@@ -24,7 +24,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
   <footer className="welcome-access-footer"><span>{p.school.name}</span><span>Investigación · {p.school.code}</span></footer>
   <div className="welcome-art" aria-hidden="true" data-school={p.school.code}>
    <div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">
-    {Array.from({length:25},(_,layer)=><div key={layer} className={`welcome-emblem-layer ${layer===0||layer===24?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-12}px)`}}><SchoolEmblem school={p.school} size={340}/></div>)}
+    {Array.from({length:49},(_,layer)=><div key={layer} className={`welcome-emblem-layer ${layer===0||layer===48?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-24}px)`}}><SchoolEmblem school={p.school} size={340}/></div>)}
    </div></div>
   </div>
   <dialog ref={dialog} className="welcome-login-dialog" onCancel={()=>setLoginOpen(false)} onClose={()=>setLoginOpen(false)} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setLoginOpen(false);}}} aria-labelledby="welcome-login-title">
