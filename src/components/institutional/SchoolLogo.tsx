@@ -69,3 +69,22 @@ export function YachayLogo({ width = 136, className = '' }: { width?: number; cl
     </span>
   );
 }
+
+export function YachaySymbol({ size = 48, className = '' }: { size?: number; className?: string }) {
+  const scale = size / 42;
+  return (
+    <span
+      className={`yachay-symbol-crop ${className}`}
+      role="img"
+      aria-label="Símbolo de la Universidad Yachay Tech"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src="./assets/university-logo.png"
+        alt=""
+        aria-hidden="true"
+        style={{ width: 219 * scale, height: 96 * scale, left: -132 * scale, top: -22 * scale }}
+      />
+    </span>
+  );
+}

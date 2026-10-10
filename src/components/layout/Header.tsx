@@ -2,7 +2,7 @@ import { canDevelop } from '../../constants/demoAccounts';
 import React, { useState, useEffect, useRef } from 'react';
 import { TeacherUser, UserNotification } from '../../types';
 import { getSchoolByCode, SchoolConfig } from '../../constants/schools';
-import { YachayLogo } from '../institutional/SchoolLogo';
+import { YachaySymbol } from '../institutional/SchoolLogo';
 import { NotificationsPopover } from './NotificationsPopover';
 import { Home, BookOpen, Users, FolderOpen, Bell, LogOut, LogIn, Menu, X, ShieldCheck, GitBranch, Settings } from 'lucide-react';
 export type ActiveTab = 'dashboard' | 'catalog' | 'directory' | 'mine' | 'settings' | 'traceability' | 'reviewer' | 'roles';
@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   </header>
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
-   <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="SIMAPC, ir al inicio"><YachayLogo width={96}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
+   <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="SIMAPC, ir al inicio"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
    <div className="sidebar-section-label">TU ESPACIO DE INVESTIGACIÓN</div>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
    <div className="sidebar-bottom">
