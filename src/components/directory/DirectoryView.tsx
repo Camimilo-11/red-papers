@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { ProductDetailModal } from '../catalog/ProductDetailModal';
-import { Search, ExternalLink, Mail, Download, BarChart3 } from 'lucide-react';
+import { Search, ExternalLink, Mail, Download, BarChart3, ArrowLeft, ChevronRight } from 'lucide-react';
 import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
 import diegoPhoto from '../../assets/researchers/diego-peluffo.png';
 import eugenioPhoto from '../../assets/researchers/eugenio-morocho.png';
@@ -36,6 +36,17 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   const [searchDraft, setSearchDraft] = useState('');
   const [viewingProduct, setViewingProduct] = useState<ScientificProduct | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!mobileProfileOpen || !window.matchMedia('(max-width: 1000px)').matches) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      profileRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [mobileProfileOpen, activeTeacherId]);
 
   // Docente activo seleccionado
   const activeTeacher = teachers.find((t) => t.id === activeTeacherId) || teachers[0];
@@ -125,19 +136,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
       <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" placeholder="Nombre o especialidad · Enter" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/></div>
     </header>
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
-    {activeTeacher&&<label className="academic-mobile-picker" htmlFor="academic-mobile-teacher">
-      <span>Consultar perfil de</span>
-      <select id="academic-mobile-teacher" value={activeTeacher.id} onChange={event=>setActiveTeacherId(event.target.value)}>
-        {!filteredTeachers.some(teacher=>teacher.id===activeTeacher.id)&&<option value={activeTeacher.id}>{activeTeacher.name}</option>}
-        {filteredTeachers.map(teacher=><option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
-      </select>
-    </label>}
-    <div className="academic-directory-layout">
+    <div className="academic-directory-layout" data-mobile-profile-open={mobileProfileOpen}>
       <nav className="academic-people" aria-label="Seleccionar docente">
-        {filteredTeachers.map(t=><button key={t.id} className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>setActiveTeacherId(t.id)}><span>{t.name}</span><small>{t.rank}</small></button>)}
+        {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
         {!filteredTeachers.length&&<p className="academic-empty">No se encontraron docentes.</p>}
       </nav>
-      {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id}>
+      {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id} ref={profileRef}>
+        <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
           <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p><p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p></div>
