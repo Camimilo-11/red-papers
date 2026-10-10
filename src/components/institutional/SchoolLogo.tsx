@@ -51,6 +51,17 @@ export function SchoolEmblem({ school, size = 260 }: { school: SchoolConfig; siz
   );
 }
 
+export function SchoolEmblemDepth({ school, size = 260 }: { school: SchoolConfig; size?: number }) {
+  const image = `url("./assets/school-emblems/${school.code}.svg")`;
+  return (
+    <span
+      className="school-emblem-depth"
+      aria-hidden="true"
+      style={{ width: size, height: size, maskImage: image, WebkitMaskImage: image }}
+    />
+  );
+}
+
 export function YachayLogo({ width = 136, className = '' }: { width?: number; className?: string }) {
   return (
     <img

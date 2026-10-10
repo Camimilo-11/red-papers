@@ -1,7 +1,7 @@
 import React, {useState,useRef,useEffect} from 'react';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
-import {SchoolEmblem,YachayLogo} from '../institutional/SchoolLogo';
+import {SchoolEmblem,SchoolEmblemDepth,YachayLogo} from '../institutional/SchoolLogo';
 interface AccessScreenProps {
  school:SchoolConfig; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
@@ -24,7 +24,14 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
   <footer className="welcome-access-footer"><span>{p.school.name}</span><span>Investigación · {p.school.code}</span></footer>
   <div className="welcome-art" aria-hidden="true" data-school={p.school.code}>
    <div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">
-    {Array.from({length:49},(_,layer)=><div key={layer} className={`welcome-emblem-layer ${layer===0||layer===48?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-24}px)`}}><SchoolEmblem school={p.school} size={340}/></div>)}
+    {Array.from({length:49},(_,layer)=>{
+     const isFace=layer===0||layer===48;
+     const cleanExtrusion=p.school.code!=='ECMC'&&p.school.code!=='ECIAA';
+     const depthScale=cleanExtrusion?0.35:1;
+     return <div key={layer} className={`welcome-emblem-layer ${isFace?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${(layer-24)*depthScale}px)`}}>
+      {isFace||!cleanExtrusion?<SchoolEmblem school={p.school} size={340}/>:<SchoolEmblemDepth school={p.school} size={340}/>}
+     </div>;
+    })}
    </div></div>
   </div>
   <dialog ref={dialog} className="welcome-login-dialog" onCancel={()=>setLoginOpen(false)} onClose={()=>setLoginOpen(false)} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setLoginOpen(false);}}} aria-labelledby="welcome-login-title">
