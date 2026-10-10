@@ -1,19 +1,28 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring } from 'motion/react';
-import { SCHOOLS, type OfficialResearchLine, type SchoolConfig } from '../../constants/schools';
-import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
+import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_LINE_MOTIFS } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
 // The tracing engine uses the same per-line timeline; each school gets its own
 // 130svh scroll scene, with its research lines distributed through that scene.
+export const STAGE_RESEARCH_LINES: Record<SchoolCode, readonly OfficialResearchLine[]> = {
+  ECIAA: ['Ciencias Agrícolas', 'Investigación del mercado de productos agroindustriales'],
+  ECBI: ['Ecología, evolución y conservación de ecosistemas terrestres', 'Biomedicina'],
+  ECFN: ['Materiales nanoestructurados, síntesis y caracterización', 'Astrofísica, Cosmología y Física Teórica'],
+  ECTEA: ['Geología física y aplicada', 'Medioambiente y clima'],
+  ECMC: ['Ciencia de datos', 'Inteligencia artificial'],
+  ECQI: ['Química medicinal y farmacología molecular', 'Desarrollo sostenible: Energía, alimentos, agricultura y medio ambiente'],
+  YTLC: ['Education technology & AI', 'Sociolinguistics/Language and Culture'],
+};
+const stageLinesFor = (school: SchoolConfig) => STAGE_RESEARCH_LINES[school.code];
 export const STAGE_PLANES = SCHOOLS.flatMap((school) =>
-  school.researchLines.map((line, lineIndex) => ({ school, line, lineIndex })),
+  stageLinesFor(school).map((line, lineIndex) => ({ school, line, lineIndex })),
 );
 export const STAGE_TIMING = { sceneVh: 130, overlap: 0.2, step: 0.8, drawMs: 600 } as const;
 const TOTAL_UNITS = STAGE_PLANES.length * STAGE_TIMING.step;
 const SCHOOL_LINE_OFFSETS = SCHOOLS.map((school, schoolIndex) =>
-  SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + previous.researchLines.length, 0),
+  SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + stageLinesFor(previous).length, 0),
 );
 const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
 export function getStageState(value: number) {
@@ -37,13 +46,6 @@ function entryEase(x: number) {
   const t = (low + high) / 2;
   return 1 - (1 - t) ** 3;
 }
-const descriptions: Partial<Record<OfficialResearchLine, string>> = {
-  'Ciencias Agrícolas': 'Conocimiento que nace del suelo y acompaña el futuro de nuestros cultivos.',
-  'Investigación del mercado de productos agroindustriales': 'Del campo al mercado: investigar el valor y el recorrido de nuestros productos.',
-  'Ciencias Animales': 'Comprender la vida animal para cuidar su bienestar y mejorar la producción.',
-  'I+D+i Agroindustrial': 'Transformar el conocimiento en procesos, productos y nuevas posibilidades.',
-  'Ecología, evolución y conservación de ecosistemas terrestres': 'Entender las conexiones de la vida para conservar nuestros ecosistemas.',
-};
 type Plane = (typeof STAGE_PLANES)[number];
 const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
 const schoolStyle = (school: SchoolConfig) => ({
@@ -51,8 +53,20 @@ const schoolStyle = (school: SchoolConfig) => ({
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
 } as React.CSSProperties);
 
+// These transparent vector marks belong to the research-stage artwork. The
+// high-resolution JPGs remain specific to the school-selection cards.
+const STAGE_EMBLEMS: Record<SchoolCode, string> = {
+  ECIAA: './assets/school-emblems/ECIAA.svg',
+  ECBI: './assets/school-emblems/ECBI.svg',
+  ECFN: './assets/school-emblems/ECFN.svg',
+  ECTEA: './assets/school-emblems/ECTEA.svg',
+  ECMC: './assets/school-symbols/ECMC.svg',
+  ECQI: './assets/school-emblems/ECQI.svg',
+  YTLC: './assets/school-emblems/YTLC.svg',
+};
+
 function Emblem({ school }: { school: SchoolConfig }) {
-  return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} />;
+  return <img src={STAGE_EMBLEMS[school.code]} alt="" draggable={false} />;
 }
 
 /** Geometry stays in ResearchLineBackdrop. Only its tracing attributes change here. */
@@ -145,7 +159,7 @@ function StageEmblems({ progress }: { progress: MotionValue<number> }) {
   const update = (value: number) => {
     root.current?.querySelectorAll<HTMLElement>('[data-stage-emblem]').forEach((emblem, index) => {
       const start = SCHOOL_LINE_OFFSETS[index] * STAGE_TIMING.step;
-      const end = (SCHOOL_LINE_OFFSETS[index] + SCHOOLS[index].researchLines.length) * STAGE_TIMING.step;
+      const end = (SCHOOL_LINE_OFFSETS[index] + stageLinesFor(SCHOOLS[index]).length) * STAGE_TIMING.step;
       const entrance = index === 0 ? 1 : clamp((value - start + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
       const departure = index === SCHOOLS.length - 1 ? 0 : clamp((value - end + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
       const opacity = entrance * (1 - departure);
@@ -169,7 +183,6 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
   const root = useRef<HTMLElement>(null);
   const words = plane.line.split(' ');
   const highlight = words.findIndex((word) => !/^(de|del|y|e|la|el|en|ciencias|investigación)$/i.test(word));
-  const description = descriptions[plane.line];
   const update = (value: number) => {
     const node = root.current;
     if (!node) return;
@@ -190,13 +203,11 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
   useMotionValueEvent(progress, 'change', update);
   return (
     <article ref={root} className="research-stage-shot-copy" data-school={plane.school.code} style={schoolStyle(plane.school)} aria-labelledby={`research-shot-title-${index}`}>
-      {showSelector && <p className="research-stage-shot-label">{displaySchoolCode(plane.school)} <span aria-hidden="true">·</span> {String(plane.lineIndex + 1).padStart(2, '0')} / {String(plane.school.researchLines.length).padStart(2, '0')}</p>}
       <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
         {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
       </h2>
-      {description && <p className="research-stage-caption">{description}</p>}
       {showSelector && <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${plane.school.name}`}>
-        {plane.school.researchLines.map((line, lineIndex) => {
+        {stageLinesFor(plane.school).map((line, lineIndex) => {
           const planeIndex = STAGE_PLANES.findIndex((item) => item.school.code === plane.school.code && item.line === line);
           return <button
             key={line}
@@ -219,16 +230,16 @@ function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: Schoo
       <p className="research-stage-eyebrow">TU PRÓXIMO PUNTO DE PARTIDA</p>
       <h2 id="research-selection-title">Explora nuestras <span>escuelas</span></h2>
       <div className="research-stage-school-grid">
-        {SCHOOLS.map((school, index) => (
+        {SCHOOLS.map((school) => (
           <article id={`research-school-${school.code}`} className="research-stage-school-card" data-school={school.code} style={schoolStyle(school)} key={school.code}>
-            {reduced && <svg className="research-stage-static-motif" viewBox="170 -30 510 430" aria-hidden="true" focusable="false">{React.createElement(RESEARCH_LINE_MOTIFS[school.researchLines[0]])}</svg>}
+            {reduced && <svg className="research-stage-static-motif" viewBox="170 -30 510 430" aria-hidden="true" focusable="false">{React.createElement(RESEARCH_LINE_MOTIFS[stageLinesFor(school)[0]])}</svg>}
             <div className="research-stage-card-emblem" aria-hidden="true"><Emblem school={school} /></div>
             <p className="research-stage-eyebrow">{school.code}</p>
             <h3>{school.name}</h3>
             <button id={`research-select-${school.code}`} type="button" onClick={() => onSelect(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
             <details open={reduced || undefined}>
               <summary>Líneas de investigación <span aria-hidden="true">+</span></summary>
-              <ul>{school.researchLines.map((line, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={line} tabIndex={-1}>{line}</li>)}</ul>
+              <ul>{stageLinesFor(school).map((line, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={line} tabIndex={-1}>{line}</li>)}</ul>
             </details>
           </article>
         ))}
@@ -273,7 +284,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
       const sceneIndex = Math.min(SCHOOLS.length - 1, Math.floor(sceneOffset));
       const localProgress = clamp(sceneOffset - sceneIndex);
       const school = SCHOOLS[sceneIndex];
-      const value = (SCHOOL_LINE_OFFSETS[sceneIndex] + localProgress * school.researchLines.length) * STAGE_TIMING.step;
+      const value = (SCHOOL_LINE_OFFSETS[sceneIndex] + localProgress * stageLinesFor(school).length) * STAGE_TIMING.step;
       target.set(clamp(value, 0, TOTAL_UNITS));
       if (scene.current) scene.current.dataset.scrolled = String(sceneOffset > 0.02);
     };
@@ -306,7 +317,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
     rail.current?.querySelectorAll<HTMLElement>('[data-school-fill]').forEach((button) => {
       const index = Number(button.dataset.schoolIndex);
       const start = SCHOOL_LINE_OFFSETS[index] * STAGE_TIMING.step;
-      const length = SCHOOLS[index].researchLines.length * STAGE_TIMING.step;
+      const length = stageLinesFor(SCHOOLS[index]).length * STAGE_TIMING.step;
       button.style.setProperty('--school-progress', String(clamp((v - start) / length)));
     });
     rail.current?.querySelectorAll<HTMLElement>('[data-line-progress]').forEach((mark) => {
@@ -321,7 +332,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
     if (index < 0 || schoolIndex < 0) return;
     setManualIndex(index);
     setHoveredIndex(null);
-    const linePosition = (lineIndex + 0.5) / school.researchLines.length;
+    const linePosition = (lineIndex + 0.5) / stageLinesFor(school).length;
     const scenePosition = schoolIndex + linePosition;
     window.scrollTo({ top: geometry.current.start + scenePosition * geometry.current.unit, behavior: 'smooth' });
   };
@@ -342,7 +353,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
       if (nextSchoolIndex !== currentSchoolIndex) {
         event.preventDefault();
         const nextSchool = SCHOOLS[nextSchoolIndex];
-        jump(nextSchool, Math.min(currentPlane.lineIndex, nextSchool.researchLines.length - 1));
+        jump(nextSchool, Math.min(currentPlane.lineIndex, stageLinesFor(nextSchool).length - 1));
       }
       return;
     }
@@ -363,8 +374,8 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
         <div className="research-stage-snap-markers" aria-hidden="true">
           {SCHOOLS.flatMap((school, schoolIndex) => [
             <span key={`${school.code}-start`} data-school={school.code} data-school-scene data-snap-position={schoolIndex} />,
-            ...school.researchLines.map((line, lineIndex) => {
-              const position = schoolIndex + (lineIndex + 0.5) / school.researchLines.length;
+            ...stageLinesFor(school).map((line, lineIndex) => {
+              const position = schoolIndex + (lineIndex + 0.5) / stageLinesFor(school).length;
               return <span key={`${school.code}-${line}`} data-snap-position={position} />;
             }),
           ])}
