@@ -1,23 +1,27 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { SCHOOLS, SchoolConfig } from '../../constants/schools';
+import { SCHOOLS, type SchoolConfig } from '../../constants/schools';
 import { YachayLogo } from './SchoolLogo';
 
-function SchoolSelectorMark({ school, size = 76 }: { school: SchoolConfig; size?: number }) {
+const SCHOOL_SELECTOR_LOGOS: Record<SchoolConfig['code'], string> = {
+  ECIAA: new URL('../../assets/schools/ecaa.jpg', import.meta.url).href,
+  ECBI: new URL('../../assets/schools/ecbi.jpg', import.meta.url).href,
+  ECFN: new URL('../../assets/schools/ecfn.jpg', import.meta.url).href,
+  ECTEA: new URL('../../assets/schools/ectea.jpg', import.meta.url).href,
+  ECMC: new URL('../../assets/schools/ecmc.jpg', import.meta.url).href,
+  ECQI: new URL('../../assets/schools/ecqi.jpg', import.meta.url).href,
+  YTLC: new URL('../../assets/schools/ytlc.jpg', import.meta.url).href,
+};
+
+function SchoolSelectorMark({ school }: { school: SchoolConfig }) {
   return (
-    <span
-      className="school-symbol"
-      role="img"
-      aria-label={`Emblema de ${school.name}`}
-      style={{ width: size, height: size }}
-    >
-      <img
-        className="school-symbol-svg"
-        src={`./assets/school-symbols/${school.code}.png`}
-        alt=""
-        draggable={false}
-      />
-    </span>
+    <img
+      className="school-selector-mark"
+      src={SCHOOL_SELECTOR_LOGOS[school.code]}
+      alt=""
+      draggable={false}
+      style={{ width: 76, height: 76, objectFit: 'contain', mixBlendMode: 'multiply' }}
+    />
   );
 }
 
