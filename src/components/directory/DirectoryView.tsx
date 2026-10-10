@@ -198,7 +198,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         </div>
         <section className="academic-products" aria-label="Producción académica">
           <h4>Producción académica <span>({teacherProducts.length})</span></h4>
-          {teacherProducts.length?teacherProducts.map(product=><button key={product.id} className="academic-product" onClick={()=>setViewingProduct(product)}><span className="academic-product-meta">{product.type==='publicacion'?'Publicación':'Proyecto'} · {productDateLabel(product)}</span><span className="academic-product-title">{product.title}</span><span className="academic-product-venue">{product.venue||product.fundingVenue||(product.doi?`DOI: ${product.doi}`:'')}</span></button>):<p className="academic-empty">Este docente aún no tiene productos registrados.</p>}
+          {teacherProducts.length?teacherProducts.map(product=><button key={product.id} className="academic-product" onClick={()=>setViewingProduct(product)}><span className="academic-product-meta">{product.type==='publicacion'?'Publicación':'Proyecto'} · {productDateLabel(product)}</span><span className="academic-product-title">{product.title}</span><span className="academic-product-venue">{product.venue||product.fundingVenue||''}</span></button>):<p className="academic-empty">Este docente aún no tiene productos registrados.</p>}
         </section>
       </article>:<p className="academic-empty">No hay docentes registrados.</p>}
     </div>

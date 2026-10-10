@@ -10,7 +10,10 @@ import {
   AlertTriangle,
   Info,
   Check,
+  Download,
+  FileText,
 } from 'lucide-react';
+import { downloadArticleAttachment } from '../../services/articleAttachmentService';
 
 interface ReviewerConsoleModalProps {
   products: ScientificProduct[];
@@ -34,6 +37,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [isDownloadingArticle, setIsDownloadingArticle] = useState(false);
 
 
   // Filtrar lista izquierda según pestaña
@@ -45,6 +49,19 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
 
   const selectedProduct =
     filteredProducts.find((p) => p.id === selectedProductId) || filteredProducts[0];
+
+  const handleDownloadArticle = async () => {
+    if (!selectedProduct?.articleAttachment) return;
+    setIsDownloadingArticle(true);
+    setActionNotice(null);
+    try {
+      await downloadArticleAttachment(selectedProduct.articleAttachment);
+    } catch (error) {
+      setActionNotice(error instanceof Error ? error.message : 'No se pudo descargar el artículo adjunto.');
+    } finally {
+      setIsDownloadingArticle(false);
+    }
+  };
 
   const handleVerify = () => {
     if (!selectedProduct) return;
@@ -255,7 +272,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                       Identificador
                     </span>
                     <span className="font-mono font-bold text-neutral-800">
-                      {selectedProduct.doi
+                      {selectedProduct.status === 'verificado' && selectedProduct.doi
                         ? `DOI: ${selectedProduct.doi}`
                         : selectedProduct.projectCode
                         ? `CÓDIGO: ${selectedProduct.projectCode}`
@@ -272,6 +289,25 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {selectedProduct.type === 'publicacion' && selectedProduct.articleAttachment && (
+                  <section className="rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-3.5" aria-label="Artículo adjunto para revisión privada">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-2">
+                        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#b83229]" aria-hidden="true" />
+                        <div className="min-w-0 text-xs">
+                          <strong className="block text-neutral-800">Artículo adjunto · revisión privada</strong>
+                          <span className="mt-1 block break-all text-neutral-600">{selectedProduct.articleAttachment.fileName}{selectedProduct.articleAttachment.isSynthetic && <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-800">DEMO</span>}</span>
+                          {selectedProduct.privacyConsentAt && <span className="mt-1 block text-[10px] text-neutral-500">Aceptó la política de privacidad antes del envío.</span>}
+                        </div>
+                      </div>
+                      <button type="button" onClick={handleDownloadArticle} disabled={isDownloadingArticle} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-[#b83229] hover:text-[#8f251e] disabled:cursor-wait disabled:opacity-60">
+                        <Download className="h-4 w-4" aria-hidden="true" />{isDownloadingArticle ? 'Preparando…' : 'Descargar PDF'}
+                      </button>
+                    </div>
+                    <p className="mt-2 pl-6 text-[10px] text-neutral-500">El archivo se muestra aquí para verificación; no forma parte del catálogo público.</p>
+                  </section>
+                )}
 
                 {/* Sección de Dictamen */}
                 <div className="pt-4 border-t border-neutral-200 space-y-3">

@@ -32,9 +32,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
   const isVerificado = product.status === 'verificado';
   const isCargado = product.status === 'cargado';
   const isRechazado = product.status === 'rechazado';
-  const citation = formatProductCitation(product, citationStyle);
+  const citation = formatProductCitation(isVerificado ? product : { ...product, doi: undefined }, citationStyle);
 
-  const cleanDoi = normalizeDoi(product.doi);
+  const cleanDoi = isVerificado ? normalizeDoi(product.doi) : '';
   const doiUrl = cleanDoi ? `https://doi.org/${cleanDoi}` : null;
   const venue = product.venue || product.fundingVenue;
 
@@ -145,9 +145,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
             <section className="product-detail-card" aria-labelledby="product-detail-identifier">
               <h3 id="product-detail-identifier">Identificador digital</h3>
               <p className="product-detail-identifier-value">
-                {product.doi && <>DOI: {product.doi}</>}
+                {isVerificado && product.doi && <>DOI: {product.doi}</>}
                 {product.projectCode && <>Código: {product.projectCode}</>}
-                {!product.doi && !product.projectCode && 'Sin identificador registrado'}
+                {(!isVerificado || !product.doi) && !product.projectCode && 'Sin identificador publicado'}
               </p>
               {doiUrl && (
                 <a

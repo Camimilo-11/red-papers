@@ -97,16 +97,6 @@ export const doiService = {
         abstract: 'A bi-objective genetic local search algorithm optimizing fuel consumption and elevation ascent constraints across complex Ecuadorian andean routes.',
         researchLine: 'Computación científica',
       },
-      '10.1145/preview.2026.0019': {
-        title: 'Borrador: Implementación de Algoritmos Genéticos en Microcontroladores de Bajo Costo',
-        authors: ['Juan Pablo Astudillo León'],
-        year: 2026,
-        semester: '2026-1',
-        venue: 'Preprint en Revisión para ACM Embedded Systems Letters',
-        doi: '10.1145/preview.2026.0019',
-        abstract: 'Demostración de algoritmos metaheurísticos compactos de optimización de potencia para sensores IoT alimentados por energía solar.',
-        researchLine: 'Computación científica',
-      },
     };
 
     if (KNOWN_MOCKS[cleanDoi]) {

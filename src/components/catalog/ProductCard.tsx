@@ -13,7 +13,7 @@ export const ProductCard: React.FC<{
   const Status = product.status === 'verificado'
     ? CheckCircle2
     : product.status === 'rechazado' ? AlertTriangle : Clock;
-  const doi = product.type === 'publicacion' ? normalizeDoi(product.doi) : '';
+  const doi = product.type === 'publicacion' && product.status === 'verificado' ? normalizeDoi(product.doi) : '';
 
   return (
     <article className="product-row">

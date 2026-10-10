@@ -2,6 +2,10 @@ import * as XLSX from 'xlsx';
 import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../types';
 import { productDateValue } from './productPresentation';
 
+function doiForDisplay(product: ScientificProduct): string | undefined {
+  return product.status === 'verificado' ? product.doi : undefined;
+}
+
 export interface ExportMetadata {
   filters: FilterState;
   totalRecords: number;
@@ -53,7 +57,7 @@ export const exportService = {
       `"${productDateValue(p)}"`,
       `"${p.researchLine}"`,
       `"${PRODUCT_STATUS_LABELS[p.status]}"`,
-      `"${(p.doi || p.projectCode || 'N/A').replace(/"/g, '""')}"`,
+      `"${(doiForDisplay(p) || p.projectCode || 'N/A').replace(/"/g, '""')}"`,
       `"${(p.venue || p.fundingVenue || 'N/A').replace(/"/g, '""')}"`,
       `"${p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A'}"`,
       `"${(p.projectParticipants || []).join('; ').replace(/"/g, '""')}"`,
@@ -105,7 +109,7 @@ export const exportService = {
       'Fecha de publicación / inicio': productDateValue(p),
       'Línea de Investigación': p.researchLine,
       'Estado de verificación': PRODUCT_STATUS_LABELS[p.status],
-      'Identificador Digital / Código': p.doi || p.projectCode || 'N/A',
+      'Identificador Digital / Código': doiForDisplay(p) || p.projectCode || 'N/A',
       'Medio de Difusión / Fondo': p.venue || p.fundingVenue || 'N/A',
       'Estado del proyecto': p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
       'Participantes del proyecto': (p.projectParticipants || []).join('; '),
@@ -191,7 +195,7 @@ export const exportService = {
         <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${p.researchLine}</td>
         <td style="padding: 8px 6px; text-align: center; color: #374151;">${productDateValue(p)}</td>
         <td style="padding: 8px 6px; font-family: monospace; font-size: 10px; color: #4B5563;">
-          ${p.doi ? `DOI: ${p.doi}` : p.projectCode ? `Cód: ${p.projectCode}` : '—'}
+          ${doiForDisplay(p) ? `DOI: ${doiForDisplay(p)}` : p.projectCode ? `Cód: ${p.projectCode}` : '—'}
         </td>
         <td style="padding: 8px 6px; text-align: center;">
           <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; ${
@@ -300,7 +304,7 @@ export const exportService = {
           <h3>${escapeHtml(product.title)}</h3>
           <p class="authors">${escapeHtml((product.projectParticipants?.length ? product.projectParticipants : product.authors).join(' · '))}</p>
           <p>${escapeHtml(product.venue || product.fundingVenue || product.researchLine)}${product.volumeIssue ? ` · ${escapeHtml(product.volumeIssue)}` : ''}</p>
-          <p class="product-meta">${escapeHtml(productDateValue(product))}${product.doi ? ` · DOI: ${escapeHtml(product.doi)}` : product.projectCode ? ` · Código: ${escapeHtml(product.projectCode)}` : ''}</p>
+          <p class="product-meta">${escapeHtml(productDateValue(product))}${doiForDisplay(product) ? ` · DOI: ${escapeHtml(doiForDisplay(product)!)}` : product.projectCode ? ` · Código: ${escapeHtml(product.projectCode)}` : ''}</p>
           ${product.type === 'proyecto' && product.expectedProducts?.length ? `<p><strong>Productos esperados:</strong> ${escapeHtml(product.expectedProducts.join(' · '))}</p>` : ''}
         </article>`).join('')
       : '<p>No hay producción verificada registrada en el portal.</p>';

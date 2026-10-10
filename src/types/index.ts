@@ -9,6 +9,14 @@ export type ProductStatus = 'cargado' | 'verificado' | 'rechazado';
 
 export type ProjectStatus = 'activo' | 'en_pausa' | 'finalizado' | 'cancelado';
 
+export interface ProductAttachment {
+  id: string;
+  fileName: string;
+  mimeType: 'application/pdf';
+  size?: number;
+  isSynthetic?: boolean;
+}
+
 export type AcademicSemester =
   | '2021-1' | '2021-2'
   | '2022-1' | '2022-2'
@@ -66,6 +74,8 @@ export interface ScientificProduct {
   doi?: string;
   venue?: string; // Revista, conferencia, medio
   volumeIssue?: string;
+  articleAttachment?: ProductAttachment;
+  privacyConsentAt?: string;
 
   // Específico para proyectos de investigación
   projectCode?: string; // ej. ECMC-INV-2024-008

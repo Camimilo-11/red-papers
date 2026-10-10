@@ -2,6 +2,56 @@ import { AcademicDegree, OfficialResearchLine, ScientificProduct, TeacherUser, U
 import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
 import { OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
+const SEED_PRODUCT_BY_ID = new Map(INITIAL_PRODUCTS.map((product) => [product.id, product]));
+
+function completeSyntheticProduct(product: ScientificProduct): ScientificProduct {
+  const defaults = SEED_PRODUCT_BY_ID.get(product.id);
+  if (!defaults) return product;
+
+  let updated = product;
+  const fillIfMissing = <K extends keyof ScientificProduct>(key: K) => {
+    if ((updated[key] === undefined || updated[key] === null) && defaults[key] !== undefined) {
+      updated = { ...updated, [key]: defaults[key] };
+    }
+  };
+
+  [
+    'publicationDate',
+    'projectStartDate',
+    'projectEndDate',
+    'projectStatus',
+    'projectParticipants',
+    'projectDurationMonths',
+    'expectedProducts',
+    'articleAttachment',
+    'privacyConsentAt',
+    'venue',
+    'volumeIssue',
+  ].forEach((key) => fillIfMissing(key as keyof ScientificProduct));
+
+  if (updated.id === 'prod-009' && updated.doi?.startsWith('10.1145/preview.')) {
+    updated = { ...updated, doi: undefined };
+  }
+
+  if (updated.id === 'prod-009' && updated.title.startsWith('Borrador:')) {
+    updated = {
+      ...updated,
+      title: defaults.title,
+      authors: defaults.authors,
+      year: defaults.year,
+      semester: defaults.semester,
+      researchLine: defaults.researchLine,
+      abstract: defaults.abstract,
+      publicationDate: defaults.publicationDate,
+      privacyConsentAt: defaults.privacyConsentAt,
+      venue: defaults.venue,
+      volumeIssue: defaults.volumeIssue,
+    };
+  }
+
+  return updated;
+}
+
 const STORAGE_KEYS = {
   PRODUCTS: 'red_papers_products_v1',
   TEACHERS: 'red_papers_teachers_v1',
@@ -59,7 +109,10 @@ export const storageService = {
         this.saveProducts(INITIAL_PRODUCTS);
         return INITIAL_PRODUCTS;
       }
-      return JSON.parse(data);
+      const storedProducts: ScientificProduct[] = JSON.parse(data);
+      const products = storedProducts.map(completeSyntheticProduct);
+      if (JSON.stringify(products) !== JSON.stringify(storedProducts)) this.saveProducts(products);
+      return products;
     } catch {
       return INITIAL_PRODUCTS;
     }

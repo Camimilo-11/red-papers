@@ -7,6 +7,7 @@ import {
   PROJECT_STATUS_LABELS,
   OfficialResearchLine,
   TeacherUser,
+  ProductAttachment,
 } from '../../types';
 import { OFFICIAL_RESEARCH_LINES } from '../../constants/researchLines';
 import { doiService, OrcidWorkItem } from '../../services/doiService';
@@ -25,7 +26,14 @@ import {
   Sparkles,
   BookOpen,
   FolderGit2,
+  ShieldCheck,
+  FileCheck2,
 } from 'lucide-react';
+import {
+  createSyntheticArticleFile,
+  removeArticleAttachment,
+  saveArticleAttachment,
+} from '../../services/articleAttachmentService';
 
 interface RegisterProductModalProps {
   initialType?: ProductType;
@@ -67,6 +75,10 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   const [projectCode, setProjectCode] = useState('');
   const [venue, setVenue] = useState('');
   const [volumeIssue, setVolumeIssue] = useState('');
+  const [articleFile, setArticleFile] = useState<File | null>(null);
+  const [articleFileIsSynthetic, setArticleFileIsSynthetic] = useState(false);
+  const [articleFileError, setArticleFileError] = useState<string | null>(null);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [projectStatus, setProjectStatus] = useState<ProjectStatus>('activo');
   const [projectDirector, setProjectDirector] = useState(currentUser?.name || '');
   const [projectEndDate, setProjectEndDate] = useState('');
@@ -241,8 +253,61 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     }
   };
 
+  const handleArticleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    setArticleFileError(null);
+    if (file.size > 10 * 1024 * 1024) {
+      setArticleFile(null);
+      setArticleFileError('El artículo no puede superar los 10 MB.');
+      input.value = '';
+      return;
+    }
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      setArticleFile(null);
+      setArticleFileError('Adjunte el artículo en formato PDF.');
+      input.value = '';
+      return;
+    }
+
+    const signature = await file.slice(0, 5).text();
+    if (signature !== '%PDF-') {
+      setArticleFile(null);
+      setArticleFileError('El archivo seleccionado no parece ser un PDF válido.');
+      input.value = '';
+      return;
+    }
+
+    setArticleFile(file);
+    setArticleFileIsSynthetic(false);
+    input.value = '';
+  };
+
+  const loadSyntheticPublicationExample = () => {
+    setProductType('publicacion');
+    setActiveTab('manual');
+    setTitle('Ejemplo sintético: análisis de datos para investigación académica');
+    setAuthorsText('Investigadora de demostración, Investigador de demostración');
+    setProductDate('2025-05-15');
+    setResearchLine('Ciencia de datos');
+    setAbstract('Registro ficticio para probar el formulario. No representa una publicación ni resultados reales.');
+    setDoi('');
+    setVenue('Revista Académica de Demostración ECMC');
+    setVolumeIssue('Vol. 1, Núm. 1, pp. 1-8 (dato sintético)');
+    setArticleFile(createSyntheticArticleFile());
+    setArticleFileIsSynthetic(true);
+    setArticleFileError(null);
+    setPrivacyAccepted(false);
+    setErrorMessage(null);
+    setStep(2);
+  };
+
   // Manejador del guardado final (HU03, HU07, HU08)
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setDuplicateWarning(null);
@@ -250,6 +315,9 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       if(!title.trim()){setErrorMessage('Escriba el título para continuar.');return;}
       if(step===2&&!authorsText.trim()){setErrorMessage('Escriba al menos un autor.');return;}
       if(step===2&&!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
+      if(step===2&&productType==='publicacion'&&!abstract.trim()){setErrorMessage('Escriba el resumen de la publicación.');return;}
+      if(step===2&&productType==='publicacion'&&!articleFile){setErrorMessage('Adjunte el artículo en PDF para continuar.');return;}
+      if(step===2&&productType==='publicacion'&&!privacyAccepted){setErrorMessage('Confirme la política de privacidad del artículo.');return;}
       if(step===2&&productType==='proyecto'){
         if(!projectDurationMonths||Number(projectDurationMonths)<1){setErrorMessage('Indique la duración estimada del proyecto en meses.');return;}
         if(!expectedProductsText.trim()){setErrorMessage('Indique los productos que se espera alcanzar en el proyecto.');return;}
@@ -273,10 +341,36 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       return;
     }
     if(!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
+    if (productType === 'publicacion' && !articleFile) {
+      setStep(2);
+      setErrorMessage('Adjunte el artículo en PDF para continuar.');
+      return;
+    }
+    if (productType === 'publicacion' && !privacyAccepted) {
+      setStep(2);
+      setErrorMessage('Confirme la política de privacidad del artículo.');
+      return;
+    }
+    if (productType === 'publicacion' && !abstract.trim()) {
+      setStep(2);
+      setErrorMessage('Escriba el resumen de la publicación.');
+      return;
+    }
 
     const ownerId = currentUser ? currentUser.id : 'doc-001';
 
     // Verificación de duplicados antes de persistir (HU07)
+    let articleAttachment: ProductAttachment | undefined;
+    if (productType === 'publicacion' && articleFile) {
+      try {
+        articleAttachment = await saveArticleAttachment(articleFile, articleFileIsSynthetic);
+      } catch (error) {
+        setStep(2);
+        setErrorMessage(error instanceof Error ? error.message : 'No se pudo guardar el artículo adjunto.');
+        return;
+      }
+    }
+
     const productPayload = {
       type: productType,
       title: title.trim(),
@@ -292,6 +386,8 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       doi: productType === 'publicacion' ? doi.trim() || undefined : undefined,
       venue: productType === 'publicacion' ? venue.trim() || undefined : undefined,
       volumeIssue: productType === 'publicacion' ? volumeIssue.trim() || undefined : undefined,
+      articleAttachment,
+      privacyConsentAt: productType === 'publicacion' ? new Date().toISOString() : undefined,
       projectCode: productType === 'proyecto' ? projectCode.trim() || undefined : undefined,
       fundingVenue: productType === 'proyecto' ? venue.trim() || undefined : undefined,
       projectStatus: productType === 'proyecto' ? projectStatus : undefined,
@@ -304,6 +400,9 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     const creationResult = productService.createProduct(productPayload, ownerId);
 
     if (!creationResult.success) {
+      if (articleAttachment && !articleAttachment.isSynthetic) {
+        void removeArticleAttachment(articleAttachment.id).catch(() => undefined);
+      }
       setErrorMessage(creationResult.error || 'No se pudo crear el producto.');
       return;
     }
@@ -357,7 +456,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             <span>Buscar con DOI / ORCID</span>
           </button>}
 
-          <button
+          {productType === 'proyecto' && <button
             onClick={() => setActiveTab('pdf')}
             className={`pb-3 px-3 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'pdf'
@@ -367,7 +466,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Usar un PDF</span>
-          </button>
+          </button>}
 
           <button
             onClick={() => setActiveTab('manual')}
@@ -385,6 +484,12 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         </>}
         {/* Contenido según pestaña */}
         <div ref={contentRef} className="registration-content p-6 overflow-y-auto space-y-5">
+          {step === 1 && productType === 'publicacion' && (
+            <button type="button" onClick={loadSyntheticPublicationExample} className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[#c5342b]/40 bg-[#fff8f5] px-3 py-2 text-left text-xs font-semibold text-[#8f251e] hover:bg-[#fff1eb]">
+              <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span><strong>Probar con ejemplo sintético</strong><span className="mt-0.5 block font-normal text-neutral-600">Incluye datos y un PDF ficticios, marcados como demostración.</span></span>
+            </button>
+          )}
           {/* Pestaña 1: Asistente DOI / ORCID */}
           {step===1 && productType==='publicacion' && activeTab === 'identifier' && (
             <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3">
@@ -465,7 +570,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           )}
 
           {/* Pestaña 2: Asistente PDF de Proyecto */}
-          {step===1 && activeTab === 'pdf' && (
+          {step===1 && productType === 'proyecto' && activeTab === 'pdf' && (
             <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
@@ -545,7 +650,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setProductType('publicacion')}
+                  onClick={() => { setProductType('publicacion'); setActiveTab('manual'); }}
                   className={`p-2.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     productType === 'publicacion'
                       ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
@@ -558,7 +663,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => setProductType('proyecto')}
+                  onClick={() => { setProductType('proyecto'); setActiveTab('manual'); }}
                   className={`p-2.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     productType === 'proyecto'
                       ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-xs'
@@ -648,9 +753,10 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     type="text"
                     value={doi}
                     onChange={(e) => setDoi(e.target.value)}
-                    placeholder="10.1145/3576915.3623102"
+                    placeholder="DOI oficial, si ya fue asignado"
                     className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs font-mono focus:ring-1 focus:ring-[#EF4035]"
                   />
+                  <small className="mt-1 block text-neutral-500">Si la publicación aún no tiene un DOI oficial, deje este campo vacío.</small>
                 </div>
 
                 <div>
@@ -662,6 +768,19 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                     placeholder="Ej. ACM CCS 2025 / IEEE Transactions..."
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block font-semibold text-neutral-700 mb-1">
+                    Volumen, número o páginas (opcional)
+                  </label>
+                  <input
+                    aria-label="Volumen, número o páginas"
+                    type="text"
+                    value={volumeIssue}
+                    onChange={(e) => setVolumeIssue(e.target.value)}
+                    placeholder="Ej. Vol. 12, Núm. 2, pp. 35-48 (dato de ejemplo)"
                     className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
                   />
                 </div>
@@ -696,6 +815,35 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               </div>
             )}
 
+            {productType === 'publicacion' && (
+              <section className="space-y-3 rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-4" aria-labelledby="article-upload-title">
+                <div className="flex items-start gap-2">
+                  <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 text-[#b83229]" aria-hidden="true" />
+                  <div>
+                    <h3 id="article-upload-title" className="font-bold text-neutral-800">Artículo completo en PDF <span className="text-[#b83229]">*</span></h3>
+                    <p className="mt-1 text-[11px] leading-relaxed text-neutral-600">Es obligatorio adjuntar el artículo para que el Comité Científico pueda verificar la publicación. Máximo 10 MB.</p>
+                  </div>
+                </div>
+                <input id="publication-article-input" type="file" accept="application/pdf,.pdf" onChange={handleArticleUpload} className="sr-only" aria-label="Adjuntar artículo completo en PDF" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <label htmlFor="publication-article-input" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold text-neutral-700 hover:border-[#b83229] hover:text-[#8f251e]">
+                    <Upload className="h-4 w-4" aria-hidden="true" />
+                    {articleFile ? 'Cambiar archivo' : 'Seleccionar artículo PDF'}
+                  </label>
+                  {articleFile && <span className="min-w-0 text-[11px] text-neutral-700"><strong className="break-all">{articleFile.name}</strong>{articleFile.size > 0 && ` · ${(articleFile.size / (1024 * 1024)).toFixed(2)} MB`}{articleFileIsSynthetic && <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-800">DEMO</span>}</span>}
+                </div>
+                {articleFileError && <p role="alert" className="text-[11px] font-medium text-red-700">{articleFileError}</p>}
+                <div className="flex items-start gap-2 rounded-lg border border-neutral-200 bg-white p-3">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#47745e]" aria-hidden="true" />
+                  <label className="flex cursor-pointer items-start gap-2 text-[11px] leading-relaxed text-neutral-700">
+                    <input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} className="mt-0.5 accent-[#b83229]" />
+                    <span><strong>Política de privacidad *</strong><br />Confirmo que tengo autorización para compartir este archivo con el Comité Científico. Se utilizará únicamente para verificar la información y no se mostrará en el catálogo público.</span>
+                  </label>
+                </div>
+                <p className="text-[10px] text-neutral-500">Demostración: el archivo queda guardado en este navegador y dirección web. Para compartirlo entre equipos se requiere conectarlo al almacenamiento institucional.</p>
+              </section>
+            )}
+
             {/* Resumen */}
             <div>
               <label className="block font-semibold text-neutral-700 mb-1">
@@ -706,12 +854,13 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 onChange={(e) => setAbstract(e.target.value)}
                 rows={3}
                 placeholder="Descripción concisa de la metodología y resultados del trabajo..."
+                required={productType === 'publicacion'}
                 className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] resize-none"
               />
             </div>
 
             </>}
-            {step===3 && <section className="review-summary"><h3>Verifique la información del registro</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd><dt>Identificador</dt><dd>{doi||projectCode||'Sin identificador. Se verificará la información registrada.'}</dd><dt>Medio / programa</dt><dd>{venue||'No indicado'}</dd><dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
+            {step===3 && <section className="review-summary"><h3>Verifique la información del registro</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd>{productType==='publicacion'&&<><dt>Artículo</dt><dd>{articleFile?.name||'No adjunto'}</dd><dt>Privacidad</dt><dd>{privacyAccepted?'Autorización confirmada para revisión privada':'Pendiente de confirmación'}</dd><dt>Identificador</dt><dd>{doi?'Registrado; se mostrará al verificarse':'Sin DOI registrado'}</dd><dt>Medio / revista</dt><dd>{venue||'No indicado'}</dd><dt>Volumen / número</dt><dd>{volumeIssue||'No indicado'}</dd></>}<dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
             {/* Aviso sobre estado inicial "cargado" (Sección 8) */}
             <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-[11px] text-neutral-600 flex items-start gap-2">
               <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
