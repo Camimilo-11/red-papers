@@ -66,7 +66,7 @@ function getInitialPhase(): IntroPhase {
 }
 
 const emblemPositions = [
-  { left: '6%', top: '18%', size: 94, rotation: '-17deg', parallax: 0.035 },
+  { left: '57%', top: '52%', size: 94, rotation: '-17deg', parallax: 0.035 },
   { left: '25%', top: '4%', size: 74, rotation: '12deg', parallax: 0.055 },
   { left: '52%', top: '3%', size: 88, rotation: '-9deg', parallax: 0.03 },
   { left: '83%', top: '16%', size: 102, rotation: '15deg', parallax: 0.05 },
@@ -223,6 +223,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
               <span
                 className={`institutional-landing-hero-emblem ${visibleEmblems[index] ? 'is-visible' : ''}`}
                 key={school.code}
+                data-school={school.code}
                 data-parallax-emblem
                 data-parallax-speed={position.parallax}
                 style={{

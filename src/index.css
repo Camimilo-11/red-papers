@@ -2194,6 +2194,7 @@ body {
   .institutional-landing-hero-link { margin-top: 24px; font-size: 15px; }
   .institutional-landing-hero-emblem { opacity: 0; }
   .institutional-landing-hero-emblem.is-visible { opacity: .24; }
+  .institutional-landing-hero-emblem[data-school="ECIAA"] { left: 80% !important; top: 35% !important; }
   .institutional-landing-hero-emblem-image { width: min(64px, var(--emblem-size)) !important; height: min(64px, var(--emblem-size)) !important; }
   .institutional-landing-hero-emblem-ecmc { width: min(64px, var(--emblem-size)) !important; height: auto !important; }
   .institutional-landing-section-heading,
