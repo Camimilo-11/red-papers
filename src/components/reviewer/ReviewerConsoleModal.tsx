@@ -255,6 +255,27 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
 
                 {selectedProduct.type==='proyecto'&&<section className="review-project-summary" aria-label="Planificación del proyecto"><h4>Planificación del proyecto</h4><dl><div><dt>Estado</dt><dd>{selectedProduct.projectStatus?PROJECT_STATUS_LABELS[selectedProduct.projectStatus]:'No indicado'}</dd></div><div><dt>Dirección</dt><dd>{selectedProduct.projectDirector||'No indicada'}</dd></div><div><dt>Duración</dt><dd>{selectedProduct.projectDurationMonths?`${selectedProduct.projectDurationMonths} meses`:'No indicada'}</dd></div><div><dt>Inicio</dt><dd>{selectedProduct.projectStartDate||selectedProduct.year}</dd></div>{selectedProduct.projectEndDate&&<div><dt>Cierre previsto</dt><dd>{selectedProduct.projectEndDate}</dd></div>}</dl>{selectedProduct.expectedProducts&&selectedProduct.expectedProducts.length>0&&<div><strong>Productos esperados:</strong><ul>{selectedProduct.expectedProducts.map((item,index)=><li key={`${item}-${index}`}>{item}</li>)}</ul></div>}</section>}
 
+                {selectedProduct.type === 'proyecto' && ((selectedProduct.projectProgressReports?.length || 0) > 0 || selectedProduct.projectClosureReport) && <details className="review-project-history">
+                  <summary>Informes de seguimiento ({selectedProduct.projectProgressReports?.length || 0}){selectedProduct.projectClosureReport ? ' · incluye cierre' : ''}</summary>
+                  <div className="review-project-history-body">
+                    {[...(selectedProduct.projectProgressReports || [])].sort((a, b) => b.periodEnd.localeCompare(a.periodEnd)).map(report => <article key={report.id}>
+                      <div className="review-project-history-heading"><strong>Avance: {report.progressPercent}%</strong><span>{new Date(`${report.periodStart}T12:00:00`).toLocaleDateString('es-EC')} – {new Date(`${report.periodEnd}T12:00:00`).toLocaleDateString('es-EC')}{report.isSynthetic && <em>DEMO</em>}</span></div>
+                      <p>{report.summary}</p>
+                      <p><strong>Actividades:</strong> {report.completedActivities.join(' · ')}</p>
+                      {report.achievedProducts.length > 0 && <p><strong>Resultados:</strong> {report.achievedProducts.join(' · ')}</p>}
+                      {report.blockers && <p><strong>Dificultades:</strong> {report.blockers}</p>}
+                      <p><strong>Próximos pasos:</strong> {report.nextSteps}</p>
+                    </article>)}
+                    {selectedProduct.projectClosureReport && <article className="review-project-closure">
+                      <div className="review-project-history-heading"><strong>Informe de cierre · {PROJECT_STATUS_LABELS[selectedProduct.projectClosureReport.finalStatus]}</strong><span>{new Date(`${selectedProduct.projectClosureReport.closedAt}T12:00:00`).toLocaleDateString('es-EC')}{selectedProduct.projectClosureReport.isSynthetic && <em>DEMO</em>}</span></div>
+                      <p>{selectedProduct.projectClosureReport.summary}</p>
+                      {selectedProduct.projectClosureReport.deliveredProducts.length > 0 && <p><strong>Productos entregados:</strong> {selectedProduct.projectClosureReport.deliveredProducts.join(' · ')}</p>}
+                      {selectedProduct.projectClosureReport.pendingItems.length > 0 && <p><strong>Pendientes:</strong> {selectedProduct.projectClosureReport.pendingItems.join(' · ')}</p>}
+                      {selectedProduct.projectClosureReport.lessonsLearned && <p><strong>Aprendizajes:</strong> {selectedProduct.projectClosureReport.lessonsLearned}</p>}
+                    </article>}
+                  </div>
+                </details>}
+
                 {/* Resumen del documento */}
                 <div>
                   <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5">

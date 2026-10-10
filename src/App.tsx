@@ -293,6 +293,7 @@ export default function App() {
             teachers={teachers}
             currentUserId={currentUser ? currentUser.id : null}
             initialTeacherFilter={catalogTeacherFilter}
+            onProjectUpdated={() => setProducts(storageService.getProducts())}
             onOpenRegister={() => {
               if(currentUser?.role==='reviewer_demo') return;
               if (!currentUser) setShowAccessScreen(true);

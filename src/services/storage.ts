@@ -23,6 +23,8 @@ function completeSyntheticProduct(product: ScientificProduct): ScientificProduct
     'projectParticipants',
     'projectDurationMonths',
     'expectedProducts',
+    'projectProgressReports',
+    'projectClosureReport',
     'articleAttachment',
     'privacyConsentAt',
     'venue',
@@ -110,7 +112,9 @@ export const storageService = {
         return INITIAL_PRODUCTS;
       }
       const storedProducts: ScientificProduct[] = JSON.parse(data);
-      const products = storedProducts.map(completeSyntheticProduct);
+      const existingIds = new Set(storedProducts.map(product => product.id));
+      const newDemoFixtures = INITIAL_PRODUCTS.filter(product => product.id === 'prod-015' && !existingIds.has(product.id));
+      const products = [...storedProducts.map(completeSyntheticProduct), ...newDemoFixtures];
       if (JSON.stringify(products) !== JSON.stringify(storedProducts)) this.saveProducts(products);
       return products;
     } catch {

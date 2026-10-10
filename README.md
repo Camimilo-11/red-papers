@@ -52,14 +52,14 @@ src/
 │   └── EcmcLogo.tsx               # Logotipo vectorial SVG institucional oficial
 ├── constants/
 │   ├── researchLines.ts           # 6 líneas oficiales y semestres 2021-1 a 2026-2
-│   ├── seedData.ts                # Dataset base calibrado (14 productos, 6 docentes)
+│   ├── seedData.ts                # Dataset sintético de demostración (15 productos, 6 docentes)
 │   └── traceabilityData.ts        # Matriz completa de historias, tareas y pruebas
 ├── types/
 │   └── index.ts                   # Interfaces TypeScript tipadas estrictamente
 ├── services/
 │   ├── storage.ts                 # Adaptador de persistencia local y reseteo
 │   ├── authService.ts             # Registro (@yachaytech.edu.ec), login, hash
-│   ├── productService.ts          # CRUD, validación unicidad DOI/Código, transiciones
+│   ├── productService.ts          # CRUD, revisión, informes de avance y cierre de proyectos
 │   ├── doiService.ts              # Normalización DOI, Crossref API, búsqueda ORCID
 │   ├── pdfExtractorService.ts     # Validación (tipo, tamaño <= 10MB) y extracción básica
 │   ├── metricsService.ts          # Cálculo de índice h escuela, citas, evolución
@@ -68,7 +68,7 @@ src/
 │   ├── auth/                      # Pantalla de acceso roja (Boceto 03) y registro docente
 │   ├── layout/                    # Header horizontal, Footer institucional, Notificaciones
 │   ├── dashboard/                 # Banner ECMC, 5 tarjetas KPI, Gráfico semestral, Tabla
-│   ├── catalog/                   # Buscador, filtros agrupados, rejilla 2 columnas, modal
+│   ├── catalog/                   # Catálogo, filtros, fichas y seguimiento de proyectos
 │   ├── directory/                 # Lista y perfil de investigador con biografía y export
 │   ├── register/                  # Modal de registro (DOI, PDF, Manual)
 │   ├── reviewer/                  # Consola de comité revisor (Flujo de auditoría propuesto)
@@ -82,8 +82,9 @@ src/
 ## 5. Decisiones de Diseño, Cálculos Bibliométricos y Coherencia Matemática
 
 1. **Conjunto Semilla Calibrado:**
-   - Total Productos: 14 (11 Publicaciones + 3 Proyectos).
-   - Verificados: 11 productos = **79% de verificación institucional**.
+   - Total Productos: 15 (11 Publicaciones + 4 Proyectos sintéticos).
+   - Verificados: 11 productos = **73% de verificación institucional**.
+   - Seguimiento: se incluyen informes sintéticos de avance y cierre para demostrar el flujo del Comité Científico.
    - Citas Totales: **182 citas** en publicaciones verificadas.
    - Índice h Institucional ECMC: **h = 8** (publicaciones con citas: 42, 35, 30, 22, 17, 12, 9, 8, 4, 3, donde exactamente 8 artículos tienen ≥ 8 citas).
    - Coautorías: los artículos con coautores docentes de la ECMC computan una sola vez a nivel Escuela.

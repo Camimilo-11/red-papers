@@ -1,5 +1,5 @@
 import { authService } from './authService';
-import { ScientificProduct, ProductStatus, FilterState, UserNotification } from '../types';
+import { ScientificProduct, ProductStatus, FilterState, UserNotification, ProjectProgressReport, ProjectClosureReport } from '../types';
 import { storageService } from './storage';
 import { normalizeDoi, normalizeProjectCode } from './doiService';
 
@@ -9,6 +9,16 @@ export interface DuplicateCheckResult {
   existingProduct?: ScientificProduct;
   warning?: string;
 }
+
+const validIsoDate = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [, year, month, day] = match.map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+};
+
+const cleanList = (values: string[]) => values.map(value => value.trim()).filter(Boolean);
 
 export const productService = {
   /**
@@ -149,6 +159,109 @@ export const productService = {
       product: newProduct,
       warning: dupCheck.warning,
     };
+  },
+
+  addProjectProgressReport(
+    productId: string,
+    reportData: Omit<ProjectProgressReport, 'id' | 'reportedAt' | 'isSynthetic'>
+  ): { success: boolean; product?: ScientificProduct; error?: string } {
+    const actor = authService.getCurrentUser();
+    if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para registrar avances.' };
+
+    const products = storageService.getProducts();
+    const index = products.findIndex(product => product.id === productId);
+    if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
+    const product = products[index];
+    if (product.type !== 'proyecto') return { success: false, error: 'El seguimiento solo está disponible para proyectos.' };
+    if (product.ownerId !== actor.id) return { success: false, error: 'Solo el docente responsable puede registrar avances.' };
+    if (product.projectStatus === 'finalizado' || product.projectStatus === 'cancelado') return { success: false, error: 'El proyecto ya tiene un informe de cierre y no admite nuevos avances.' };
+    if (!validIsoDate(reportData.periodStart) || !validIsoDate(reportData.periodEnd) || reportData.periodStart > reportData.periodEnd || reportData.periodEnd > new Date().toISOString().slice(0, 10)) {
+      return { success: false, error: 'Revise las fechas del periodo informado.' };
+    }
+    if (!Number.isInteger(reportData.progressPercent) || reportData.progressPercent < 0 || reportData.progressPercent > 100) {
+      return { success: false, error: 'El avance debe ser un porcentaje entre 0 y 100.' };
+    }
+    if (reportData.summary.trim().length < 20) return { success: false, error: 'Describa el avance con al menos 20 caracteres.' };
+    if (reportData.nextSteps.trim().length < 8) return { success: false, error: 'Indique los próximos pasos.' };
+    const completedActivities = cleanList(reportData.completedActivities);
+    if (!completedActivities.length) return { success: false, error: 'Añada al menos una actividad realizada.' };
+
+    const now = new Date().toISOString();
+    const report: ProjectProgressReport = {
+      ...reportData,
+      id: `avance-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      summary: reportData.summary.trim(),
+      completedActivities,
+      achievedProducts: cleanList(reportData.achievedProducts),
+      blockers: reportData.blockers?.trim() || undefined,
+      nextSteps: reportData.nextSteps.trim(),
+      reportedAt: now,
+    };
+    const updated: ScientificProduct = {
+      ...product,
+      projectStatus: report.statusAfterReport,
+      projectProgressReports: [...(product.projectProgressReports || []), report],
+      updatedAt: now,
+    };
+    products[index] = updated;
+    storageService.saveProducts(products);
+    this.createNotification({
+      userId: actor.id,
+      productId: updated.id,
+      productTitle: updated.title,
+      status: updated.status,
+      message: `Se guardó el informe de avance de "${updated.title}" (${report.progressPercent}%).`,
+    });
+    return { success: true, product: updated };
+  },
+
+  closeProject(
+    productId: string,
+    closureData: Omit<ProjectClosureReport, 'id' | 'isSynthetic'>
+  ): { success: boolean; product?: ScientificProduct; error?: string } {
+    const actor = authService.getCurrentUser();
+    if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para cerrar el proyecto.' };
+
+    const products = storageService.getProducts();
+    const index = products.findIndex(product => product.id === productId);
+    if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
+    const product = products[index];
+    if (product.type !== 'proyecto') return { success: false, error: 'El cierre solo está disponible para proyectos.' };
+    if (product.ownerId !== actor.id) return { success: false, error: 'Solo el docente responsable puede cerrar este proyecto.' };
+    if (product.projectClosureReport) {
+      return { success: false, error: 'El proyecto ya cuenta con un informe de cierre.' };
+    }
+    if (!validIsoDate(closureData.closedAt) || closureData.closedAt > new Date().toISOString().slice(0, 10)) return { success: false, error: 'Indique una fecha de cierre válida.' };
+    if (closureData.summary.trim().length < 30) return { success: false, error: 'El resumen de cierre debe tener al menos 30 caracteres.' };
+    const deliveredProducts = cleanList(closureData.deliveredProducts);
+    if (closureData.finalStatus === 'finalizado' && !deliveredProducts.length) {
+      return { success: false, error: 'Registre al menos un producto o resultado entregado para finalizar el proyecto.' };
+    }
+
+    const closure: ProjectClosureReport = {
+      ...closureData,
+      id: `cierre-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      summary: closureData.summary.trim(),
+      deliveredProducts,
+      pendingItems: cleanList(closureData.pendingItems),
+      lessonsLearned: closureData.lessonsLearned?.trim() || undefined,
+    };
+    const updated: ScientificProduct = {
+      ...product,
+      projectStatus: closure.finalStatus,
+      projectClosureReport: closure,
+      updatedAt: new Date().toISOString(),
+    };
+    products[index] = updated;
+    storageService.saveProducts(products);
+    this.createNotification({
+      userId: actor.id,
+      productId: updated.id,
+      productTitle: updated.title,
+      status: updated.status,
+      message: `Se registró el cierre del proyecto "${updated.title}" como ${closure.finalStatus === 'finalizado' ? 'finalizado' : 'cancelado'}.`,
+    });
+    return { success: true, product: updated };
   },
 
   /**

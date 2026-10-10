@@ -82,9 +82,9 @@ export const INITIAL_TEACHERS: TeacherUser[] = [
 
 /**
  * Datos sintéticos de demostración; no representan producción académica real.
- * 14 productos iniciales que reproducen con exactitud matemática:
- * - 11 Publicaciones, 3 Proyectos
- * - 11 Verificados (79% tasa de verificación), 2 Cargados (en revisión), 1 Rechazado (con motivo para auditar)
+ * 15 productos iniciales de demostración:
+ * - 11 Publicaciones, 4 Proyectos
+ * - 11 Verificados (73% tasa de verificación), 3 Cargados (en revisión), 1 en observación
  * - 182 Citas totales en publicaciones verificadas
  * - Índice h Escuela = 8 (artículos con citas [42, 35, 30, 22, 17, 12, 9, 8, 4, 3], exactamente 8 tienen >= 8 citas)
  */
@@ -345,6 +345,20 @@ export const INITIAL_PRODUCTS: ScientificProduct[] = [
     projectParticipants: ['Dr. Roberto Cárdenas Guanoluisa', 'MSc. Juan Pablo Astudillo León'],
     projectDurationMonths: 24,
     expectedProducts: ['Protocolo de análisis criptográfico', 'Artículo científico', 'Informe técnico de resultados'],
+    projectProgressReports: [{
+      id: 'demo-avance-prod-012',
+      periodStart: '2026-04-01',
+      periodEnd: '2026-08-31',
+      progressPercent: 75,
+      summary: 'Se completó la evaluación de seguridad de los esquemas priorizados y se documentaron los resultados preliminares del análisis frente a escenarios de computación cuántica.',
+      completedActivities: ['Implementación del entorno de pruebas', 'Análisis de tres esquemas criptográficos', 'Revisión interna de resultados'],
+      achievedProducts: ['Protocolo preliminar de análisis criptográfico'],
+      blockers: 'La disponibilidad de cómputo especializado limitó la cantidad de escenarios simulados.',
+      nextSteps: 'Completar las simulaciones pendientes y preparar el manuscrito científico.',
+      statusAfterReport: 'activo',
+      reportedAt: '2026-09-02T15:00:00Z',
+      isSynthetic: true,
+    }],
     fundingVenue: 'Línea de Seguridad Estratégica ECMC Yachay Tech',
     citations: 0,
     createdAt: '2024-11-01T10:00:00Z',
@@ -370,6 +384,16 @@ export const INITIAL_PRODUCTS: ScientificProduct[] = [
     projectParticipants: ['Dra. Elena Valdivieso Castro', 'Dr. Carlos Mendoza Paredes'],
     projectDurationMonths: 12,
     expectedProducts: ['Pipeline de simulación paralela', 'Dataset climático documentado', 'Informe de reducción de riesgo'],
+    projectClosureReport: {
+      id: 'demo-cierre-prod-013',
+      closedAt: '2024-02-15',
+      finalStatus: 'finalizado',
+      summary: 'El equipo completó el pipeline de simulación climática, documentó el conjunto de datos generado y entregó el informe técnico previsto para las cuencas priorizadas.',
+      deliveredProducts: ['Pipeline de simulación paralela', 'Dataset climático documentado', 'Informe de reducción de riesgo'],
+      pendingItems: ['Ampliar la cobertura de estaciones para una fase posterior.'],
+      lessonsLearned: 'La validación temprana con especialistas locales mejoró la interpretación de los escenarios.',
+      isSynthetic: true,
+    },
     fundingVenue: 'Programa Institucional de Investigación Aplicada Yachay Tech',
     citations: 0,
     createdAt: '2023-02-15T09:00:00Z',
@@ -396,11 +420,59 @@ export const INITIAL_PRODUCTS: ScientificProduct[] = [
     projectParticipants: ['Dra. Sofía Arcentales Mora', 'Dra. Elena Valdivieso Castro'],
     projectDurationMonths: 36,
     expectedProducts: ['Prototipo de cribado virtual', 'Dataset de metabolitos', 'Artículo científico'],
+    projectClosureReport: {
+      id: 'demo-cierre-prod-014',
+      closedAt: '2025-08-10',
+      finalStatus: 'finalizado',
+      summary: 'Se concluyó la evaluación del prototipo de cribado virtual y se entregaron el conjunto de datos documentado y el manuscrito científico asociado al proyecto.',
+      deliveredProducts: ['Prototipo de cribado virtual', 'Dataset de metabolitos', 'Artículo científico'],
+      pendingItems: ['Mantener el prototipo disponible para futuras validaciones externas.'],
+      lessonsLearned: 'La curación de datos y la validación experimental son etapas clave para priorizar candidatos.',
+      isSynthetic: true,
+    },
     fundingVenue: 'Fondo Semilla de Investigación ECMC',
     citations: 0,
     createdAt: '2022-08-10T14:00:00Z',
     updatedAt: '2022-09-01T16:30:00Z',
     verifiedAt: '2022-09-01T16:30:00Z',
+  },
+  {
+    id: 'prod-015',
+    type: 'proyecto',
+    title: 'Ejemplo sintético: Observatorio de datos abiertos para indicadores de sostenibilidad regional',
+    authors: ['MSc. Juan Pablo Astudillo León', 'Dra. Elena Valdivieso Castro'],
+    ownerId: 'doc-001',
+    projectDirector: 'MSc. Juan Pablo Astudillo León',
+    projectCode: 'ECMC-DEMO-2026-001',
+    school: 'ECMC',
+    year: 2026,
+    projectStartDate: '2026-01-15',
+    projectEndDate: '2026-12-15',
+    researchLine: 'Ciencia de datos',
+    abstract: 'Registro sintético para demostrar cómo se documentan los avances, productos esperados y estado de un proyecto institucional.',
+    status: 'cargado',
+    projectStatus: 'activo',
+    projectParticipants: ['MSc. Juan Pablo Astudillo León', 'Dra. Elena Valdivieso Castro'],
+    projectDurationMonths: 11,
+    expectedProducts: ['Catálogo de indicadores documentado', 'Tablero demostrativo', 'Informe de resultados'],
+    projectProgressReports: [{
+      id: 'demo-avance-prod-015',
+      periodStart: '2026-01-15',
+      periodEnd: '2026-08-31',
+      progressPercent: 55,
+      summary: 'Se definió el catálogo inicial de indicadores, se integraron fuentes públicas de demostración y se preparó una primera versión del tablero para validación interna.',
+      completedActivities: ['Definición del esquema de datos', 'Integración de tres fuentes públicas de prueba', 'Diseño inicial del tablero'],
+      achievedProducts: ['Catálogo preliminar de indicadores'],
+      blockers: 'Se requiere acordar criterios de actualización para algunas fuentes externas.',
+      nextSteps: 'Validar los indicadores con el equipo y completar la documentación técnica.',
+      statusAfterReport: 'activo',
+      reportedAt: '2026-09-03T14:00:00Z',
+      isSynthetic: true,
+    }],
+    fundingVenue: 'Fondo demostrativo ECMC · dato sintético',
+    citations: 0,
+    createdAt: '2026-01-15T09:00:00Z',
+    updatedAt: '2026-09-03T14:00:00Z',
   },
 ];
 

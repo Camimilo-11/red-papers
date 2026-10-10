@@ -17,6 +17,32 @@ export interface ProductAttachment {
   isSynthetic?: boolean;
 }
 
+export interface ProjectProgressReport {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  progressPercent: number;
+  summary: string;
+  completedActivities: string[];
+  achievedProducts: string[];
+  blockers?: string;
+  nextSteps: string;
+  statusAfterReport: Extract<ProjectStatus, 'activo' | 'en_pausa'>;
+  reportedAt: string;
+  isSynthetic?: boolean;
+}
+
+export interface ProjectClosureReport {
+  id: string;
+  closedAt: string;
+  finalStatus: Extract<ProjectStatus, 'finalizado' | 'cancelado'>;
+  summary: string;
+  deliveredProducts: string[];
+  pendingItems: string[];
+  lessonsLearned?: string;
+  isSynthetic?: boolean;
+}
+
 export type AcademicSemester =
   | '2021-1' | '2021-2'
   | '2022-1' | '2022-2'
@@ -85,6 +111,8 @@ export interface ScientificProduct {
   projectParticipants?: string[];
   projectDurationMonths?: number;
   expectedProducts?: string[];
+  projectProgressReports?: ProjectProgressReport[];
+  projectClosureReport?: ProjectClosureReport;
 }
 
 export interface TeacherUser {

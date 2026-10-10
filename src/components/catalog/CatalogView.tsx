@@ -5,6 +5,7 @@ import { productService } from '../../services/productService';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { ProductCard } from './ProductCard';
 import { ProductDetailModal } from './ProductDetailModal';
+import { ProjectTrackingModal } from './ProjectTrackingModal';
 import {
   Search,
   Download,
@@ -16,6 +17,7 @@ import {
   Printer,
   ChevronDown,
   AlertCircle,
+  ClipboardList,
 } from 'lucide-react';
 
 interface CatalogViewProps {
@@ -26,6 +28,7 @@ interface CatalogViewProps {
   currentUserId: string | null;
   initialTeacherFilter?: string;
   onOpenRegister: () => void;
+  onProjectUpdated?: (product: ScientificProduct) => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
@@ -36,8 +39,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   currentUserId,
   initialTeacherFilter,
   onOpenRegister,
+  onProjectUpdated,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<ScientificProduct | null>(null);
+  const [trackingProject, setTrackingProject] = useState<ScientificProduct | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<'recent' | 'citations' | 'title'>('recent');
@@ -427,12 +432,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       ) : (
         <div className="product-list">
           {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              showStatus={onlyMine}
-              onClick={() => setSelectedProduct(product)}
-            />
+            <article className={`catalog-product-item ${onlyMine && product.type === 'proyecto' ? 'has-project-tracking' : ''}`} key={product.id}>
+              <ProductCard
+                product={product}
+                showStatus={onlyMine}
+                onClick={() => setSelectedProduct(product)}
+              />
+              {onlyMine && product.type === 'proyecto' && <button type="button" className="project-tracking-open" onClick={() => setTrackingProject(product)}><ClipboardList size={17} aria-hidden="true"/><span>Seguimiento del proyecto</span><span className="project-tracking-count">{product.projectProgressReports?.length || 0} avances</span></button>}
+            </article>
           ))}
         </div>
       )}
@@ -445,6 +452,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           onClose={() => setSelectedProduct(null)}
         />
       )}
+      {trackingProject && <ProjectTrackingModal product={trackingProject} onClose={() => setTrackingProject(null)} onUpdated={updated => { setTrackingProject(updated); onProjectUpdated?.(updated); }}/ >}
     </div>
   );
 };
