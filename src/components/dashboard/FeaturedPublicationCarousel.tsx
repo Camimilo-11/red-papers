@@ -144,7 +144,7 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
       >
         <FeaturedPublicationBackdrop key={`backdrop-${publication.id}`} theme={theme} />
         <div className="featured-paper-copy" key={publication.id}>
-          <p className="eyebrow">PUBLICACIÓN DESTACADA · {currentIndex + 1} / {publications.length}</p>
+          <p className="eyebrow">PUBLICACIÓN DESTACADA</p>
           <p className="featured-paper-line">
             <span className="featured-paper-line-dot" aria-hidden="true" />
             {publication.researchLine}
@@ -192,7 +192,6 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
               />
             ))}
           </div>
-          <span className="featured-paper-counter">{currentIndex + 1} de {publications.length}</span>
           <button type="button" onClick={() => goTo(1)} aria-label="Mostrar siguiente publicación">
             <ChevronRight size={19} aria-hidden="true" />
           </button>
