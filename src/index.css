@@ -1423,9 +1423,9 @@ body {
   }
 
   .portal-main-public-dashboard .featured-paper-backdrop {
-    --bd-opacity: .16;
-    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.4));
-    mask-image: linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.4));
+    --bd-opacity: .42;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.72));
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.72));
   }
 
   .portal-main-public-dashboard .featured-paper-copy .eyebrow {
