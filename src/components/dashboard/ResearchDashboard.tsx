@@ -62,7 +62,7 @@ function ResearchLineChart({products}:{products:ScientificProduct[]}) {
  const max=Math.max(1,...values.map(item=>item.count));
  return <section className="research-chart-card research-line-chart" aria-labelledby="research-lines-chart-title">
   <header className="research-chart-heading">
-   <div><p className="eyebrow">ÁREAS · ECMC</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3><p>Producción verificada de la escuela</p></div>
+   <div><p className="eyebrow">ÁREAS · ECMC</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
    <BarChart3 size={21} aria-hidden="true"/>
   </header>
   <ol className="research-line-bars">{values.map(item=><li key={item.line}>
