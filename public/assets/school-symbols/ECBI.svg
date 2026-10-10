@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Emblema de Ciencias Biológicas">
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 17c59 15 0 31 58 47-58 15 1 32-58 47" stroke="#68B347" stroke-width="9"/>
+    <path d="M93 17c-59 15 0 31-58 47 58 15-1 32 58 47" stroke="#4D8737" stroke-width="9"/>
+    <path d="m45 26 38 0M39 47l50 0M39 81l50 0M45 102h38" stroke="#8AC768" stroke-width="6"/>
+  </g>
+</svg>

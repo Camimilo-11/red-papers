@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Emblema de Ciencias Físicas">
+  <path d="m64 14 43 25v50l-43 25-43-25V39l43-25Z" stroke="#F4C400" stroke-linejoin="round" stroke-width="9"/>
+  <path d="M21 39 64 64l43-25M64 64v50M64 64l25-43M64 64 38 108" stroke="#9A7947" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+  <circle cx="21" cy="39" r="7" fill="#9A7947"/><circle cx="107" cy="39" r="7" fill="#9A7947"/><circle cx="64" cy="114" r="7" fill="#9A7947"/>
+  <circle cx="64" cy="64" r="6" fill="#F4C400"/>
+</svg>

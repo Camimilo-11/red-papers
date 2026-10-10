@@ -1,7 +1,25 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { SchoolIconTile, YachayLogo } from './SchoolLogo';
+import { YachayLogo } from './SchoolLogo';
+
+function SchoolSelectorMark({ school, size = 76 }: { school: SchoolConfig; size?: number }) {
+  return (
+    <span
+      className="school-symbol"
+      role="img"
+      aria-label={`Emblema de ${school.name}`}
+      style={{ width: size, height: size }}
+    >
+      <img
+        className="school-symbol-svg"
+        src={`./assets/school-symbols/${school.code}.svg`}
+        alt=""
+        draggable={false}
+      />
+    </span>
+  );
+}
 
 export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   return (
@@ -21,7 +39,7 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
         <section className="school-selector-grid" aria-label="Escuelas disponibles">
           {SCHOOLS.map((school) => (
             <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--accent': `color-mix(in srgb, ${school.accent} 45%, #292522)` } as React.CSSProperties}>
-              <div className="school-selector-logo"><SchoolIconTile school={school} size={76} /></div>
+              <div className="school-selector-logo"><SchoolSelectorMark school={school} /></div>
               <span className="school-selector-code">{school.code}</span>
               <h2>{school.name}</h2>
               <button type="button" className="school-selector-enter" onClick={() => onSelect(school)}>

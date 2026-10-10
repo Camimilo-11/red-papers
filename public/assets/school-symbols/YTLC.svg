@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Emblema del Centro de Idiomas">
+  <path d="M49 13c-19 0-34 15-34 34 0 8 3 16 8 22L17 84l20-8c4 2 8 3 12 3 19 0 34-14 34-32S68 13 49 13Z" fill="#0CA2B0"/>
+  <g stroke="#fff" stroke-linecap="round" stroke-width="3.5">
+    <path d="M24 47h50M49 18c-9 9-13 19-13 29s4 20 13 29M49 18c9 9 13 19 13 29S58 67 49 76M28 33c6 5 13 7 21 7s15-2 21-7M28 61c6-5 13-7 21-7s15 2 21 7"/>
+  </g>
+  <path d="M83 54c17 0 30 13 30 29 0 7-2 13-7 18l5 15-17-7c-4 2-7 3-11 3-17 0-30-13-30-29s13-29 30-29Z" fill="#0CA2B0"/>
+  <path d="m74 94 10-22 10 22m-16-9h12m9-12v24m-5-19 5-5 5 5" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+</svg>

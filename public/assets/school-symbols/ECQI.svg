@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Emblema de Ciencias Químicas">
+  <path d="m43 14 28 16v32L43 78 15 62V30l28-16Z" stroke="#21ACD5" stroke-linejoin="round" stroke-width="9"/>
+  <path d="m85 50 28 16v32l-28 16-28-16V66l28-16Z" stroke="#147D91" stroke-linejoin="round" stroke-width="9"/>
+  <path d="m63 61 17 10M39 31l21 12m25 29v25" stroke="#147D91" stroke-linecap="round" stroke-width="7"/>
+  <circle cx="43" cy="14" r="6" fill="#21ACD5"/><circle cx="113" cy="98" r="6" fill="#147D91"/>
+</svg>
