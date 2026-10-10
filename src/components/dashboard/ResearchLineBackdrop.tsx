@@ -271,14 +271,35 @@ function Biomedicine(): Node {
 }
 
 function Biomaterials(): Node {
-  const r = rng(33);
-  const fibers = range(20).map((i) => {
-    const x1 = 230 + r() * 120, y1 = 20 + r() * 320, x2 = 520 + r() * 110, y2 = 20 + r() * 320;
-    const cx = 330 + r() * 200, cy = 20 + r() * 320;
-    return <path key={i} d={`M${f(x1)} ${f(y1)}Q${f(cx)} ${f(cy)} ${f(x2)} ${f(y2)}`} {...line} strokeWidth={1.3} opacity={0.5} />;
+  const frontPores = range(3).flatMap((row) => range(5).map((col) => {
+    const cx = 304 + col * 42, cy = 207 + row * 38;
+    const points = range(6).map((i) => polar(cx, cy, 14, Math.PI / 6 + (i * Math.PI) / 3));
+    return <path key={`front-${row}-${col}`} d={toPath(points, true)} fill="currentColor" fillOpacity={0.08} stroke="currentColor" strokeWidth={1.2} opacity={0.82} />;
+  }));
+  const topPores = [365, 415, 465].map((cx) => {
+    const points = range(6).map((i) => polar(cx, 164, 12, Math.PI / 6 + (i * Math.PI) / 3));
+    return <path key={`top-${cx}`} d={toPath(points, true)} fill="currentColor" fillOpacity={0.08} stroke="currentColor" strokeWidth={1.2} opacity={0.76} />;
   });
-  const pores = range(16).map((i) => <circle key={i} cx={f(250 + r() * 370)} cy={f(30 + r() * 300)} r={f(8 + r() * 20)} fill="none" stroke="currentColor" strokeWidth={1.2} opacity={0.65} />);
-  return <g>{fibers}{pores}{range(10).map((i) => <circle key={`n${i}`} cx={f(250 + r() * 370)} cy={f(30 + r() * 300)} r={3} {...solid} />)}</g>;
+
+  return (
+    <g>
+      {/* Células sobre un andamio poroso de biomaterial. */}
+      {[365, 420, 475].map((cx, i) => (
+        <g key={`cell-${cx}`} opacity={0.82}>
+          <circle cx={cx} cy={104 + (i % 2) * 5} r={17} fill="currentColor" fillOpacity={0.08} stroke="currentColor" strokeWidth={1.6} />
+          <circle cx={cx + 2} cy={105 + (i % 2) * 5} r={6} {...solid} opacity={0.36} />
+          <circle cx={cx - 5} cy={98 + (i % 2) * 5} r={2} {...solid} opacity={0.62} />
+        </g>
+      ))}
+      <path d="M280 184L350 143H580L510 184Z" fill="currentColor" fillOpacity={0.11} stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+      <path d="M280 184H510V310H280Z" fill="currentColor" fillOpacity={0.045} stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+      <path d="M510 184L580 143V269L510 310Z" fill="currentColor" fillOpacity={0.12} stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+      {topPores}
+      {frontPores}
+      <path d="M263 320H508L592 273" {...thin} opacity={0.65} />
+      <path d="M302 176L333 158M516 179L550 159" {...thin} opacity={0.55} />
+    </g>
+  );
 }
 
 // ───────────────────────── ECFN ─────────────────────────

@@ -1848,9 +1848,10 @@ body {
   position: absolute;
   z-index: 0;
   top: 0;
+  left: auto;
   right: 0;
   bottom: 0;
-  width: 56%;
+  width: 74%;
   height: 100%;
   overflow: hidden;
   color: var(--school-accent);
