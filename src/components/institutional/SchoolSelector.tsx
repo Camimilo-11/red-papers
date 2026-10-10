@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { SchoolIconTile, UniversityLogoLink } from './SchoolLogo';
+import { SchoolIconTile } from './SchoolLogo';
 
 export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   return (
@@ -11,7 +11,6 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
           <span className="school-selector-brand-mark">Σ·</span>
           <span>RED PAPERS<small>Investigación · Yachay Tech</small></span>
         </a>
-        <UniversityLogoLink />
       </header>
 
       <main id="inicio" className="school-selector-main">
@@ -39,7 +38,6 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
 
       <footer className="school-selector-footer">
         <span>RED PAPERS · Universidad Yachay Tech</span>
-        <UniversityLogoLink className="school-selector-footer-link" />
       </footer>
     </div>
   );

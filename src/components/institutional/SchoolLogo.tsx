@@ -1,5 +1,5 @@
 import React from 'react';
-import { SchoolConfig, UNIVERSITY_HOME_URL } from '../../constants/schools';
+import { SchoolConfig } from '../../constants/schools';
 import { EcmcLogo } from '../../assets/EcmcLogo';
 
 export function SchoolLogo({ school, className = '', scale = 1 }: { school: SchoolConfig; className?: string; scale?: number }) {
@@ -48,22 +48,5 @@ export function SchoolEmblem({ school, size = 260 }: { school: SchoolConfig; siz
       alt={`Emblema de ${school.name}`}
       style={{ width: size, height: size }}
     />
-  );
-}
-
-export function UniversityLogoLink({ className = '' }: { className?: string }) {
-  return (
-    <a
-      className={`university-logo-link ${className}`}
-      href={UNIVERSITY_HOME_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Visitar el sitio oficial de la Universidad Yachay Tech"
-    >
-      <span className="university-logo-crop" aria-hidden="true">
-        <img src="./assets/university-logo.png" alt="" />
-      </span>
-      <span>Universidad Yachay Tech <span aria-hidden="true">↗</span></span>
-    </a>
   );
 }

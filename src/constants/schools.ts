@@ -1,5 +1,3 @@
-export const UNIVERSITY_HOME_URL = 'https://yachaytech.edu.ec/';
-
 export const SCHOOLS = [
   {
     code: 'ECIAA',
