@@ -1810,7 +1810,7 @@ body {
 .institutional-landing-brand-logo {
   position: fixed;
   z-index: 32;
-  top: 50%;
+  top: 0;
   left: 50%;
   display: block;
   width: min(180px, 52vw);
@@ -1819,27 +1819,26 @@ body {
   object-fit: contain;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(.64);
+  transform: translate3d(-50%, calc(50vh - 50%), 0) scale(.64);
   filter: brightness(0) invert(1);
   transform-origin: center;
 }
 
 .institutional-landing.is-logo .institutional-landing-brand-logo {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1.35);
+  transform: translate3d(-50%, calc(50vh - 50%), 0) scale(1.35);
   transition: opacity var(--landing-logo-form-ms) var(--landing-ease), transform var(--landing-logo-form-ms) var(--landing-ease);
 }
 
 .institutional-landing.is-transition .institutional-landing-brand-logo,
 .institutional-landing.is-done .institutional-landing-brand-logo,
 .institutional-landing.is-reduced .institutional-landing-brand-logo {
-  top: calc(var(--landing-header-height) / 2);
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate3d(-50%, calc(var(--landing-header-height) / 2 - 50%), 0) scale(1);
 }
 
 .institutional-landing.is-transition .institutional-landing-brand-logo {
-  transition: top var(--landing-logo-travel-ms) var(--landing-ease), transform var(--landing-logo-travel-ms) var(--landing-ease), opacity var(--landing-logo-travel-ms) var(--landing-ease);
+  transition: transform var(--landing-logo-travel-ms) var(--landing-ease), opacity var(--landing-logo-travel-ms) var(--landing-ease);
 }
 
 .institutional-landing.is-done .institutional-landing-brand-logo,
@@ -1853,13 +1852,13 @@ body {
   height: 100svh;
   overflow: hidden;
   background: var(--yt-blue, #24618e);
-  clip-path: inset(0 0 0 0);
+  transform: translateY(0);
   pointer-events: none;
 }
 
 .institutional-landing.is-transition .institutional-landing-curtain {
-  clip-path: inset(0 0 calc(100% - var(--landing-header-height)) 0);
-  transition: clip-path var(--landing-curtain-ms) var(--landing-ease);
+  transform: translateY(calc(-100% + var(--landing-header-height)));
+  transition: transform var(--landing-curtain-ms) var(--landing-ease);
 }
 
 .institutional-landing-intro-words {
@@ -1883,7 +1882,7 @@ body {
 .institutional-landing-intro-words > span {
   opacity: 0;
   transform: translateY(14px);
-  animation: institutional-intro-word-in 300ms var(--landing-ease) forwards;
+  animation: institutional-intro-word-in 350ms var(--landing-ease) forwards;
 }
 
 .institutional-landing-intro-words > span:nth-child(2) { animation-delay: 330ms; }
@@ -1892,11 +1891,11 @@ body {
   font: 700 12px/1 sans-serif;
   letter-spacing: .35em;
   opacity: 0;
-  animation: institutional-intro-word-in 250ms var(--landing-ease) 700ms forwards;
+  animation: institutional-intro-word-in 350ms var(--landing-ease) 700ms forwards;
 }
 
 .institutional-landing.is-logo .institutional-landing-intro-words,
-.institutional-landing.is-transition .institutional-landing-intro-words { opacity: 0; transition: opacity 100ms linear; }
+.institutional-landing.is-transition .institutional-landing-intro-words { opacity: 0; transition: opacity 350ms var(--landing-ease); }
 
 @keyframes institutional-intro-word-in {
   to { opacity: 1; transform: translateY(0); }
@@ -1930,7 +1929,11 @@ body {
   align-items: center;
   padding: 78px max(24px, calc((100vw - 1320px) / 2)) 90px;
   overflow: clip;
+  opacity: 0;
+  transition: opacity 350ms var(--landing-ease);
 }
+
+.institutional-landing-hero[data-assets-ready="true"] { opacity: 1; }
 
 .institutional-landing-hero-copy {
   position: relative;
@@ -1967,7 +1970,7 @@ body {
 .landing-reveal {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 100ms var(--landing-ease), transform 100ms var(--landing-ease);
+  transition: opacity 350ms var(--landing-ease), transform 350ms var(--landing-ease);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
@@ -2003,21 +2006,23 @@ body {
   position: absolute;
   display: block;
   width: var(--emblem-size);
-  height: var(--emblem-size);
+  aspect-ratio: 1;
   opacity: 0;
-  mix-blend-mode: multiply;
   transform: translate3d(calc(-50% + var(--entry-x)), calc(-50% + 30px), 0) rotate(var(--entry-rotation));
   transition: opacity 350ms var(--landing-ease), transform 350ms var(--landing-ease);
-  will-change: transform, opacity;
 }
 
 .institutional-landing-hero-emblem.is-visible {
   opacity: .94;
-  transform: translate3d(-50%, calc(-50% + var(--parallax-y, 0px)), 0) rotate(var(--emblem-rotation));
+  transform: translate3d(-50%, -50%, 0) rotate(var(--emblem-rotation));
 }
 
+.institutional-landing-hero-emblem-parallax,
 .institutional-landing-hero-emblem-float { display: block; width: 100%; height: 100%; }
-.institutional-landing-hero-emblem.is-visible .institutional-landing-hero-emblem-float.is-floating { animation: institutional-emblem-float 6.5s ease-in-out var(--float-delay, 0s) infinite; }
+.institutional-landing-hero-emblem-float { aspect-ratio: 1; background: #fff; }
+.institutional-landing-hero-emblem.is-visible .institutional-landing-hero-emblem-float.is-floating { animation: institutional-emblem-float 6.5s var(--landing-ease) var(--float-delay, 0s) infinite; animation-play-state: paused; }
+.institutional-landing-hero[data-in-view="true"] .institutional-landing-hero-emblem-parallax { will-change: transform; }
+.institutional-landing-hero[data-in-view="true"] .institutional-landing-hero-emblem.is-visible .institutional-landing-hero-emblem-float.is-floating { animation-play-state: running; will-change: transform; }
 .institutional-landing-emblem-image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .institutional-landing-emblem-ecmc { display: block; }
 
@@ -2120,7 +2125,7 @@ body {
   font-size: 16px;
   font-weight: 750;
   cursor: pointer;
-  transition: transform 160ms var(--landing-ease), background-color 160ms ease;
+  transition: transform 350ms var(--landing-ease);
 }
 
 .institutional-landing-school-button:hover { transform: translateY(-2px); background-color: color-mix(in srgb, var(--school-ink) 88%, #000); }
@@ -2143,11 +2148,10 @@ body {
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--school-wash);
-  filter: blur(2px);
 }
 
 .institutional-landing-school-emblem-float { display: grid; place-items: center; }
-.institutional-landing.is-done .institutional-landing-school-emblem-float { animation: institutional-emblem-float 6s ease-in-out infinite; }
+.institutional-landing.is-done .institutional-landing-school-emblem-float { animation: institutional-emblem-float 6s var(--landing-ease) infinite; animation-play-state: paused; }
 .institutional-landing-school-emblem-float > .institutional-landing-emblem-image { width: min(360px, 36vw) !important; height: min(360px, 36vw) !important; }
 .institutional-landing-school-emblem-float > .institutional-landing-emblem-ecmc { width: min(320px, 34vw) !important; height: auto; }
 
@@ -2158,7 +2162,7 @@ body {
   color: #303942;
   opacity: 0;
   transform: translateY(12px);
-  transition: opacity 300ms var(--landing-ease), transform 300ms var(--landing-ease);
+  transition: opacity 350ms var(--landing-ease), transform 350ms var(--landing-ease);
 }
 
 .institutional-landing-footer[data-revealed="true"] { opacity: 1; transform: translateY(0); }
@@ -2183,7 +2187,7 @@ body {
 
 .institutional-landing.is-reduced .institutional-landing-hero,
 .institutional-landing.is-reduced .institutional-landing-section-heading,
-.institutional-landing.is-reduced .institutional-landing-school-scene { animation: institutional-reduced-fade 200ms ease both; }
+.institutional-landing.is-reduced .institutional-landing-school-scene { animation: none; }
 
 @keyframes institutional-reduced-fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -2258,12 +2262,15 @@ body {
   .institutional-landing:not(.is-reduced) .institutional-landing-curtain { display: none; }
   .institutional-landing-brand-logo,
   .institutional-landing-hero-emblem,
+  .institutional-landing-hero-emblem-float,
   .institutional-landing-school-emblem-float,
   .institutional-landing-school-button,
   .landing-reveal { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .institutional-landing-hero { transition: none; }
+  .institutional-landing-hero-emblem-parallax { transform: none !important; will-change: auto !important; }
   .institutional-landing.is-reduced .institutional-landing-hero,
   .institutional-landing.is-reduced .institutional-landing-section-heading,
-  .institutional-landing.is-reduced .institutional-landing-school-scene { animation: institutional-reduced-fade 200ms ease both; }
+  .institutional-landing.is-reduced .institutional-landing-school-scene { animation: none; }
   .institutional-landing-footer { opacity: 1; transform: none; transition: none; }
 }
 .portal-app .welcome-seal .school-icon-crop { transform: scale(.9); transform-origin: center; }

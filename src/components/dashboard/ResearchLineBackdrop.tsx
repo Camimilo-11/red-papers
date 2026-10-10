@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef, type RefObject } from 'react';
 import type { OfficialResearchLine } from '../../types';
+import './ResearchLineBackdrop.css';
 
 /**
  * Fondos abstractos del carrusel: un motivo SVG distinto por línea de investigación.
@@ -694,12 +695,51 @@ const MOTIFS: Record<OfficialResearchLine, () => Node> = {
 
 export const RESEARCH_LINE_MOTIFS = MOTIFS;
 
+/** Pause decorative motion when its actual animated element is outside the viewport. */
+export function useBackdropMotionVisibility<T extends HTMLElement | SVGSVGElement>(
+  ref: RefObject<T | null>,
+  { enabled = true, transform = false }: { enabled?: boolean; transform?: boolean } = {},
+) {
+  useEffect(() => {
+    const element = ref.current;
+    if (!enabled || !element) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let intersects = false;
+    element.dataset.backgroundMotion = 'true';
+
+    const sync = () => {
+      const running = intersects && !reducedMotion.matches && document.visibilityState === 'visible';
+      element.dataset.motionPaused = String(!running);
+      if (transform) element.style.willChange = running ? 'transform' : 'auto';
+    };
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      intersects = entry.isIntersecting;
+      sync();
+    });
+    if (observer) observer.observe(element);
+    else intersects = true;
+    sync();
+    reducedMotion.addEventListener('change', sync);
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      observer?.disconnect();
+      reducedMotion.removeEventListener('change', sync);
+      document.removeEventListener('visibilitychange', sync);
+      if (transform) element.style.removeProperty('will-change');
+    };
+  }, [enabled, ref, transform]);
+}
 /** Motivo decorativo de una línea. Es puramente visual: no recibe foco ni se anuncia. */
 export function ResearchLineBackdrop({ researchLine }: { researchLine: OfficialResearchLine }) {
+  const backdrop = useRef<SVGSVGElement>(null);
+  useBackdropMotionVisibility(backdrop);
   const Motif = MOTIFS[researchLine];
   return (
     <svg
-      className="featured-paper-backdrop"
+      ref={backdrop}
+      className="featured-paper-backdrop research-line-backdrop"
+      data-background-motion="true"
+      data-motion-paused="true"
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="xMaxYMid slice"
       aria-hidden="true"

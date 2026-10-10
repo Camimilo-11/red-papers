@@ -1,32 +1,32 @@
 import type { SchoolConfig } from '../constants/schools';
-import ecaa from './schools/ecaa.jpg';
-import ecbi from './schools/ecbi.jpg';
-import ecfn from './schools/ecfn.jpg';
-import ectea from './schools/ectea.jpg';
-import ecmc from './schools/ecmc.jpg';
-import ecqi from './schools/ecqi.jpg';
-import ytlc from './schools/ytlc.jpg';
 
-/** High-resolution school marks used by the public institutional pages. */
+const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+
+/** One source for the original school marks, resized and compressed for the web. */
 export const SCHOOL_LOGOS: Record<SchoolConfig['code'], string> = {
-  ECIAA: ecaa,
-  ECBI: ecbi,
-  ECFN: ecfn,
-  ECTEA: ectea,
-  ECMC: ecmc,
-  ECQI: ecqi,
-  YTLC: ytlc,
+  ECIAA: publicAsset('logos/ecaa.webp'),
+  ECBI: publicAsset('logos/ecbi.webp'),
+  ECFN: publicAsset('logos/ecfn.webp'),
+  ECTEA: publicAsset('logos/ectea.webp'),
+  ECMC: publicAsset('logos/ecmc.webp'),
+  ECQI: publicAsset('logos/ecqi.webp'),
+  YTLC: publicAsset('logos/ytlc.webp'),
 };
 
+const institutionalImages = [...Object.values(SCHOOL_LOGOS), publicAsset('assets/yachay-logo-clean.svg')];
+// Retain the decoded images so the intro, school navigation and slides share the cache.
+const decodedImages = new Map<string, HTMLImageElement>();
 let schoolLogosDecoded: Promise<boolean> | undefined;
 
-/** Resolve only after each school mark is available for an uninterrupted slide swap. */
-export function ensureSchoolLogosDecoded() {
-  schoolLogosDecoded ??= Promise.all(Object.values(SCHOOL_LOGOS).map(async (src) => {
+/** Starts once in main.tsx, before React renders the 1.5-second intro. */
+export function ensureSchoolLogosDecoded(): Promise<boolean> {
+  schoolLogosDecoded ??= Promise.all(institutionalImages.map(async (src) => {
     const image = new Image();
     image.decoding = 'async';
+    image.fetchPriority = 'high';
     image.src = src;
     await image.decode();
+    decodedImages.set(src, image);
   })).then(() => true).catch(() => false);
 
   return schoolLogosDecoded;

@@ -2,30 +2,31 @@ import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { SCHOOLS, type SchoolConfig } from '../../constants/schools';
 import { YachayLogo } from './SchoolLogo';
-
-const SCHOOL_SELECTOR_LOGOS: Record<SchoolConfig['code'], string> = {
-  ECIAA: new URL('../../assets/schools/ecaa.jpg', import.meta.url).href,
-  ECBI: new URL('../../assets/schools/ecbi.jpg', import.meta.url).href,
-  ECFN: new URL('../../assets/schools/ecfn.jpg', import.meta.url).href,
-  ECTEA: new URL('../../assets/schools/ectea.jpg', import.meta.url).href,
-  ECMC: new URL('../../assets/schools/ecmc.jpg', import.meta.url).href,
-  ECQI: new URL('../../assets/schools/ecqi.jpg', import.meta.url).href,
-  YTLC: new URL('../../assets/schools/ytlc.jpg', import.meta.url).href,
-};
+import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 
 function SchoolSelectorMark({ school }: { school: SchoolConfig }) {
   return (
     <img
       className="school-selector-mark"
-      src={SCHOOL_SELECTOR_LOGOS[school.code]}
+      src={SCHOOL_LOGOS[school.code]}
       alt=""
+      width={76}
+      height={76}
       draggable={false}
-      style={{ width: 76, height: 76, objectFit: 'contain', mixBlendMode: 'multiply' }}
+      style={{ width: 76, height: 76, aspectRatio: '1', flexShrink: 0, objectFit: 'contain', backgroundColor: '#fff' }}
     />
   );
 }
 
 export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
+  const [logosReady, setLogosReady] = React.useState(false);
+
+  React.useEffect(() => {
+    let mounted = true;
+    void ensureSchoolLogosDecoded().then((ready) => { if (mounted) setLogosReady(ready); });
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div className="school-selector-page">
       <header className="school-selector-header">
@@ -40,7 +41,7 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
         <h1>Seleccione su escuela</h1>
         <p className="school-selector-intro">Consulte publicaciones, proyectos y líneas de investigación de la comunidad académica.</p>
 
-        <section className="school-selector-grid" aria-label="Escuelas disponibles">
+        <section className="school-selector-grid" aria-label="Escuelas disponibles" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}>
           {SCHOOLS.map((school) => (
             <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--accent': `color-mix(in srgb, ${school.accent} 45%, #292522)` } as React.CSSProperties}>
               <div className="school-selector-logo"><SchoolSelectorMark school={school} /></div>

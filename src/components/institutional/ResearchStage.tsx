@@ -1,12 +1,10 @@
-import React, { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring } from 'motion/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
 import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
-import { RESEARCH_LINE_MOTIFS } from '../dashboard/ResearchLineBackdrop';
+import { RESEARCH_LINE_MOTIFS, useBackdropMotionVisibility } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
-// The tracing engine uses the same per-line timeline; each school gets its own
-// 130svh scroll scene, with its research lines distributed through that scene.
 export const STAGE_RESEARCH_LINES: Record<SchoolCode, readonly OfficialResearchLine[]> = {
   ECIAA: ['Ciencias Agrícolas', 'Investigación del mercado de productos agroindustriales'],
   ECBI: ['Ecología, evolución y conservación de ecosistemas terrestres', 'Biomedicina'],
@@ -32,22 +30,7 @@ export function getStageState(value: number) {
   const activeIndex = current;
   return { progress, activeIndex };
 }
-// The same entry curve is used for words, fills and the circular school reveal.
-// CSS handles cubic-bezier(.22, 1, .36, 1); these are its sampled scroll values.
-function entryEase(x: number) {
-  const target = clamp(x);
-  let low = 0, high = 1;
-  for (let i = 0; i < 12; i++) {
-    const t = (low + high) / 2;
-    const bx = 3 * (1 - t) ** 2 * t * 0.22 + 3 * (1 - t) * t ** 2 * 0.36 + t ** 3;
-    if (bx < target) low = t; else high = t;
-  }
-  const t = (low + high) / 2;
-  return 1 - (1 - t) ** 3;
-}
-type ActiveSlide = { school: SchoolConfig; index: number };
 const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
-const slideForIndex = (index: number): ActiveSlide => ({ school: STAGE_PLANES[index].school, index });
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
@@ -57,144 +40,124 @@ function Emblem({ school }: { school: SchoolConfig }) {
   return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} />;
 }
 
-/** Geometry stays in ResearchLineBackdrop. Only its tracing attributes change here. */
-const TracedMotif = memo(function TracedMotif({ line }: { line: OfficialResearchLine }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const Motif = RESEARCH_LINE_MOTIFS[line];
-  useLayoutEffect(() => {
-    const shapes = svgRef.current?.querySelectorAll<SVGElement>('path, circle, ellipse, rect, polyline, polygon, line');
-    shapes?.forEach((shape, index) => {
-      // StrictMode runs layout effects twice: retain the source fill, not its animated value.
-      if (shape.dataset.trace === 'true') return;
-      const original = getComputedStyle(shape);
-      const sourceFill = original.fill;
-      const sourceFillOpacity = original.fillOpacity;
-      shape.setAttribute('pathLength', '1');
-      shape.dataset.trace = 'true';
-      shape.style.setProperty('--trace-delay', String((index / Math.max(1, shapes.length - 1)) * 0.28));
-      if (sourceFill !== 'none') {
-        shape.dataset.filled = 'true';
-        shape.style.setProperty('--original-fill-opacity', sourceFillOpacity);
-      }
-    });
-  }, [line]);
-  return (
-    <svg ref={svgRef} className="research-stage-svg" viewBox="170 -30 510 430" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-      <Motif />
-    </svg>
-  );
-});
 
-function ShotArt({ index, progress, preview = false, selected = false, selectedToken = 0, frozen = false }: { index: number; progress: MotionValue<number>; preview?: boolean; selected?: boolean; selectedToken?: number; frozen?: boolean }) {
-  const root = useRef<HTMLDivElement>(null);
-  const selectedRef = useRef(selected);
-  selectedRef.current = selected;
-  const plane = STAGE_PLANES[index];
-  const schoolChange = index > 0 && STAGE_PLANES[index - 1].school.code !== plane.school.code;
-  const update = (value: number) => {
-    const node = root.current;
-    if (!node || selectedRef.current) return;
-    if (frozen) {
-      node.style.setProperty('--plane-opacity', '1');
-      node.style.setProperty('--plane-draw', '1');
-      node.style.setProperty('--wash-opacity', '.1');
-      node.style.setProperty('--wash-radius', '150%');
-      return;
-    }
-    if (preview) {
-      node.style.setProperty('--plane-opacity', '.27');
-      node.style.setProperty('--plane-draw', '1');
-      node.style.setProperty('--wash-opacity', '0');
-      return;
-    }
-    const p = clamp(value - index * STAGE_TIMING.step);
-    const entered = value >= index * STAGE_TIMING.step;
-    const exit = index === STAGE_PLANES.length - 1 ? 0 : clamp((p - 0.75) / 0.25);
-    node.dataset.planeProgress = p.toFixed(4);
-    node.style.setProperty('--plane-opacity', String(entered ? 1 - exit : 0));
-    node.style.setProperty('--plane-draw', String(clamp(p / 0.35)));
-    node.style.setProperty('--wash-opacity', String(index === 0 ? 0.1 : 0.1 * clamp(p / STAGE_TIMING.overlap)));
-    node.style.setProperty('--wash-radius', schoolChange ? `${entryEase(p / 0.22) * 150}%` : '150%');
-  };
-  useLayoutEffect(() => {
-    if (selected) {
-      root.current?.style.setProperty('--plane-opacity', '1');
-      root.current?.style.setProperty('--plane-draw', '0');
-      root.current?.style.setProperty('--wash-opacity', '.1');
-      return;
-    }
-    update(progress.get());
-  }, [index, progress, selected, preview, frozen]);
-  useMotionValueEvent(progress, 'change', update);
-  useEffect(() => {
-    if (!selected) return;
-    const node = root.current;
-    if (!node) return;
-    let frame = 0;
-    const startedAt = performance.now();
-    const draw = (now: number) => {
-      const amount = clamp((now - startedAt) / STAGE_TIMING.drawMs);
-      node.style.setProperty('--plane-draw', String(amount));
-      if (amount < 1) frame = requestAnimationFrame(draw);
+const ease = cubicBezier(.22, 1, .36, 1);
+const FADE = .12;
+const motifCache = new Map<number, SVGSVGElement>();
+
+// Build detached SVG templates from the existing, stateless motif elements.
+// Preparation runs in small tasks during the intro, never in a scroll callback.
+const svgAttributes: Record<string, string> = { className: 'class', strokeWidth: 'stroke-width', strokeLinecap: 'stroke-linecap', strokeLinejoin: 'stroke-linejoin', fillOpacity: 'fill-opacity', strokeOpacity: 'stroke-opacity', strokeDasharray: 'stroke-dasharray', strokeDashoffset: 'stroke-dashoffset', vectorEffect: 'vector-effect' };
+function appendGeometry(node: React.ReactNode, parent: SVGElement) {
+  if (Array.isArray(node)) { node.forEach((child) => appendGeometry(child, parent)); return; }
+  if (!React.isValidElement<Record<string, unknown>>(node)) return;
+  const { children, ...attributes } = node.props;
+  if (node.type === React.Fragment) { appendGeometry(children as React.ReactNode, parent); return; }
+  if (typeof node.type === 'function') {
+    appendGeometry((node.type as (props: Record<string, unknown>) => React.ReactNode)(node.props), parent);
+    return;
+  }
+  if (typeof node.type !== 'string') return;
+  const element = document.createElementNS('http://www.w3.org/2000/svg', node.type);
+  Object.entries(attributes).forEach(([key, value]) => {
+    if (value === undefined || value === null || key === 'ref') return;
+    if (key === 'style') Object.assign(element.style, value);
+    else element.setAttribute(svgAttributes[key] ?? key, String(value));
+  });
+  appendGeometry(children as React.ReactNode, element);
+  parent.append(element);
+}
+let motifsReady: Promise<void> | undefined;
+function prepareMotifs() {
+  motifsReady ??= new Promise<void>((resolve) => {
+    let index = 0;
+    const prepareNext = () => {
+      const Motif = RESEARCH_LINE_MOTIFS[STAGE_PLANES[index].line];
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('research-stage-svg');
+      svg.setAttribute('viewBox', '170 -30 510 430');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('focusable', 'false');
+      appendGeometry(<Motif />, svg);
+      motifCache.set(index++, svg);
+      if (index < STAGE_PLANES.length) window.setTimeout(prepareNext, 0);
+      else resolve();
     };
-    frame = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(frame);
-  }, [index, selected, selectedToken]);
-  return (
-    <div ref={root} className={`research-stage-shot-art ${schoolChange ? 'is-school-change' : ''} ${preview ? 'is-preview' : ''} ${selected ? 'is-selected-draw' : ''}`} data-school={plane.school.code} data-plane-index={index} style={{ ...schoolStyle(plane.school), zIndex: STAGE_PLANES.length - index }} aria-hidden="true">
-      <div className="research-stage-wash-parallax"><div className="research-stage-wash" /></div>
-      <div className="research-stage-motif-camera"><div className="research-stage-motif-ambient"><TracedMotif line={plane.line} /></div></div>
-    </div>
-  );
+    window.setTimeout(prepareNext, 0);
+  });
+  return motifsReady;
+}
+function motifFor(index: number) {
+  return motifCache.get(index)!.cloneNode(true) as SVGSVGElement;
 }
 
-function StageSlide({ slide, isActive, progress, previewIndex, drawRequest, onSelectLine, onPreviewLine, onSelectSchool }: {
-  slide: ActiveSlide;
-  isActive: boolean;
-  progress: MotionValue<number>;
-  previewIndex: number | null;
-  drawRequest: { index: number; token: number } | null;
+function slideOpacity(value: number, index: number) {
+  const local = value - index;
+  const enter = index === 0 ? 1 : ease(clamp((local + FADE) / (FADE * 2)));
+  const exit = index === STAGE_PLANES.length - 1 ? 1 : 1 - ease(clamp((local - 1 + FADE) / (FADE * 2)));
+  return enter * exit;
+}
+
+function StageSlide({ index, timeline, live, registerHost, onSelectLine, onPreviewLine, onSelectSchool }: {
+  index: number;
+  timeline: MotionValue<number>;
+  live: MotionValue<boolean>;
+  registerHost: (index: number, node: HTMLDivElement | null) => void;
   onSelectLine: (school: SchoolConfig, lineIndex: number) => void;
-  onPreviewLine: (index: number | null) => void;
+  onPreviewLine: (index: number) => void;
   onSelectSchool: (school: SchoolConfig) => void;
 }) {
-  const { school, index } = slide;
   const plane = STAGE_PLANES[index];
+  const { school } = plane;
+  const opacity = useTransform(timeline, (value) => slideOpacity(value, index));
+  const y = useTransform(timeline, (value) => (1 - ease(clamp((value - index + FADE) / (FADE * 2)))) * 12 - ease(clamp((value - index - 1 + FADE) / (FADE * 2))) * 12);
+  const drift = useTransform(() => live.get() ? clamp(timeline.get() - index) : 0);
+  const motifX = useTransform(drift, [0, 1], [0, 10]);
+  const motifY = useTransform(drift, [0, 1], [0, -6]);
+  const scale = useTransform(drift, [0, 1], [1, 1.05]);
+  const rotate = useTransform(drift, [0, 1], [0, 4]);
+  const emblemRotate = useTransform(drift, [0, 1], [-3, 3]);
   const words = plane.line.split(' ');
   const highlight = words.findIndex((word) => !/^(de|del|y|e|la|el|en|ciencias|investigación)$/i.test(word));
-  return (
-    <section className={`research-stage-slide ${isActive ? 'is-active' : 'is-leaving'}`} data-school={school.code} style={schoolStyle(school)} aria-hidden={!isActive} inert={!isActive}>
-      <div className="research-stage-art" aria-hidden="true">
-        <ShotArt index={index} progress={progress} selected={drawRequest?.index === index} selectedToken={drawRequest?.token ?? 0} frozen={!isActive} />
-        {isActive && previewIndex !== null && previewIndex !== index && <ShotArt index={previewIndex} progress={progress} preview key={`preview-${previewIndex}`} />}
+
+  return <motion.section className="research-stage-slide" data-school={school.code} data-slide-index={index} style={{ ...schoolStyle(school), opacity, y }} aria-hidden={index !== 0} inert={index !== 0}>
+    <div className="research-stage-art" aria-hidden="true">
+      <div className="research-stage-shot-art">
+        <div className="research-stage-wash-parallax"><div className="research-stage-wash" /></div>
+        <motion.div className="research-stage-motif-camera" style={{ x: motifX, y: motifY, scale, rotate }}>
+          <div className="research-stage-motif-ambient" ref={(node) => registerHost(index, node)} />
+        </motion.div>
       </div>
-      <div className="research-stage-slide-emblem" aria-hidden="true"><Emblem school={school} /></div>
-      <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
-        <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageLinesFor(school).length).padStart(2, '0')}</span></p>
-        <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
-          {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
-        </h2>
-        <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${school.name}`}>
-        {stageLinesFor(plane.school).map((line, lineIndex) => {
-          const planeIndex = STAGE_PLANES.findIndex((item) => item.school.code === plane.school.code && item.line === line);
-          return <button
-            key={line}
-            type="button"
-            className={plane.lineIndex === lineIndex ? 'is-active' : ''}
-            aria-label={`Mostrar ${line}`}
-            aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
-            onClick={() => onSelectLine(plane.school, lineIndex)}
-            onPointerEnter={(event) => { if (event.pointerType === 'mouse') onPreviewLine(planeIndex); }}
-            onPointerLeave={() => onPreviewLine(null)}
-          ><span aria-hidden="true" /></button>;
-        })}
-        </nav>
-      </div>
-      <div className="research-stage-bottom">
-        <button type="button" onClick={() => onSelectSchool(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
-      </div>
-    </section>
-  );
+    </div>
+    <motion.div className="research-stage-slide-emblem" style={{ rotate: emblemRotate }} aria-hidden="true"><Emblem school={school} /></motion.div>
+    <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
+      <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageLinesFor(school).length).padStart(2, '0')}</span></p>
+      <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
+        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
+      </h2>
+      <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${school.name}`}>
+        {stageLinesFor(school).map((line, lineIndex) => <button key={line} type="button" className={plane.lineIndex === lineIndex ? 'is-active' : ''} aria-label={`Mostrar ${line}`} aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
+          onClick={() => onSelectLine(school, lineIndex)}
+          onPointerEnter={(event) => { if (event.pointerType === 'mouse') onPreviewLine(SCHOOL_LINE_OFFSETS[SCHOOLS.indexOf(school)] + lineIndex); }}
+          onPointerLeave={() => onPreviewLine(-1)}><span aria-hidden="true" /></button>)}
+      </nav>
+    </div>
+    <div className="research-stage-bottom"><button type="button" onClick={() => onSelectSchool(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button></div>
+  </motion.section>;
+}
+
+function SchoolNavigationItem({ school, schoolIndex, timeline, jump }: {
+  school: SchoolConfig; schoolIndex: number; timeline: MotionValue<number>;
+  jump: (school: SchoolConfig, lineIndex?: number) => void;
+}) {
+  const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageLinesFor(school).length));
+  return <li data-school={school.code} style={schoolStyle(school)}>
+    <button className="research-stage-school-button" type="button" data-school-index={schoolIndex} aria-label={`Ir a ${school.name}`} aria-current={schoolIndex === 0 ? 'step' : undefined} onClick={() => jump(school)}>
+      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{displaySchoolCode(school)}</small>
+      <motion.span className="research-stage-school-fill" style={{ scaleX: fill }} aria-hidden="true" />
+    </button>
+  </li>;
 }
 
 function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: SchoolConfig) => void; reduced?: boolean }) {
@@ -221,220 +184,178 @@ function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: Schoo
   );
 }
 
-function AnimatedStage({ onSelect, logosReady }: { onSelect: (school: SchoolConfig) => void; logosReady: boolean }) {
+
+function AnimatedStage({ onSelect, logosReady, scrollY }: { onSelect: (school: SchoolConfig) => void; logosReady: boolean; scrollY: MotionValue<number> }) {
   const track = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const rail = useRef<HTMLElement>(null);
-  const geometry = useRef({ start: 0, unit: 1 });
-  const transitionTimer = useRef<number | null>(null);
-  const drawTimer = useRef<number | null>(null);
-  const pendingIndex = useRef<number | null>(null);
-  const drawToken = useRef(0);
-  const initialSync = useRef(true);
-  const target = useMotionValue(0);
-  const progress = useSpring(target, { stiffness: 120, damping: 30, mass: 1, restDelta: 0.0001, restSpeed: 0.0001 });
-  const [activeSlide, setActiveSlide] = useState<ActiveSlide>(() => slideForIndex(0));
-  const activeSlideRef = useRef(activeSlide);
-  const [outgoingSlide, setOutgoingSlide] = useState<ActiveSlide | null>(null);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [drawRequest, setDrawRequest] = useState<{ index: number; token: number } | null>(null);
+  const previewHost = useRef<HTMLDivElement>(null);
+  const hosts = useRef(new Map<number, HTMLDivElement>());
+  const attached = useRef(new Set<number>());
+  const currentIndex = useRef(-1);
+  const activeSlide = useRef({ school: STAGE_PLANES[0].school, index: 0 });
+  const start = useMotionValue(0);
+  const unit = useMotionValue(1);
+  const live = useMotionValue(false);
+  const preview = useMotionValue(-1);
+  const navigationOpacity = useMotionValue(1);
+  const navigationY = useMotionValue(0);
+  const navigationAnimation = useRef<ReturnType<typeof animate>[]>([]);
+  const timeline = useTransform(() => clamp((scrollY.get() - start.get()) / unit.get() * 2, 0, STAGE_PLANES.length - .001));
+  const previewOpacity = useTransform(preview, (index) => index < 0 ? 0 : .27);
+  const hintOpacity = useTransform(timeline, [0, .06], [1, 0]);
+  const hintY = useTransform(timeline, [0, .06], [0, 8]);
+  useBackdropMotionVisibility(scene, { enabled: logosReady });
 
-  const activateSlide = (index: number) => {
-    const next = slideForIndex(clamp(index, 0, STAGE_PLANES.length - 1));
-    const previous = activeSlideRef.current;
-    if (previous.index === next.index) return;
-    activeSlideRef.current = next;
-    setActiveSlide(next);
-    setOutgoingSlide(previous);
-    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
-    transitionTimer.current = window.setTimeout(() => {
-      setOutgoingSlide((current) => current?.index === previous.index ? null : current);
-      transitionTimer.current = null;
-    }, 350);
+  const registerHost = (index: number, node: HTMLDivElement | null) => {
+    if (node) hosts.current.set(index, node);
+    else hosts.current.delete(index);
   };
 
-  const requestDraw = (index: number) => {
-    const request = { index, token: ++drawToken.current };
-    setDrawRequest(request);
-    if (drawTimer.current !== null) window.clearTimeout(drawTimer.current);
-    drawTimer.current = window.setTimeout(() => {
-      setDrawRequest((current) => current?.token === request.token ? null : current);
-      drawTimer.current = null;
-    }, STAGE_TIMING.drawMs);
+  const sync = (value: number) => {
+    if (!logosReady || motifCache.size !== STAGE_PLANES.length) return;
+    const index = clamp(Math.floor(value), 0, STAGE_PLANES.length - 1);
+    const hovered = preview.get();
+    const candidates = hovered >= 0 && hovered !== index
+      ? [index]
+      : Array.from(new Set([clamp(Math.floor(value - FADE), 0, STAGE_PLANES.length - 1), clamp(Math.floor(value + FADE), 0, STAGE_PLANES.length - 1)]));
+    // Remove first: even rapid jumps never leave a third motif mounted.
+    attached.current.forEach((previous) => {
+      if (!candidates.includes(previous)) {
+        const host = hosts.current.get(previous);
+        host?.replaceChildren();
+        host?.parentElement?.style.removeProperty('will-change');
+        attached.current.delete(previous);
+      }
+    });
+    if (previewHost.current && (hovered < 0 || hovered === index)) {
+      previewHost.current.replaceChildren();
+      delete previewHost.current.dataset.index;
+    }
+    candidates.forEach((next) => {
+      const host = hosts.current.get(next);
+      if (host && !attached.current.has(next)) {
+        host.append(motifFor(next));
+        attached.current.add(next);
+      }
+      if (host?.parentElement) host.parentElement.style.willChange = live.get() ? 'transform' : 'auto';
+    });
+    if (hovered >= 0 && hovered !== index && previewHost.current?.dataset.index !== String(hovered)) {
+      previewHost.current?.replaceChildren(motifFor(hovered));
+      if (previewHost.current) previewHost.current.dataset.index = String(hovered);
+    }
+    if (hovered < 0 && previewHost.current) delete previewHost.current.dataset.index;
+
+    if (currentIndex.current === index) return;
+    currentIndex.current = index;
+    activeSlide.current = { school: STAGE_PLANES[index].school, index };
+    if (scene.current) {
+      scene.current.dataset.school = activeSlide.current.school.code;
+      scene.current.style.setProperty('--school-accent', activeSlide.current.school.accent);
+      scene.current.style.setProperty('--school-ink', `color-mix(in srgb, ${activeSlide.current.school.accent} 42%, #111820)`);
+    }
+    const focusedSlide = document.activeElement?.closest('[data-slide-index]');
+    const focusedLine = document.activeElement?.closest('.research-stage-line-selector');
+    if (focusedSlide && Number((focusedSlide as HTMLElement).dataset.slideIndex) !== index) {
+      const destination = scene.current?.querySelector<HTMLElement>(`[data-slide-index="${index}"]`);
+      if (destination) {
+        destination.inert = false;
+        destination.querySelector<HTMLButtonElement>(focusedLine ? '.research-stage-line-selector .is-active' : '.research-stage-bottom button')?.focus({ preventScroll: true });
+      }
+    }
+    scene.current?.querySelectorAll<HTMLElement>('[data-slide-index]').forEach((element) => {
+      const active = Number(element.dataset.slideIndex) === index;
+      element.inert = !active;
+      element.setAttribute('aria-hidden', String(!active));
+      element.classList.toggle('is-active', active);
+    });
+    rail.current?.querySelectorAll<HTMLButtonElement>('[data-school-index]').forEach((button) => {
+      const active = SCHOOLS[Number(button.dataset.schoolIndex)].code === activeSlide.current.school.code;
+      button.closest('li')?.classList.toggle('is-active', active);
+      if (active) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
+    });
   };
+  useMotionValueEvent(timeline, 'change', sync);
+  useMotionValueEvent(preview, 'change', () => sync(timeline.get()));
+  useMotionValueEvent(live, 'change', () => sync(timeline.get()));
 
   useEffect(() => {
-    let frame = 0;
-    let disposed = false;
-    const update = () => {
-      frame = 0;
-      if (disposed || !track.current) return;
-      const sceneOffset = clamp((window.scrollY - geometry.current.start) / geometry.current.unit, 0, SCHOOLS.length);
-      const sceneIndex = Math.min(SCHOOLS.length - 1, Math.floor(sceneOffset));
-      const localProgress = clamp(sceneOffset - sceneIndex);
-      const school = SCHOOLS[sceneIndex];
-      const value = clamp((SCHOOL_LINE_OFFSETS[sceneIndex] + localProgress * stageLinesFor(school).length) * STAGE_TIMING.step, 0, TOTAL_UNITS);
-      target.set(value);
-      if (initialSync.current) {
-        initialSync.current = false;
-        const initialSlide = slideForIndex(getStageState(value).activeIndex);
-        activeSlideRef.current = initialSlide;
-        setActiveSlide(initialSlide);
-        progress.jump(value);
-      }
-      if (scene.current) scene.current.dataset.scrolled = String(sceneOffset > 0.02);
-    };
-    const scheduleUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
     const measure = () => {
-      if (disposed || !track.current) return;
-      const header = parseFloat(getComputedStyle(track.current).getPropertyValue('--landing-header-height')) || 86;
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const unit = viewportHeight * STAGE_TIMING.sceneVh / 100;
-      track.current.style.setProperty('--stage-scroll-length', `${unit * SCHOOLS.length}px`);
-      track.current.querySelectorAll<HTMLElement>('[data-snap-position]').forEach((marker) => {
-        marker.style.top = `${Number(marker.dataset.snapPosition) * unit}px`;
-      });
-      geometry.current = { start: track.current.getBoundingClientRect().top + window.scrollY - header, unit };
-      scheduleUpdate();
+      if (!track.current || !scene.current) return;
+      const header = parseFloat(getComputedStyle(scene.current).top) || 0;
+      start.set(track.current.getBoundingClientRect().top + window.scrollY - header);
+      unit.set((track.current.clientHeight - scene.current.clientHeight) / SCHOOLS.length);
     };
-    const clearPending = () => { pendingIndex.current = null; };
-    measure();
-    document.fonts.ready.then(measure);
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('scrollend', clearPending);
-    window.addEventListener('wheel', clearPending, { passive: true });
-    window.addEventListener('touchstart', clearPending, { passive: true });
+    // The first ResizeObserver delivery measures after the browser has laid out the page.
+    const resize = new ResizeObserver(measure);
+    if (track.current) resize.observe(track.current);
+    if (scene.current) resize.observe(scene.current);
     window.addEventListener('resize', measure);
-    return () => {
-      disposed = true;
-      cancelAnimationFrame(frame);
-      if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
-      if (drawTimer.current !== null) window.clearTimeout(drawTimer.current);
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('scrollend', clearPending);
-      window.removeEventListener('wheel', clearPending);
-      window.removeEventListener('touchstart', clearPending);
-      window.removeEventListener('resize', measure);
-    };
-  }, [target, progress]);
+    return () => { resize.disconnect(); window.removeEventListener('resize', measure); };
+  }, [start, unit]);
 
-  useMotionValueEvent(progress, 'change', (value) => {
-    const { progress: v, activeIndex } = getStageState(value);
-    const pending = pendingIndex.current;
-    if (pending === null || pending === activeIndex) {
-      pendingIndex.current = null;
-      activateSlide(activeIndex);
-    }
-    if (scene.current) scene.current.dataset.timeline = v.toFixed(4);
-    rail.current?.querySelectorAll<HTMLElement>('[data-school-fill]').forEach((button) => {
-      const index = Number(button.dataset.schoolIndex);
-      const start = SCHOOL_LINE_OFFSETS[index] * STAGE_TIMING.step;
-      const length = stageLinesFor(SCHOOLS[index]).length * STAGE_TIMING.step;
-      button.style.setProperty('--school-progress', String(clamp((v - start) / length)));
-    });
-  });
+  useEffect(() => {
+    let mounted = true;
+    // Fast Refresh can retain readiness while rebuilding this module's SVG cache.
+    void prepareMotifs().then(() => { if (mounted) sync(timeline.get()); });
+    const observer = new IntersectionObserver(([entry]) => live.set(entry.isIntersecting));
+    if (scene.current) observer.observe(scene.current);
+    return () => { mounted = false; observer.disconnect(); navigationAnimation.current.forEach((control) => control.stop()); };
+  }, [logosReady]);
 
-  const jump = (school: SchoolConfig, lineIndex = 0, behavior: ScrollBehavior = 'smooth') => {
-    const index = STAGE_PLANES.findIndex((plane) => plane.school.code === school.code && plane.lineIndex === lineIndex);
-    const schoolIndex = SCHOOLS.findIndex((item) => item.code === school.code);
-    if (index < 0 || schoolIndex < 0) return;
-    const lineCount = stageLinesFor(school).length;
-    const lineOffset = behavior === 'instant' ? lineIndex : lineIndex + 0.5;
-    const value = (SCHOOL_LINE_OFFSETS[schoolIndex] + lineOffset) * STAGE_TIMING.step;
-    const scenePosition = schoolIndex + lineOffset / lineCount;
-    pendingIndex.current = index;
-    activateSlide(index);
-    setHoveredIndex(null);
-    requestDraw(index);
-    target.set(value);
-    window.scrollTo({ top: geometry.current.start + scenePosition * geometry.current.unit, behavior });
-    if (behavior === 'instant') progress.jump(value);
+  const jump = (school: SchoolConfig, lineIndex = 0) => {
+    const schoolIndex = SCHOOLS.indexOf(school);
+    const index = SCHOOL_LINE_OFFSETS[schoolIndex] + lineIndex;
+    preview.set(-1);
+    // Land beyond the blend boundary so a direct jump settles the whole target slide.
+    const target = index + FADE + .001;
+    window.scrollTo({ top: start.get() + target / 2 * unit.get(), behavior: 'instant' });
+    scrollY.set(window.scrollY);
+    sync(target);
+    navigationAnimation.current.forEach((control) => control.stop());
+    navigationOpacity.set(.68);
+    navigationY.set(12);
+    navigationAnimation.current = [animate(navigationOpacity, 1, { duration: .35, ease }), animate(navigationY, 0, { duration: .35, ease })];
   };
-
   const keyboardNavigation = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const targetElement = event.target as HTMLElement;
-    if (targetElement.isContentEditable || targetElement.closest('input, textarea, select')) return;
-    const plane = STAGE_PLANES[activeSlide.index];
-    const currentSchoolIndex = SCHOOLS.findIndex((school) => school.code === activeSlide.school.code);
-    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-      const next = clamp(activeSlide.index + (event.key === 'ArrowRight' ? 1 : -1), 0, STAGE_PLANES.length - 1);
-      if (next !== activeSlide.index) {
-        event.preventDefault();
-        jump(STAGE_PLANES[next].school, STAGE_PLANES[next].lineIndex);
-      }
-      return;
-    }
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      const nextSchoolIndex = clamp(currentSchoolIndex + (event.key === 'PageDown' ? 1 : -1), 0, SCHOOLS.length - 1);
-      if (nextSchoolIndex !== currentSchoolIndex) {
-        event.preventDefault();
-        const nextSchool = SCHOOLS[nextSchoolIndex];
-        jump(nextSchool, Math.min(plane.lineIndex, stageLinesFor(nextSchool).length - 1));
-      }
-      return;
-    }
-    if (event.key === 'Home' || event.key === 'End') {
-      event.preventDefault();
-      const next = event.key === 'Home' ? STAGE_PLANES[0] : STAGE_PLANES[STAGE_PLANES.length - 1];
-      jump(next.school, next.lineIndex);
-    }
+    const element = event.target as HTMLElement;
+    if (element.isContentEditable || element.closest('input, textarea, select')) return;
+    let next = activeSlide.current.index;
+    const schoolIndex = SCHOOLS.indexOf(activeSlide.current.school);
+    if (event.key === 'ArrowRight') next++;
+    else if (event.key === 'ArrowLeft') next--;
+    else if (event.key === 'PageDown') next = SCHOOL_LINE_OFFSETS[Math.min(schoolIndex + 1, SCHOOLS.length - 1)];
+    else if (event.key === 'PageUp') next = SCHOOL_LINE_OFFSETS[Math.max(schoolIndex - 1, 0)];
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = STAGE_PLANES.length - 1;
+    else return;
+    event.preventDefault();
+    const plane = STAGE_PLANES[clamp(next, 0, STAGE_PLANES.length - 1)];
+    jump(plane.school, plane.lineIndex);
   };
 
-  const visibleSlides = outgoingSlide && outgoingSlide.index !== activeSlide.index
-    ? [outgoingSlide, activeSlide]
-    : [activeSlide];
-  const previewIndex = outgoingSlide === null ? hoveredIndex : null;
-
-  return (
-    <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
-      <div className="research-stage-snap-markers" aria-hidden="true">
-        {SCHOOLS.flatMap((school, schoolIndex) => [
-          <span key={`${school.code}-start`} data-school={school.code} data-school-scene data-snap-position={schoolIndex} />,
-          ...stageLinesFor(school).map((line, lineIndex) => {
-            const position = schoolIndex + (lineIndex + 0.5) / stageLinesFor(school).length;
-            return <span key={`${school.code}-${line}`} data-snap-position={position} />;
-          }),
-        ])}
-      </div>
-      <div ref={scene} className="research-stage" data-school={activeSlide.school.code} data-timeline="0" data-scrolled="false" style={schoolStyle(activeSlide.school)} role="region" aria-label="Recorrido por las líneas de investigación" aria-busy={!logosReady}>
-        {logosReady && visibleSlides.map((slide) => <StageSlide
-          key={`${slide.school.code}-${slide.index}`}
-          slide={slide}
-          isActive={slide.index === activeSlide.index}
-          progress={progress}
-          previewIndex={slide.index === activeSlide.index ? previewIndex : null}
-          drawRequest={drawRequest}
-          onSelectLine={(school, lineIndex) => jump(school, lineIndex)}
-          onPreviewLine={setHoveredIndex}
-          onSelectSchool={onSelect}
-        />)}
-        <span className="research-stage-scroll-hint">Desliza <span aria-hidden="true">↓</span></span>
-      </div>
-      {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación">
-        <ol>{SCHOOLS.map((school, index) => (
-          <li key={school.code} data-school={school.code} style={schoolStyle(school)} className={activeSlide.school.code === school.code ? 'is-active' : ''}>
-            <button className="research-stage-school-button" type="button" data-school-fill data-school-index={index} aria-label={`Ir a ${school.name}`} aria-current={activeSlide.school.code === school.code ? 'step' : undefined} onClick={() => jump(school, 0, 'instant')}>
-              <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span>
-              <small>{displaySchoolCode(school)}</small>
-            </button>
-          </li>
-        ))}</ol>
-      </nav>}
-      <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">
-        {STAGE_PLANES.map(({ school, line }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {line}</li>)}
-      </ol>
+  return <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation}>
+    <div ref={scene} className="research-stage" data-school={SCHOOLS[0].code} role="region" aria-label="Recorrido por las líneas de investigación" aria-busy={!logosReady}>
+      {logosReady && <motion.div className="research-stage-slides" style={{ opacity: navigationOpacity, y: navigationY }}>
+        {STAGE_PLANES.map((plane, index) => <StageSlide key={`${plane.school.code}-${index}`} index={index} timeline={timeline} live={live} registerHost={registerHost} onSelectLine={jump} onSelectSchool={onSelect} onPreviewLine={(next) => preview.set(next)} />)}
+        <motion.div className="research-stage-preview research-stage-motif-camera" style={{ opacity: previewOpacity }} aria-hidden="true"><div ref={previewHost} className="research-stage-motif-ambient" /></motion.div>
+      </motion.div>}
+      {logosReady && <motion.span className="research-stage-scroll-hint" style={{ opacity: hintOpacity, x: '-50%', y: hintY }}>Desliza <span aria-hidden="true">↓</span></motion.span>}
     </div>
-  );
+    {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}
+    <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">{STAGE_PLANES.map(({ school, line }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {line}</li>)}</ol>
+  </div>;
 }
 
-export function ResearchStage({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
+export function ResearchStage({ onSelect, scrollY }: { onSelect: (school: SchoolConfig) => void; scrollY: MotionValue<number> }) {
   const reduced = useReducedMotion();
   const [logosReady, setLogosReady] = useState(false);
   useEffect(() => {
     let mounted = true;
-    void ensureSchoolLogosDecoded().then((ready) => { if (mounted) setLogosReady(ready); });
+    void Promise.all([ensureSchoolLogosDecoded(), reduced ? Promise.resolve() : prepareMotifs()]).then(([ready]) => { if (mounted) setLogosReady(ready); });
     return () => { mounted = false; };
   }, []);
-  if (reduced) return <div id="escuelas" aria-busy={!logosReady}>{logosReady ? <SelectionGrid onSelect={onSelect} reduced /> : null}</div>;
-  return <AnimatedStage onSelect={onSelect} logosReady={logosReady} />;
+  if (reduced) return <div id="escuelas" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}><SelectionGrid onSelect={onSelect} reduced /></div>;
+  return <AnimatedStage onSelect={onSelect} logosReady={logosReady} scrollY={scrollY} />;
 }

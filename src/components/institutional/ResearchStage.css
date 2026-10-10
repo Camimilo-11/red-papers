@@ -1,26 +1,21 @@
 /* Scoped to section B; the intro, access screens and portal retain their styles. */
-html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-top: 94px; scroll-behavior: smooth; }
 .research-stage-track { position: relative; height: calc(100svh - var(--landing-header-height) + var(--stage-scroll-length, 910svh)); scroll-margin-top: var(--landing-header-height); }
-.research-stage-snap-markers { position: absolute; inset: 0; pointer-events: none; }
-.research-stage-snap-markers > span { position: absolute; left: 0; width: 1px; height: 1px; opacity: 0; scroll-snap-align: start; scroll-margin-top: var(--landing-header-height); }
 .research-stage { position: sticky; top: var(--landing-header-height); height: calc(100svh - var(--landing-header-height)); min-height: 0; overflow: clip; background: #fff; isolation: isolate; --stage-gutter: max(34px, calc((100vw - 1320px) / 2)); --stage-ease: cubic-bezier(.22, 1, .36, 1); --emblem-left: 63%; --emblem-top: 18%; --emblem-width: clamp(230px, 29vw, 410px); --emblem-height: clamp(250px, 34vw, 460px); }
 .research-stage-art, .research-stage-shot-art { position: absolute; inset: 0; pointer-events: none; }
 .research-stage-art { z-index: 0; }
 .research-stage-shot-art { opacity: var(--plane-opacity, 0); color: var(--school-ink); }
 .research-stage-shot-art.is-preview { z-index: 8 !important; }
 .research-stage-shot-art.is-selected-draw { z-index: 9 !important; }
-.research-stage-wash-parallax { position: absolute; inset: 0; clip-path: circle(var(--wash-radius, 150%) at calc(var(--emblem-left) + var(--emblem-width) / 2) calc(var(--emblem-top) + var(--emblem-height) / 2)); }
+.research-stage-wash-parallax { position: absolute; inset: 0;  }
 .research-stage-wash { position: absolute; width: min(105vw, 1380px); aspect-ratio: 1; left: 34%; top: -28%; border-radius: 50%; background: var(--school-accent); opacity: var(--wash-opacity, .1); }
 .research-stage-motif-camera { position: absolute; width: 122%; height: 136%; left: -11%; top: -18%; opacity: .42; }
 .research-stage-motif-ambient { width: 100%; height: 100%; }
 .research-stage-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.research-stage-svg [data-trace] { --shape-progress: clamp(0, calc((var(--plane-draw, 0) - var(--trace-delay, 0)) / (1 - var(--trace-delay, 0))), 1); stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--shape-progress)); stroke-width: .65; }
-.research-stage-svg [data-filled] { fill-opacity: calc(var(--original-fill-opacity, 1) * var(--shape-progress)); }
-.research-stage-emblems { position: absolute; inset: 0; z-index: 7; mix-blend-mode: multiply; }
+.research-stage-emblems { position: absolute; inset: 0; z-index: 7;  }
 .research-stage-emblem-camera { position: absolute; width: var(--emblem-width); height: var(--emblem-height); left: var(--emblem-left); top: var(--emblem-top); }
 .research-stage-emblem-ambient { width: 100%; height: 100%; }
 .research-stage-emblem-ambient img, .research-stage-card-emblem img { width: 100%; height: 100%; object-fit: contain; }
-.research-stage-emblem-ambient img { will-change: opacity; }
+
 .research-stage-eyebrow { position: absolute; z-index: 3; top: 19%; left: var(--stage-gutter); margin: 0; color: #40474d; font-size: 12px; font-weight: 800; letter-spacing: .17em; }
 .research-stage-copy-stack { position: absolute; left: var(--stage-gutter); top: 24%; width: min(850px, 69%); height: auto; max-height: 68%; z-index: 4; pointer-events: none; }
 .research-stage-copy-stack::before { content: ''; position: absolute; z-index: -1; inset: -30px -80px -22px -20px; background: linear-gradient(90deg, #fff 0%, rgb(255 255 255 / 96%) 60%, rgb(255 255 255 / 0%) 100%); pointer-events: none; }
@@ -29,21 +24,21 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 .research-stage-shot-copy h2 .is-accent { color: var(--school-ink); }
 .research-stage-line-selector { display: flex; gap: 3px; width: max-content; margin-top: 6px; pointer-events: auto; }
 .research-stage-line-selector button { display: grid; width: 44px; min-height: 44px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.research-stage-line-selector button > span { width: 10px; height: 10px; border: 1.5px solid var(--school-ink); border-radius: 999px; background: #fff; transition: width 160ms var(--stage-ease), background-color 160ms var(--stage-ease), border-color 160ms var(--stage-ease); }
+.research-stage-line-selector button > span { width: 10px; height: 10px; border: 1.5px solid var(--school-ink); border-radius: 999px; background: #fff;  }
 .research-stage-line-selector button:hover > span { background: color-mix(in srgb, var(--school-accent) 25%, #fff); }
 .research-stage-line-selector button.is-active > span { width: 24px; border-color: var(--school-accent); background: var(--school-accent); }
 .research-stage-navigation { position: fixed; z-index: 12; top: calc(var(--landing-header-height) + 7px); left: 50%; width: min(1200px, calc(100vw - 48px)); transform: translateX(-50%); }
 .research-stage-navigation ol { display: flex; justify-content: center; gap: 8px; padding: 0; margin: 0; list-style: none; }
 .research-stage-navigation li { flex: 1 1 0; min-width: 0; }
-.research-stage-school-button { position: relative; display: flex; width: 100%; min-width: 78px; min-height: 54px; align-items: center; justify-content: center; gap: 7px; overflow: hidden; padding: 6px 9px 9px; border: 1px solid #e0e3e5; border-radius: 999px; background: rgb(255 255 255 / 96%); color: #262a2e; cursor: pointer; transition: background-color 180ms var(--stage-ease), border-color 180ms var(--stage-ease), color 180ms var(--stage-ease); }
-.research-stage-school-button::after { content: ''; position: absolute; right: 11px; bottom: 4px; left: 11px; height: 3px; border-radius: 4px; background: var(--school-accent); transform: scaleX(var(--school-progress, 0)); transform-origin: left center; transition: transform 100ms linear; }
+.research-stage-school-button { position: relative; display: flex; width: 100%; min-width: 78px; min-height: 54px; align-items: center; justify-content: center; gap: 7px; overflow: hidden; padding: 6px 9px 9px; border: 1px solid #e0e3e5; border-radius: 999px; background: rgb(255 255 255 / 96%); color: #262a2e; cursor: pointer;  }
+.research-stage-school-button::after { content: ''; position: absolute; right: 11px; bottom: 4px; left: 11px; height: 3px; border-radius: 4px; background: var(--school-accent); transform: scaleX(var(--school-progress, 0)); transform-origin: left center;  }
 .research-stage-navigation .is-active .research-stage-school-button { border-color: var(--school-accent); background: color-mix(in srgb, var(--school-accent) 13%, #fff); color: var(--school-ink); }
-.research-stage-school-emblem { display: grid; width: 26px; height: 26px; flex: 0 0 26px; place-items: center; mix-blend-mode: multiply; }
+.research-stage-school-emblem { display: grid; width: 26px; height: 26px; flex: 0 0 26px; place-items: center;  }
 .research-stage-school-button small { font-size: 11px; font-weight: 800; letter-spacing: .035em; }
 .research-stage-bottom { position: absolute; z-index: 5; left: var(--stage-gutter); bottom: 20px; }
 .research-stage-bottom button { display: inline-flex; min-height: 50px; align-items: center; gap: 18px; padding: 0 18px; border: 1px solid var(--school-ink); border-radius: 4px; background: var(--school-ink); color: #fff; font-size: 15px; font-weight: 750; cursor: pointer; }
 .research-stage-bottom button span { font-size: 20px; }
-.research-stage-scroll-hint { position: absolute; z-index: 5; left: 50%; bottom: 27px; display: inline-flex; align-items: center; gap: 13px; color: #323940; font-size: 17px; font-weight: 700; letter-spacing: .04em; transform: translateX(-50%); transition: opacity 180ms ease, transform 180ms ease; pointer-events: none; }
+.research-stage-scroll-hint { position: absolute; z-index: 5; left: 50%; bottom: 27px; display: inline-flex; align-items: center; gap: 13px; color: #323940; font-size: 17px; font-weight: 700; letter-spacing: .04em; transform: translateX(-50%);  pointer-events: none; }
 .research-stage-scroll-hint span { display: inline-block; font-size: 23px; }
 .research-stage[data-scrolled='true'] .research-stage-scroll-hint { opacity: 0; transform: translate(-50%, 8px); }
 .research-stage button:focus-visible, .research-stage a:focus-visible, .research-stage-navigation button:focus-visible, .research-stage-selection button:focus-visible, .research-stage-selection summary:focus-visible, .research-stage-selection li:focus-visible { outline: 3px solid #17191c; outline-offset: 4px; }
@@ -53,7 +48,7 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 .research-stage-selection > h2 span { color: var(--yt-blue); }
 .research-stage-school-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .research-stage-school-card { position: relative; min-width: 0; border-top: 2px solid var(--school-accent); padding: 28px 22px; background: #fff; scroll-margin-top: calc(var(--landing-header-height) + 24px); }
-.research-stage-card-emblem { width: 52px; height: 60px; margin-bottom: 22px; mix-blend-mode: multiply; }
+.research-stage-card-emblem { width: 52px; height: 60px; margin-bottom: 22px;  }
 .research-stage-school-card > .research-stage-eyebrow { position: static; color: var(--school-ink); }
 .research-stage-school-card h3 { font-size: 22px; font-weight: 650; line-height: 1.25; margin: 12px 0 22px; }
 .research-stage-school-card > button { min-height: 44px; border: 0; background: transparent; color: var(--school-ink); padding: 8px 0; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -73,7 +68,6 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
   .research-stage-school-button small { font-size: 10px; }
 }
 @media (max-width: 768px) {
-  html:has(.research-stage-track) { scroll-padding-top: 80px; }
   .research-stage-track { height: calc(100svh - var(--landing-header-height) + var(--stage-scroll-length, 910svh)); }
   .research-stage { --stage-gutter: 20px; --emblem-left: 30%; --emblem-top: 12%; --emblem-width: 220px; --emblem-height: 230px; }
   .research-stage-motif-camera { width: 145%; height: 82%; left: -22%; top: -1%; opacity: .4; }
@@ -105,7 +99,6 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
   .research-stage-bottom { bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html:has(.research-stage-track) { scroll-snap-type: none; scroll-behavior: auto; }
   .research-stage, .research-stage-track { position: static; height: auto; overflow: visible; }
   .research-stage-track { min-height: 0; }
   .research-stage-navigation { display: none; }
@@ -114,10 +107,8 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 
 /* Keep every visual for a line inside the same keyed school/line slide. */
 .research-stage-slide { position: absolute; inset: 0; z-index: 1; overflow: clip; pointer-events: none; }
-.research-stage-slide.is-active { animation: research-stage-slide-enter 350ms var(--stage-ease) both; }
-.research-stage-slide.is-leaving { z-index: 0; animation: research-stage-slide-exit 350ms var(--stage-ease) both; }
 .research-stage-slide .research-stage-art { z-index: 0; }
-.research-stage-slide-emblem { position: absolute; z-index: 2; left: var(--emblem-left); top: var(--emblem-top); width: var(--emblem-width); height: var(--emblem-height); mix-blend-mode: multiply; }
+.research-stage-slide-emblem { position: absolute; z-index: 2; left: var(--emblem-left); top: var(--emblem-top); width: var(--emblem-width); height: var(--emblem-height); aspect-ratio: 1; background: #fff; }
 .research-stage-slide-emblem img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .research-stage-slide .research-stage-copy-stack { z-index: 4; pointer-events: none; }
 .research-stage-counter { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; color: var(--school-ink); font-size: 14px; font-weight: 800; letter-spacing: .17em; }
@@ -129,14 +120,8 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 .research-stage-slide .research-stage-line-selector button { pointer-events: auto; }
 .research-stage-accessible-lines { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
-@keyframes research-stage-slide-enter {
-  from { opacity: .68; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes research-stage-slide-exit {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-12px); }
-}
+
+
 
 @media (max-width: 1000px) and (min-width: 769px) {
   .research-stage-slide-emblem { left: 67%; width: 260px; height: 300px; }
@@ -148,3 +133,20 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 @media (max-height: 700px) and (max-width: 768px) {
   .research-stage-copy-stack h2 { font-size: 38px; }
 }
+
+/* Scroll geometry is reserved before assets finish decoding. */
+.research-stage-track { height: calc(100svh - var(--landing-header-height) + 910svh); }
+.research-stage-slides { position: absolute; inset: 0; }
+.research-stage-slide { opacity: 0; }
+.research-stage-slide:not(.is-active) .research-stage-line-selector,
+.research-stage-slide:not(.is-active) .research-stage-bottom { pointer-events: none; }
+.research-stage-shot-art { opacity: 1; }
+.research-stage-wash { opacity: .1; }
+.research-stage-svg :is(path, circle, ellipse, rect, polyline, polygon, line) { stroke-width: .65; }
+.research-stage-preview { z-index: 1; pointer-events: none; color: var(--school-ink); }
+.research-stage-school-button::after { content: none; }
+.research-stage-school-fill { position: absolute; right: 11px; bottom: 4px; left: 11px; height: 3px; border-radius: 4px; background: var(--school-accent); transform-origin: left center; }
+.research-stage-school-emblem { aspect-ratio: 1; background: #fff; }
+.research-stage-school-emblem img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.research-stage-card-emblem { aspect-ratio: 1; background: #fff; }
+

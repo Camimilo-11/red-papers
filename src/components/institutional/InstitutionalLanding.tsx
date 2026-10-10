@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { ResearchStage } from './ResearchStage';
@@ -118,6 +119,48 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
   );
 }
 
+function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion }: {
+  school: SchoolConfig;
+  index: number;
+  visible: boolean;
+  scrollY: MotionValue<number>;
+  reducedMotion: boolean;
+}) {
+  const position = emblemPositions[index];
+  const y = useTransform(scrollY, (value) => reducedMotion ? 0 : Math.min(value, window.innerHeight * 1.2) * position.parallax);
+
+  return (
+    <span
+      className={`institutional-landing-hero-emblem ${visible ? 'is-visible' : ''}`}
+      data-school={school.code}
+      style={{
+        left: position.left,
+        top: position.top,
+        '--emblem-rotation': position.rotation,
+        '--emblem-size': `${position.size}px`,
+        '--float-delay': position.floatDelay,
+        '--entry-x': index % 2 === 0 ? '42px' : '-42px',
+        '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg',
+      } as React.CSSProperties}
+    >
+      <motion.span className="institutional-landing-hero-emblem-parallax" style={{ y }}>
+        <span className={`institutional-landing-hero-emblem-float ${visible ? 'is-floating' : ''}`}>
+          <LandingEmblem school={school} size={position.size} />
+        </span>
+      </motion.span>
+    </span>
+  );
+}
+
+// Start the one scroll observer after the first paint, so its initial geometry
+// read does not force layout inside the intro's first animation frame.
+function LandingScrollDriver({ value }: { value: MotionValue<number> }) {
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, 'change', (latest) => value.set(latest));
+  useEffect(() => { value.set(scrollY.get()); }, [scrollY, value]);
+  return null;
+}
+
 export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   const [phase, setPhase] = useState<IntroPhase>(getInitialPhase);
   const [contentVisible, setContentVisible] = useState(phase === 'done' || phase === 'reduced');
@@ -125,11 +168,22 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
     SCHOOLS.map(() => phase === 'done' || phase === 'reduced'),
   );
   const [logosReady, setLogosReady] = useState(false);
-  const [footerRevealed, setFooterRevealed] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const scrollY = useMotionValue(window.scrollY);
+  const [scrollReady, setScrollReady] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const introTimersRef = useRef<number[]>([]);
   const introActiveRef = useRef(phase === 'intro');
+
+  useEffect(() => {
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setScrollReady(true));
+    });
+    return () => { cancelAnimationFrame(firstFrame); cancelAnimationFrame(secondFrame); };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -139,18 +193,24 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
   useEffect(() => {
     const footer = footerRef.current;
-    if (!footer) return;
+    const hero = heroRef.current;
+    if (!footer || !hero) return;
     if (!('IntersectionObserver' in window)) {
-      setFooterRevealed(true);
+      footer.dataset.revealed = 'true';
+      hero.dataset.inView = 'true';
       return;
     }
     const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setFooterRevealed(true);
-        observer.disconnect();
-      }
+      entries.forEach((entry) => {
+        if (entry.target === hero) hero.dataset.inView = String(entry.isIntersecting);
+        if (entry.target === footer && entry.isIntersecting) {
+          footer.dataset.revealed = 'true';
+          observer.unobserve(footer);
+        }
+      });
     }, { threshold: 0.04 });
     observer.observe(footer);
+    observer.observe(hero);
     return () => observer.disconnect();
   }, []);
 
@@ -200,28 +260,6 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    let frame = 0;
-    const updateParallax = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        const scrollY = Math.min(window.scrollY, window.innerHeight * 1.2);
-        rootRef.current?.querySelectorAll<HTMLElement>('[data-parallax-emblem]').forEach((element) => {
-          const speed = Number(element.dataset.parallaxSpeed || '0.04');
-          element.style.setProperty('--parallax-y', `${scrollY * speed}px`);
-        });
-      });
-    };
-
-    updateParallax();
-    window.addEventListener('scroll', updateParallax, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', updateParallax);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
   const introVisible = phase === 'intro' || phase === 'logo' || phase === 'transition';
   const pageClasses = [
     'institutional-landing',
@@ -242,11 +280,14 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         completeIntro();
       }}
     >
+      {scrollReady && <LandingScrollDriver value={scrollY} />}
       <header className="institutional-landing-header" aria-label="Universidad Yachay Tech">
         <span className="institutional-landing-header-space" aria-hidden="true" />
         <img
           className="institutional-landing-brand-logo"
           src="./assets/yachay-logo-clean.svg"
+          width={731}
+          height={252}
           alt="Universidad Yachay Tech"
           draggable={false}
         />
@@ -272,33 +313,11 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         </button>
       )}
 
-      <section className="institutional-landing-hero" aria-labelledby="landing-title">
+      <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
         <div className="institutional-landing-hero-emblems" aria-hidden="true">
-          {SCHOOLS.map((school, index) => {
-            const position = emblemPositions[index];
-            return (
-              <span
-                className={`institutional-landing-hero-emblem ${logosReady && visibleEmblems[index] ? 'is-visible' : ''}`}
-                key={school.code}
-                data-school={school.code}
-                data-parallax-emblem
-                data-parallax-speed={position.parallax}
-                style={{
-                  left: position.left,
-                  top: position.top,
-                  '--emblem-rotation': position.rotation,
-                  '--emblem-size': `${position.size}px`,
-                  '--float-delay': position.floatDelay,
-                  '--entry-x': index % 2 === 0 ? '42px' : '-42px',
-                  '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg',
-                } as React.CSSProperties}
-              >
-                <span className={`institutional-landing-hero-emblem-float ${logosReady ? 'is-floating' : ''}`}>
-                  <LandingEmblem school={school} size={position.size} />
-                </span>
-              </span>
-            );
-          })}
+          {SCHOOLS.map((school, index) => (
+            <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} />
+          ))}
         </div>
 
         <div className="institutional-landing-hero-copy">
@@ -316,15 +335,15 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         </div>
       </section>
 
-      <ResearchStage onSelect={onSelect} />
+      <ResearchStage onSelect={onSelect} scrollY={scrollY} />
 
-      <footer ref={footerRef} className="institutional-landing-footer" data-revealed={footerRevealed} aria-label="Enlaces institucionales">
+      <footer ref={footerRef} className="institutional-landing-footer" data-revealed="false" aria-label="Enlaces institucionales">
         <div className="institutional-landing-footer-ribbon" aria-hidden="true">
           {SCHOOLS.map((school) => <span key={school.code} style={{ backgroundColor: school.accent }} />)}
         </div>
         <div className="institutional-landing-footer-content">
           <div className="institutional-landing-footer-brand">
-            <img src="./assets/yachay-logo-clean.svg" alt="Universidad Yachay Tech" />
+            <img src="./assets/yachay-logo-clean.svg" width={731} height={252} alt="Universidad Yachay Tech" />
             <p>Producción científica y comunidad investigadora en un solo lugar.</p>
           </div>
           {FOOTER_LINK_GROUPS.map((group) => (
