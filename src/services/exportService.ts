@@ -288,16 +288,29 @@ export const exportService = {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return false;
 
+    const profileLink = (field: 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId', label: string, href: string, identifier: string) => {
+      if (!identifier) return '';
+      if (teacher.syntheticAcademicProfileFields?.includes(field)) return `<span>${label} · DEMO · ${escapeHtml(identifier)}</span>`;
+      return `<a href="${escapeHtml(href)}">${label} · ${escapeHtml(identifier)}</a>`;
+    };
     const links = [
       teacher.orcid && `<a href="https://orcid.org/${escapeHtml(teacher.orcid)}">ORCID · ${escapeHtml(teacher.orcid)}</a>`,
-      teacher.googleScholarId && `<a href="https://scholar.google.com/citations?user=${encodeURIComponent(teacher.googleScholarId)}">Google Scholar${teacher.googleScholarHIndex !== undefined ? ` · Índice h ${teacher.googleScholarHIndex}` : ''}</a>`,
-      teacher.scopusAuthorId && `<a href="https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(teacher.scopusAuthorId)}">Scopus · ${escapeHtml(teacher.scopusAuthorId)}</a>`,
-      teacher.webOfScienceId && `<a href="https://www.webofscience.com/wos/author/record/${encodeURIComponent(teacher.webOfScienceId)}">Web of Science · ${escapeHtml(teacher.webOfScienceId)}</a>`,
-      teacher.githubUrl && `<a href="${escapeHtml(teacher.githubUrl)}">GitHub</a>`,
+      teacher.googleScholarId && profileLink('googleScholarId', 'Google Scholar', `https://scholar.google.com/citations?user=${encodeURIComponent(teacher.googleScholarId)}`, teacher.googleScholarId),
+      teacher.scopusAuthorId && profileLink('scopusAuthorId', 'Scopus', `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(teacher.scopusAuthorId)}`, teacher.scopusAuthorId),
+      teacher.webOfScienceId && profileLink('webOfScienceId', 'Web of Science', `https://www.webofscience.com/wos/author/record/${encodeURIComponent(teacher.webOfScienceId)}`, teacher.webOfScienceId),
+      teacher.githubUrl && profileLink('githubUrl', 'GitHub', teacher.githubUrl, teacher.githubUrl),
     ].filter(Boolean).join(' <span>·</span> ');
     const researchLines = teacher.researchLines?.length
       ? teacher.researchLines
       : teacher.researchLine ? [teacher.researchLine] : [];
+    const researchAreasHtml = researchLines.length
+      ? researchLines.map(line => `<p><strong>${escapeHtml(line)}</strong>${teacher.researchSublines?.[line]?.length ? `<br>${teacher.researchSublines[line]?.map(escapeHtml).join(' · ')}` : ''}</p>`).join('')
+      : '<p>No registradas</p>';
+    const externalIndex = (field: 'googleScholarHIndex' | 'scopusHIndex', name: string, value?: number) => {
+      const shownValue = value === undefined ? 'No disponible' : String(value);
+      const demo = teacher.syntheticBibliometricFields?.includes(field) ? ' · DEMO' : '';
+      return `<p><strong>Índice h ${name}:</strong> ${shownValue}${demo}</p>`;
+    };
     const productsHtml = products.length
       ? products.map((product) => `<article class="product">
           <div class="product-meta">${product.type === 'publicacion' ? 'Publicación científica' : 'Proyecto de investigación'} · ${escapeHtml(product.year)}${product.projectStatus ? ` · ${escapeHtml(PROJECT_STATUS_LABELS[product.projectStatus])}` : ''}</div>
@@ -322,8 +335,8 @@ export const exportService = {
         <p>${escapeHtml(teacher.rank)}${teacher.academicDegree ? ` · ${escapeHtml(teacher.academicDegree)}${teacher.academicField ? ` en ${escapeHtml(teacher.academicField)}` : ''}` : ''}</p>
         <p>${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}</p></header>
       <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico de la Escuela de Ciencias Matemáticas y Computacionales.')}</p></section>
-      <section><h2>Áreas de investigación</h2><p>${researchLines.length ? researchLines.map(escapeHtml).join(' · ') : 'No registradas'}</p></section>
-      <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p><p><strong>Índice h de Google Scholar:</strong> ${teacher.googleScholarHIndex ?? 'No registrado'}</p></div></section>
+      <section><h2>Áreas de investigación</h2>${researchAreasHtml}</section>
+      <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p>${externalIndex('googleScholarHIndex', 'Google Scholar', teacher.googleScholarHIndex)}${externalIndex('scopusHIndex', 'Scopus', teacher.scopusHIndex)}</div></section>
       <section><h2>Identificadores y perfiles académicos</h2><p class="links">${links || 'No registrados'}</p></section>
       <section><h2>Producción académica verificada (${products.length})</h2>${productsHtml}</section>
       <div class="footer"><span>Universidad Yachay Tech · Escuela de Ciencias Matemáticas y Computacionales</span><span>Generado ${escapeHtml(generatedAt)}</span></div>

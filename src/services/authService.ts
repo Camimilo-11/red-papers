@@ -1,8 +1,8 @@
 import { resolveRole } from './roleService';
 import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
-import { AcademicDegree, OfficialResearchLine, TeacherUser } from '../types';
+import { AcademicDegree, OfficialResearchLine, TeacherResearchSublines, TeacherUser } from '../types';
 import { storageService } from './storage';
-import { ALLOWED_EMAIL_DOMAIN, OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
+import { ALLOWED_EMAIL_DOMAIN, OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
 
 export interface RegisterFormData {
   name: string;
@@ -26,6 +26,7 @@ export interface TeacherProfileUpdate {
   academicDegree: AcademicDegree;
   academicField?: string;
   researchLines?: OfficialResearchLine[];
+  researchSublines?: TeacherResearchSublines;
   orcid?: string;
   githubUrl?: string;
   googleScholarId?: string;
@@ -266,6 +267,12 @@ export const authService = {
     const rank=data.rank.trim();
     const academicField=data.academicField?.trim();
     const researchLines=[...new Set(data.researchLines||[])];
+    const researchSublines:TeacherResearchSublines={};
+    for(const line of researchLines){
+      const selected=[...new Set(data.researchSublines?.[line]||[])];
+      if(selected.some(subline=>!OFFICIAL_RESEARCH_SUBLINES[line].includes(subline))) return {success:false,error:'Seleccione sublíneas válidas para cada línea de investigación.'};
+      if(selected.length) researchSublines[line]=selected;
+    }
     const orcid=normalizeOrcid(data.orcid);
     const githubUrl=normalizeGithub(data.githubUrl);
     const googleScholarId=normalizeScholarId(data.googleScholarId);
@@ -285,7 +292,10 @@ export const authService = {
     if(data.scopusAuthorId?.trim() && !scopusAuthorId) return {success:false,error:'Ingrese un ID o enlace válido de Scopus.'};
     if(data.webOfScienceId?.trim() && !webOfScienceId) return {success:false,error:'Ingrese un ResearcherID o enlace válido de Web of Science.'};
     if((data.bio?.trim().length || 0)>500) return {success:false,error:'La biografía debe tener 500 caracteres o menos.'};
-    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,profileImage:data.profileImage||undefined,researchLines,researchLine:researchLines[0],orcid,githubUrl,googleScholarId,scopusAuthorId,webOfScienceId,bio:data.bio?.trim()||undefined};
+    const profileIdentifiers={githubUrl,googleScholarId,scopusAuthorId,webOfScienceId};
+    const syntheticAcademicProfileFields=(['githubUrl','googleScholarId','scopusAuthorId','webOfScienceId'] as const)
+      .filter(field=>current.syntheticAcademicProfileFields?.includes(field)&&current[field]===profileIdentifiers[field]);
+    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,profileImage:data.profileImage||undefined,researchLines,researchSublines,researchLine:researchLines[0],orcid,githubUrl,googleScholarId,scopusAuthorId,webOfScienceId,syntheticAcademicProfileFields,bio:data.bio?.trim()||undefined};
     const teachers=storageService.getTeachers();
     const index=teachers.findIndex(t=>t.id===current.id);
     if(index>=0) teachers[index]=updated; else teachers.push(updated);

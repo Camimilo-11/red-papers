@@ -41,8 +41,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
               Directorio e Indicadores por Docente (ECMC)
             </h3>
             <p className="text-xs text-neutral-500">
-              Métricas de productos verificados: publicaciones, proyectos, citas e índice h
-              calculado con los datos de RED PAPERS.
+              Publicaciones, proyectos, citas registradas e índices h reportados por plataformas externas.
             </p>
           </div>
         </div>
@@ -70,7 +69,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
               <th className="py-3 px-4 text-center">Publicaciones</th>
               <th className="py-3 px-4 text-center">Proyectos</th>
               <th className="py-3 px-4 text-center">Citas Totales</th>
-              <th className="py-3 px-4 text-center">Índice h RED PAPERS</th>
+              <th className="py-3 px-4 text-center">Índices h externos</th>
               <th className="py-3 px-6 text-right">Acciones</th>
             </tr>
           </thead>
@@ -134,9 +133,10 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                     {tm.citationsTotal}
                   </td>
 
-                  {/* Índice h */}
-                  <td className="py-4 px-4 text-center font-black text-[#EF4035] tabular-nums text-sm">
-                    {tm.hIndex}
+                  {/* Índices h reportados por las plataformas externas */}
+                  <td className="py-4 px-4 text-center font-semibold text-neutral-800 tabular-nums text-xs">
+                    <span className="teacher-external-index">Scholar: {tm.teacher.googleScholarHIndex ?? '—'}{tm.teacher.syntheticBibliometricFields?.includes('googleScholarHIndex')&&<em className="demo-data-badge">DEMO</em>}</span>
+                    <span className="teacher-external-index">Scopus: {tm.teacher.scopusHIndex ?? '—'}{tm.teacher.syntheticBibliometricFields?.includes('scopusHIndex')&&<em className="demo-data-badge">DEMO</em>}</span>
                   </td>
 
                   {/* Acciones */}

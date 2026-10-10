@@ -86,9 +86,9 @@ src/
    - Verificados: 11 productos = **73% de verificación institucional**.
    - Seguimiento: se incluyen informes sintéticos de avance y cierre para demostrar el flujo del Comité Científico.
    - Citas Totales: **182 citas** en publicaciones verificadas.
-   - Índice h Institucional ECMC: **h = 8** (publicaciones con citas: 42, 35, 30, 22, 17, 12, 9, 8, 4, 3, donde exactamente 8 artículos tienen ≥ 8 citas).
+   - No se calcula un índice h institucional en RED PAPERS. Los índices h de docente se identifican por su fuente (Google Scholar o Scopus); los valores del modo demostración son sintéticos y se marcan como **DEMO**.
    - Coautorías: los artículos con coautores docentes de la ECMC computan una sola vez a nivel Escuela.
-   - Docentes sin publicaciones (ej. Dr. Andrés Villacís): muestran cero (0) publicaciones, cero citas y cero índice h sin generar excepciones.
+   - Docentes sin publicaciones (ej. Dr. Andrés Villacís): muestran cero (0) publicaciones y cero citas; sus índices h se muestran según la fuente externa disponible.
 
 2. **Estados Oficiales del Producto:**
    - `cargado`: Estado inicial al registrar cualquier producto por parte de un docente.

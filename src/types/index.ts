@@ -60,6 +60,10 @@ export type OfficialResearchLine =
   | 'Tecnologías de la información'
   | 'Ciencia, Tecnología y Sociedad';
 
+export type TeacherResearchSublines = Partial<Record<OfficialResearchLine, string[]>>;
+export type SyntheticAcademicProfileField = 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId';
+export type SyntheticBibliometricField = 'googleScholarHIndex' | 'scopusHIndex';
+
 export type AcademicDegree = 'PhD' | 'MSc' | 'BSc' | 'Other';
 
 export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
@@ -125,13 +129,18 @@ export interface TeacherUser {
   yachayEntryYear?: number;
   profileImage?: string; // Imagen optimizada en formato data URL
   researchLines?: OfficialResearchLine[];
+  researchSublines?: TeacherResearchSublines;
   researchLine?: OfficialResearchLine; // Compatibilidad con perfiles guardados antes de la selección múltiple
   orcid?: string; // Formato 0000-000X-XXXX-XXXX
   githubUrl?: string;
   googleScholarId?: string;
   googleScholarHIndex?: number;
   scopusAuthorId?: string;
+  scopusHIndex?: number;
   webOfScienceId?: string;
+  syntheticAcademicProfileFields?: SyntheticAcademicProfileField[];
+  syntheticBibliometricFields?: SyntheticBibliometricField[];
+  syntheticProfileSeedVersion?: number;
   bio?: string;
   school: string;
   role: 'teacher' | 'reviewer_demo' | 'developer'; // Revisor como consola demo propuesta
@@ -155,14 +164,12 @@ export interface TeacherMetrics {
   publicationsCount: number;
   projectsCount: number;
   citationsTotal: number;
-  hIndex: number;
 }
 
 export interface SchoolMetrics {
   totalPublications: number;
   totalProjects: number;
   totalCitations: number;
-  hIndex: number;
   verificationRate: number; // Porcentaje redondeado (ej. 79)
   verifiedCount: number;
   totalProductsCount: number;

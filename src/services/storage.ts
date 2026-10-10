@@ -3,6 +3,36 @@ import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../co
 import { OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
 const SEED_PRODUCT_BY_ID = new Map(INITIAL_PRODUCTS.map((product) => [product.id, product]));
+const SEED_TEACHER_BY_ID = new Map(INITIAL_TEACHERS.map((teacher) => [teacher.id, teacher]));
+
+function completeSyntheticTeacher(teacher: TeacherUser): TeacherUser {
+  const defaults = SEED_TEACHER_BY_ID.get(teacher.id);
+  if (!defaults || teacher.syntheticProfileSeedVersion) return teacher;
+
+  let updated = teacher;
+  const fillIfMissing = <K extends keyof TeacherUser>(key: K) => {
+    if ((updated[key] === undefined || updated[key] === null) && defaults[key] !== undefined) {
+      updated = { ...updated, [key]: defaults[key] };
+    }
+  };
+
+  [
+    'researchLines', 'researchSublines', 'githubUrl', 'googleScholarId', 'googleScholarHIndex',
+    'scopusAuthorId', 'scopusHIndex', 'webOfScienceId',
+  ].forEach((key) => fillIfMissing(key as keyof TeacherUser));
+
+  const syntheticAcademicProfileFields = (defaults.syntheticAcademicProfileFields || [])
+    .filter(field => updated[field] === defaults[field]);
+  const syntheticBibliometricFields = (defaults.syntheticBibliometricFields || [])
+    .filter(field => updated[field] === defaults[field]);
+
+  return {
+    ...updated,
+    syntheticAcademicProfileFields,
+    syntheticBibliometricFields,
+    syntheticProfileSeedVersion: 1,
+  };
+}
 
 function completeSyntheticProduct(product: ScientificProduct): ScientificProduct {
   const defaults = SEED_PRODUCT_BY_ID.get(product.id);
@@ -134,16 +164,16 @@ export const storageService = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TEACHERS);
       if (!data) {
-        const teachers = INITIAL_TEACHERS.map(normalizeTeacher);
+        const teachers = INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
         this.saveTeachers(teachers);
         return teachers;
       }
       const storedTeachers: TeacherUser[] = JSON.parse(data);
-      const teachers = storedTeachers.map(normalizeTeacher);
+      const teachers = storedTeachers.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
       if (JSON.stringify(teachers) !== JSON.stringify(storedTeachers)) this.saveTeachers(teachers);
       return teachers;
     } catch {
-      return INITIAL_TEACHERS.map(normalizeTeacher);
+      return INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
     }
   },
 
@@ -181,7 +211,7 @@ export const storageService = {
       const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
       if (!data) return null;
       const storedUser: TeacherUser = JSON.parse(data);
-      const user = normalizeTeacher(storedUser);
+      const user = normalizeTeacher(completeSyntheticTeacher(storedUser));
       if (JSON.stringify(user) !== JSON.stringify(storedUser)) this.setCurrentUser(user);
       return user;
     } catch {
@@ -221,7 +251,7 @@ export const storageService = {
   resetToSeed(): void {
     try {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHERS.map(normalizeTeacher)));
+      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)))));
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(INITIAL_NOTIFICATIONS));
       localStorage.setItem(STORAGE_KEYS.PUBLIC_VISIBILITY_CONFIG, JSON.stringify(DEFAULT_CONFIG));
     } catch (err) {

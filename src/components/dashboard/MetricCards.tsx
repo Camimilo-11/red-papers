@@ -6,7 +6,7 @@ export const MetricCards: React.FC<{ metrics: SchoolMetrics }> = ({ metrics }) =
     { value: metrics.totalPublications, label: 'Publicaciones' },
     { value: metrics.totalProjects, label: 'Proyectos' },
     { value: metrics.totalCitations, label: 'Citas registradas' },
-    { value: metrics.hIndex, label: 'Índice h RED PAPERS' },
+    { value: `${metrics.verificationRate}%`, label: 'Productos verificados' },
   ];
 
   return (

@@ -6,15 +6,16 @@ import {metricsService} from '../../services/metricsService';
 import type {TemporalDataPoint} from '../../services/metricsService';
 import {TemporalEvolutionChart} from './TemporalEvolutionChart';
 
-type RankingMetric='citations'|'publications'|'hIndex';
+type RankingMetric='citations'|'publications'|'scholarHIndex'|'scopusHIndex';
 const rankingOptions:{id:RankingMetric;label:string}[]=[
  {id:'citations',label:'Citas'},
  {id:'publications',label:'Publicaciones'},
- {id:'hIndex',label:'Índice h RED PAPERS'},
+ {id:'scholarHIndex',label:'h Google Scholar'},
+ {id:'scopusHIndex',label:'h Scopus'},
 ];
 const colors=['#bd3027','#e66a55','#b58a70','#d1b399','#625853'];
 const numberFormat=new Intl.NumberFormat('es-EC');
-const metricValue=(teacher:TeacherMetrics,metric:RankingMetric)=>metric==='citations'?teacher.citationsTotal:metric==='publications'?teacher.publicationsCount:teacher.hIndex;
+const metricValue=(teacher:TeacherMetrics,metric:RankingMetric)=>metric==='citations'?teacher.citationsTotal:metric==='publications'?teacher.publicationsCount:metric==='scholarHIndex'?teacher.teacher.googleScholarHIndex||0:teacher.teacher.scopusHIndex||0;
 
 function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];products:ScientificProduct[]}) {
  const [metric,setMetric]=useState<RankingMetric>('citations');
@@ -50,8 +51,8 @@ function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];product
     <text x="100" y="94" textAnchor="middle" className="donut-center-label">Top {top.length}</text>
     <text x="100" y="116" textAnchor="middle" className="donut-center-caption">profesores</text>
    </svg>
-   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:colors[index%colors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}</strong></li>)}</ol>
-  </div>:<div className="teacher-ranking-empty"><Quote size={22}/><p>No hay publicaciones verificadas para comparar con esta métrica.</p></div>}
+   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:colors[index%colors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}{metric==='scholarHIndex'&&teacher.teacher.syntheticBibliometricFields?.includes('googleScholarHIndex')||metric==='scopusHIndex'&&teacher.teacher.syntheticBibliometricFields?.includes('scopusHIndex')?<small className="demo-data-badge">DEMO</small>:null}</strong></li>)}</ol>
+  </div>:<div className="teacher-ranking-empty"><Quote size={22}/><p>No hay datos disponibles para comparar con esta métrica.</p></div>}
  </section>;
 }
 

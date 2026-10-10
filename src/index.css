@@ -253,6 +253,15 @@ button:disabled { cursor:wait; }
 .profile-research-line-option:has(input:checked) { border-color:#bd3027; background:#fff7f3; }
 .profile-research-line-option input { flex:0 0 17px; width:17px; height:17px; min-height:17px; margin:1px 0 0; padding:0; accent-color:#bd3027; }
 .profile-research-line-option span { color:var(--ink); font-size:13px; line-height:1.4; }
+.profile-research-subline-group { margin:14px 0 0; padding:13px 14px; border:1px solid #e8dfd6; border-radius:7px; background:#fcfaf7; }
+.profile-research-subline-group>strong { display:block; margin-bottom:9px; color:#4d423b; font-size:13px; }
+.profile-research-subline-options { display:flex; flex-wrap:wrap; gap:8px; }
+.profile-research-subline-option { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid #ded8d1; border-radius:999px; background:#fff; cursor:pointer; }
+.profile-research-subline-option:has(input:checked) { border-color:#bd3027; background:#fff2ed; }
+.profile-research-subline-option input { width:15px; height:15px; margin:0; accent-color:#bd3027; }
+.profile-research-subline-option span { color:var(--ink); font-size:12px; line-height:1.35; }
+.profile-bibliometrics-note { margin:0; padding:11px 13px; border-left:3px solid #bd3027; background:#fcf8f3; color:var(--muted); font-size:12px; line-height:1.5; }
+.demo-data-badge { display:inline-flex; align-items:center; margin-left:6px; padding:2px 5px; border:1px solid #d9c8a4; border-radius:999px; background:#fff8e8; color:#7d5b19; font-size:9px; font-style:normal; font-weight:750; letter-spacing:.04em; vertical-align:middle; }
 .profile-settings-photo-field { display:flex; flex-direction:column; gap:9px; min-width:0; }
 .profile-settings-photo-field>span { font-size:15px; font-weight:650; }
 .profile-settings-photo-editor { display:flex; align-items:center; gap:18px; padding:16px; border:1px solid #e5dfd8; border-radius:7px; background:#faf8f5; }
@@ -449,18 +458,27 @@ html, body {
 .academic-description-section { margin-top:22px; }
 .academic-profile-section { margin:0 0 22px; }
 .academic-profile-section h4 { font-size:17px; font-weight:650; line-height:1.4; margin-bottom:10px; }
-.academic-research-lines { display:flex; flex-wrap:wrap; gap:8px; }
-.academic-research-lines span { padding:7px 11px; border:1px solid #e4d8cc; border-radius:5px; background:#f7f2ec; color:#51443c; font-size:14px; line-height:1.45; }
+.academic-research-groups { display:grid; gap:11px; }
+.academic-research-group { padding:12px 14px; border:1px solid #e4d8cc; border-radius:6px; background:#f7f2ec; }
+.academic-research-group>strong { color:#51443c; font-size:14px; line-height:1.45; }
+.academic-research-group ul { display:flex; flex-wrap:wrap; gap:6px; padding:0; margin:9px 0 0; list-style:none; }
+.academic-research-group li { padding:5px 8px; border:1px solid #e5dbd1; border-radius:999px; background:#fff; color:#625b54; font-size:12px; line-height:1.35; }
 .academic-section-note,.academic-section-empty { display:block; margin-top:8px; color:var(--muted); font-size:13px; line-height:1.5; }
 .academic-bio { margin:0; font-size:16px; line-height:1.7; color:#55504b; max-width:none; }
 .academic-contact { display:flex; flex-direction:column; gap:12px; margin:24px 0; font-size:15px; color:#625b54; }
 .academic-contact a { display:flex; align-items:center; gap:9px; overflow-wrap:anywhere; width:fit-content; max-width:100%; }
 .academic-contact svg { flex-shrink:0; }
 .academic-contact a:hover { color:#ad2f25; text-decoration:underline; }
+.academic-contact .academic-demo-link { display:flex; align-items:center; gap:6px; color:#625b54; }
 .academic-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; padding:25px 0; border-top:1px solid #e0dad3; border-bottom:1px solid #e0dad3; margin:28px 0 24px; }
 .academic-metrics div { display:flex; flex-direction:column-reverse; gap:5px; }
 .academic-metrics dt { font-size:15px; color:var(--muted); }
 .academic-metrics dd { font-size:28px; font-weight:500; font-variant-numeric:tabular-nums; }
+.academic-metrics .academic-index-metric { flex-direction:column; gap:7px; }
+.academic-metrics .academic-index-metric dd { display:grid; gap:5px; font-size:12px; }
+.academic-index-metric dd>span { display:flex; align-items:center; flex-wrap:wrap; gap:3px; }
+.academic-index-metric dd strong { margin-left:auto; color:var(--ink); font-size:20px; font-weight:650; }
+.teacher-external-index { display:block; white-space:nowrap; }
 .academic-year-chart { align-self:stretch; min-width:0; display:flex; flex-direction:column; padding:20px 20px 16px; border:1px solid #e4ddd5; border-radius:7px; background:#fff; }
 .academic-year-chart-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:15px; }
 .academic-year-chart-heading>div>span { color:var(--accent); font-size:10px; font-weight:750; letter-spacing:1.4px; }
@@ -618,8 +636,10 @@ html, body {
 
   .academic-profile-body { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 22px; }
   .academic-profile-section h4 { font-size: 15px; }
-  .academic-research-lines { gap: 7px; }
-  .academic-research-lines span { font-size: 13px; }
+  .academic-research-groups { gap: 8px; }
+  .academic-research-group { padding: 10px 11px; }
+  .academic-research-group>strong { font-size: 13px; }
+  .academic-research-group li { font-size: 11px; }
 
   .academic-year-chart { padding: 16px 14px 13px; border-radius: 10px; }
   .academic-year-chart-heading h4 { font-size: 16px; }
@@ -649,6 +669,9 @@ html, body {
   .academic-metrics > div:nth-child(-n+2) { border-bottom: 1px solid #e8dfd6; }
   .academic-metrics dt { font-size: 12px; }
   .academic-metrics dd { font-size: 24px; line-height: 1.2; }
+  .academic-metrics .academic-index-metric dd { font-size: 11px; }
+  .academic-index-metric dd strong { font-size: 18px; }
+  .academic-index-metric dd .demo-data-badge { margin-left: 2px; font-size: 8px; }
 
   .academic-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .academic-actions > .primary-button { width: 100%; justify-content: center; }

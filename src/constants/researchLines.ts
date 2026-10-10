@@ -14,6 +14,40 @@ export const OFFICIAL_RESEARCH_LINES: readonly OfficialResearchLine[] = [
   'Ciencia, Tecnología y Sociedad',
 ] as const;
 
+/** Sub-líneas demostrativas para que cada docente pueda precisar su perfil. */
+export const OFFICIAL_RESEARCH_SUBLINES: Record<OfficialResearchLine, readonly string[]> = {
+  'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización': [
+    'Ecuaciones diferenciales parciales',
+    'Análisis numérico y métodos computacionales',
+    'Modelamiento matemático y optimización',
+  ],
+  'Ciencia de datos': [
+    'Minería de datos y aprendizaje estadístico',
+    'Bioinformática y análisis de datos biológicos',
+    'Análisis de datos topológicos',
+  ],
+  'Computación científica': [
+    'Computación de alto rendimiento',
+    'Simulación y métodos numéricos',
+    'Algoritmos distribuidos y computación paralela',
+  ],
+  'Inteligencia artificial': [
+    'Aprendizaje profundo',
+    'Procesamiento de lenguaje natural',
+    'Inteligencia artificial explicable',
+  ],
+  'Tecnologías de la información': [
+    'Ciberseguridad y criptografía',
+    'Sistemas distribuidos y redes',
+    'Ingeniería de software',
+  ],
+  'Ciencia, Tecnología y Sociedad': [
+    'Brecha digital e inclusión tecnológica',
+    'Innovación y política científica',
+    'Ciencia abierta y comunicación pública',
+  ],
+};
+
 export const ACADEMIC_SEMESTERS = [
   '2021-1', '2021-2',
   '2022-1', '2022-2',

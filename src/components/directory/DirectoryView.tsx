@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AcademicDegree, TeacherUser, ScientificProduct } from '../../types';
+import { AcademicDegree, SyntheticAcademicProfileField, TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { productDateLabel } from '../../services/productPresentation';
@@ -9,6 +9,14 @@ import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
 import diegoPhoto from '../../assets/researchers/diego-peluffo.png';
 import eugenioPhoto from '../../assets/researchers/eugenio-morocho.png';
 const degreeLabels:Record<AcademicDegree,string>={PhD:'Doctorado (PhD)',MSc:'Maestría (MSc)',BSc:'Licenciatura o Ingeniería',Other:'Otro título'};
+const academicProfileLink=(teacher:TeacherUser,field:SyntheticAcademicProfileField,label:string,href:string)=>{
+ if(!teacher[field]) return null;
+ const rawValue=teacher[field]||'';
+ const value=field==='githubUrl'?rawValue.replace(/^https?:\/\/(www\.)?github\.com\//i,'@'):rawValue;
+ const labelWithValue=`${label} · ${value}`;
+ if(teacher.syntheticAcademicProfileFields?.includes(field)) return <span className="academic-demo-link">{labelWithValue}<em className="demo-data-badge">DEMO</em></span>;
+ return <a href={href} target="_blank" rel="noopener noreferrer">{labelWithValue}<ExternalLink size={15} aria-hidden="true"/></a>;
+};
 const academicTitle = (teacher:TeacherUser) => {
  if(!teacher.academicDegree) return undefined;
  const label=degreeLabels[teacher.academicDegree];
@@ -97,6 +105,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
       t.rank.toLowerCase().includes(q) ||
       (t.academicDegree&&degreeLabels[t.academicDegree].toLowerCase().includes(q)) ||
       (t.academicField&&t.academicField.toLowerCase().includes(q)) ||
+      Object.values(t.researchSublines||{}).flat().some(subline=>subline.toLowerCase().includes(q)) ||
       t.email.toLowerCase().includes(q) ||
       (t.bio && t.bio.toLowerCase().includes(q))
     );
@@ -162,7 +171,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">
             <h4 id="academic-research-line-title">Línea de investigación</h4>
-            {teacherResearchLines.length?<div className="academic-research-lines">{teacherResearchLines.map(line=><span key={line}>{line}</span>)}</div>:<p className="academic-section-empty">Este docente aún no ha registrado una línea de investigación.</p>}
+            {teacherResearchLines.length?<div className="academic-research-groups">{teacherResearchLines.map(line=><div className="academic-research-group" key={line}><strong>{line}</strong>{activeTeacher.researchSublines?.[line]?.length?<ul>{activeTeacher.researchSublines[line]?.map(subline=><li key={subline}>{subline}</li>)}</ul>:null}</div>)}</div>:<p className="academic-section-empty">Este docente aún no ha registrado una línea de investigación.</p>}
           </section>
           <aside className="academic-year-chart" aria-labelledby="academic-year-chart-title">
             <div className="academic-year-chart-heading"><div><span>PRODUCCIÓN ACADÉMICA</span><h4 id="academic-year-chart-title">Investigaciones por año</h4></div><BarChart3 size={20} aria-hidden="true"/></div>
@@ -181,16 +190,16 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <div className="academic-contact">
           <a href={`mailto:${activeTeacher.email}`}><Mail size={18} aria-hidden="true"/>{activeTeacher.email}</a>
           {activeTeacher.orcid?<a href={`https://orcid.org/${activeTeacher.orcid}`} target="_blank" rel="noopener noreferrer">ORCID · {activeTeacher.orcid}<ExternalLink size={15} aria-hidden="true"/></a>:<span>ORCID no registrado</span>}
-          {activeTeacher.githubUrl&&<a href={activeTeacher.githubUrl} target="_blank" rel="noopener noreferrer">GitHub<ExternalLink size={15} aria-hidden="true"/></a>}
-          {activeTeacher.googleScholarId&&<a href={`https://scholar.google.com/citations?user=${encodeURIComponent(activeTeacher.googleScholarId)}`} target="_blank" rel="noopener noreferrer">Google Scholar<ExternalLink size={15} aria-hidden="true"/></a>}
-          {activeTeacher.scopusAuthorId&&<a href={`https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(activeTeacher.scopusAuthorId)}`} target="_blank" rel="noopener noreferrer">Scopus<ExternalLink size={15} aria-hidden="true"/></a>}
-          {activeTeacher.webOfScienceId&&<a href={`https://www.webofscience.com/wos/author/record/${encodeURIComponent(activeTeacher.webOfScienceId)}`} target="_blank" rel="noopener noreferrer">Web of Science<ExternalLink size={15} aria-hidden="true"/></a>}
+          {academicProfileLink(activeTeacher,'githubUrl','GitHub',activeTeacher.githubUrl||'')}
+          {academicProfileLink(activeTeacher,'googleScholarId','Google Scholar',`https://scholar.google.com/citations?user=${encodeURIComponent(activeTeacher.googleScholarId||'')}`)}
+          {academicProfileLink(activeTeacher,'scopusAuthorId','Scopus',`https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(activeTeacher.scopusAuthorId||'')}`)}
+          {academicProfileLink(activeTeacher,'webOfScienceId','Web of Science',`https://www.webofscience.com/wos/author/record/${encodeURIComponent(activeTeacher.webOfScienceId||'')}`)}
         </div>
         <dl className="academic-metrics">
           <div><dt>Publicaciones</dt><dd>{activeTeacherMetrics.publicationsCount}</dd></div>
           <div><dt>Proyectos</dt><dd>{activeTeacherMetrics.projectsCount}</dd></div>
           <div><dt>Citas</dt><dd>{activeTeacherMetrics.citationsTotal}</dd></div>
-          <div><dt>{activeTeacher.googleScholarHIndex!==undefined?'Índice h Google Scholar':'Índice h RED PAPERS'}</dt><dd>{activeTeacher.googleScholarHIndex??activeTeacherMetrics.hIndex}</dd></div>
+          <div className="academic-index-metric"><dt>Índices h externos</dt><dd><span>Google Scholar <strong>{activeTeacher.googleScholarHIndex??'—'}</strong>{activeTeacher.syntheticBibliometricFields?.includes('googleScholarHIndex')&&<em className="demo-data-badge">DEMO</em>}</span><span>Scopus <strong>{activeTeacher.scopusHIndex??'—'}</strong>{activeTeacher.syntheticBibliometricFields?.includes('scopusHIndex')&&<em className="demo-data-badge">DEMO</em>}</span></dd></div>
         </dl>
         <div className="academic-actions">
           <button className="primary-button" onClick={()=>onFilterInCatalog(activeTeacher.id)}>Ver publicaciones</button>

@@ -2,24 +2,6 @@ import { ScientificProduct, TeacherUser, TeacherMetrics, SchoolMetrics, Academic
 import { ACADEMIC_SEMESTERS } from '../constants/researchLines';
 import { storageService } from './storage';
 
-/**
- * Calcula el índice h estándar a partir de un arreglo de citas
- * Algoritmo: Ordenar descendentemente y encontrar el mayor h tal que citas[h - 1] >= h
- */
-export function calculateHIndex(citations: number[]): number {
-  if (!citations || citations.length === 0) return 0;
-  const sorted = [...citations].sort((a, b) => b - a);
-  let h = 0;
-  for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i] >= i + 1) {
-      h = i + 1;
-    } else {
-      break;
-    }
-  }
-  return h;
-}
-
 export interface TemporalDataPoint {
   semester: AcademicSemester;
   publications: number;
@@ -44,10 +26,6 @@ export const metricsService = {
 
     const totalCitations = publications.reduce((acc, p) => acc + (p.citations || 0), 0);
 
-    // Lista de citas de cada publicación única
-    const citationsList = publications.map((p) => p.citations || 0);
-    const hIndex = calculateHIndex(citationsList);
-
     const verificationRate = totalProductsCount > 0
       ? Math.round((verifiedCount / totalProductsCount) * 100)
       : 0;
@@ -56,7 +34,6 @@ export const metricsService = {
       totalPublications: publications.length,
       totalProjects: projects.length,
       totalCitations,
-      hIndex,
       verificationRate,
       verifiedCount,
       totalProductsCount,
@@ -79,15 +56,11 @@ export const metricsService = {
 
     // Citas acumuladas en publicaciones
     const citationsTotal = publications.reduce((acc, p) => acc + (p.citations || 0), 0);
-    const citationsList = publications.map((p) => p.citations || 0);
-    const hIndex = calculateHIndex(citationsList);
-
     return {
       teacher,
       publicationsCount: publications.length,
       projectsCount: projects.length,
       citationsTotal,
-      hIndex,
     };
   },
 
