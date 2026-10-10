@@ -151,7 +151,6 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">
             <h4 id="academic-research-line-title">Línea de investigación</h4>
             {teacherResearchLines.length?<div className="academic-research-lines">{teacherResearchLines.map(line=><span key={line}>{line}</span>)}</div>:<p className="academic-section-empty">Este docente aún no ha registrado una línea de investigación.</p>}
-            {!activeTeacher.researchLine&&teacherResearchLines.length>0&&<small className="academic-section-note">Áreas tomadas de los productos registrados.</small>}
           </section>
           <aside className="academic-year-chart" aria-labelledby="academic-year-chart-title">
             <div className="academic-year-chart-heading"><div><span>PRODUCCIÓN ACADÉMICA</span><h4 id="academic-year-chart-title">Investigaciones por año</h4></div><BarChart3 size={20} aria-hidden="true"/></div>
