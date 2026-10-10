@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
+import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { ResearchStage } from './ResearchStage';
 
 const INTRO_TIMING_MS = {
@@ -78,7 +79,7 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
   return (
     <img
       className="institutional-landing-emblem-image"
-      src={`./assets/school-symbols/${school.code}.png`}
+      src={SCHOOL_LOGOS[school.code]}
       alt=""
       draggable={false}
       style={{ width: size, height: size }}

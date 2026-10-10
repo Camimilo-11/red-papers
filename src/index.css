@@ -2005,6 +2005,7 @@ body {
   width: var(--emblem-size);
   height: var(--emblem-size);
   opacity: 0;
+  mix-blend-mode: multiply;
   transform: translate3d(var(--entry-x), 30px, 0) rotate(var(--entry-rotation));
   transition: opacity 50ms var(--landing-ease), transform 50ms var(--landing-ease);
   will-change: transform, opacity;

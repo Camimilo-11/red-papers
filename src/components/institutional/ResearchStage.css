@@ -44,6 +44,7 @@
   position: absolute; width: var(--emblem-width); height: var(--emblem-height);
   left: var(--emblem-left); top: var(--emblem-top); perspective: 850px;
   opacity: 0;
+  mix-blend-mode: multiply;
   transform: translateY(var(--emblem-y, 0px)) rotateY(var(--emblem-turn, -15deg)) rotateZ(-10deg);
   transform-style: preserve-3d;
 }

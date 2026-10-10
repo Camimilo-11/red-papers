@@ -46,7 +46,7 @@ const schoolStyle = (school: SchoolConfig) => ({
 } as React.CSSProperties);
 
 function Emblem({ school }: { school: SchoolConfig }) {
-  return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} style={{ mixBlendMode: 'multiply' }} />;
+  return <img src={SCHOOL_LOGOS[school.code]} alt="" draggable={false} />;
 }
 
 /** Geometry stays in ResearchLineBackdrop. Only its tracing attributes change here. */
