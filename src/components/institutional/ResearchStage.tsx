@@ -406,12 +406,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
   useMotionValueEvent(pointerY, 'change', (value) => scene.current?.style.setProperty('--pointer-y', `${value.toFixed(2)}px`));
   useMotionValueEvent(pointerTiltX, 'change', (value) => scene.current?.style.setProperty('--pointer-tilt-x', `${value.toFixed(2)}deg`));
   useMotionValueEvent(pointerTiltY, 'change', (value) => scene.current?.style.setProperty('--pointer-tilt-y', `${value.toFixed(2)}deg`));
-  const jumpToSelection = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    document.getElementById('seleccion-escuelas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
   return (
-    <>
       <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
         <div className="research-stage-snap-markers" aria-hidden="true">
           {SCHOOLS.flatMap((school, schoolIndex) => [
@@ -455,10 +450,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
             </li>
           ))}</ol>
         </nav>
-        <a className="research-stage-skip" href="#seleccion-escuelas" onClick={jumpToSelection}>Saltar a escuelas <span aria-hidden="true">↓</span></a>
       </div>
-      <SelectionGrid onSelect={onSelect} />
-    </>
   );
 }
 

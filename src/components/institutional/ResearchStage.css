@@ -49,9 +49,7 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
 .research-stage-scroll-hint { position: absolute; z-index: 5; left: 50%; bottom: 27px; display: inline-flex; align-items: center; gap: 13px; color: #323940; font-size: 17px; font-weight: 700; letter-spacing: .04em; transform: translateX(-50%); transition: opacity 180ms ease, transform 180ms ease; pointer-events: none; }
 .research-stage-scroll-hint span { display: inline-block; animation: research-hint-bob 900ms ease-in-out infinite alternate; font-size: 23px; }
 .research-stage[data-scrolled='true'] .research-stage-scroll-hint { opacity: 0; transform: translate(-50%, 8px); }
-.research-stage-skip { position: fixed; z-index: 15; right: 24px; bottom: 16px; display: inline-flex; min-height: 48px; align-items: center; gap: 10px; padding: 0 16px; border: 1px solid #d3dce1; border-radius: 999px; background: #fff; color: #24292d; font-size: 13px; font-weight: 750; text-decoration: none; box-shadow: 0 3px 14px rgb(18 34 45 / 8%); }
-.research-stage-skip:hover { border-color: var(--yt-blue); color: #103b5a; }
-.research-stage button:focus-visible, .research-stage a:focus-visible, .research-stage-navigation button:focus-visible, .research-stage-skip:focus-visible, .research-stage-selection button:focus-visible, .research-stage-selection summary:focus-visible, .research-stage-selection li:focus-visible { outline: 3px solid #17191c; outline-offset: 4px; }
+.research-stage button:focus-visible, .research-stage a:focus-visible, .research-stage-navigation button:focus-visible, .research-stage-selection button:focus-visible, .research-stage-selection summary:focus-visible, .research-stage-selection li:focus-visible { outline: 3px solid #17191c; outline-offset: 4px; }
 .research-stage-selection { width: min(1320px, calc(100% - 68px)); margin: 0 auto; padding: 100px 0 90px; scroll-margin-top: calc(var(--landing-header-height) + 20px); }
 .research-stage-selection > .research-stage-eyebrow { position: static; color: var(--yt-blue); }
 .research-stage-selection > h2 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(38px, 4.4vw, 68px); line-height: 1.05; letter-spacing: -.035em; margin: 16px 0 48px; }
@@ -108,7 +106,6 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
   .research-stage-bottom button { min-height: 46px; padding-inline: 12px; gap: 8px; font-size: 12px; }
   .research-stage-scroll-hint { bottom: 68px; font-size: 13px; }
   .research-stage-scroll-hint span { font-size: 19px; }
-  .research-stage-skip { right: 12px; bottom: 12px; min-height: 46px; padding-inline: 12px; font-size: 12px; }
   .research-stage-selection { width: calc(100% - 40px); padding: 68px 0; }
   .research-stage-selection > h2 { font-size: 42px; margin-bottom: 36px; }
   .research-stage-school-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -119,12 +116,12 @@ html:has(.research-stage-track) { scroll-snap-type: y proximity; scroll-padding-
   .research-stage-shot-copy h2, .research-stage-shot-copy h2:has(.research-stage-word-mask:nth-child(6)) { font-size: 40px; }
   .research-stage-line-selector { gap: 4px; margin-top: 8px; }
   .research-stage-line-selector button { min-height: 44px; padding-block: 6px; }
-  .research-stage-bottom, .research-stage-skip { bottom: 8px; }
+  .research-stage-bottom { bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html:has(.research-stage-track) { scroll-snap-type: none; scroll-behavior: auto; }
   .research-stage, .research-stage-track { position: static; height: auto; overflow: visible; }
   .research-stage-track { min-height: 0; }
-  .research-stage-navigation, .research-stage-skip { display: none; }
+  .research-stage-navigation { display: none; }
   .research-stage-selection *, .research-stage-selection *::before, .research-stage-selection *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
