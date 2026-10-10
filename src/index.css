@@ -455,7 +455,7 @@ html, body {
 .academic-profile-heading p { font-size:16px; color:#55504b; line-height:1.5; }
 .academic-profile-heading .academic-degree { color:color-mix(in srgb,var(--accent) 86%,black); font-size:14px; font-weight:600; }
 .academic-profile-heading .academic-school { font-size:14px; color:var(--muted); margin-top:5px; }
-.academic-profile-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,1fr); gap:30px; align-items:stretch; margin-top:24px; }
+.academic-profile-body { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,1fr); gap:30px; align-items:start; margin-top:24px; }
 .academic-research-section { margin-bottom:0; }
 .academic-description-section { margin-top:22px; }
 .academic-profile-section { margin:0 0 22px; }
@@ -481,12 +481,12 @@ html, body {
 .academic-index-metric dd>span { display:flex; align-items:center; flex-wrap:wrap; gap:3px; }
 .academic-index-metric dd strong { margin-left:auto; color:var(--ink); font-size:20px; font-weight:650; }
 .teacher-external-index { display:block; white-space:nowrap; }
-.academic-year-chart { align-self:stretch; min-width:0; display:flex; flex-direction:column; padding:20px 20px 16px; border:1px solid #e4ddd5; border-radius:7px; background:#fff; }
+.academic-year-chart { align-self:start; min-width:0; display:flex; flex-direction:column; padding:20px 20px 16px; border:1px solid #e4ddd5; border-radius:7px; background:#fff; }
 .academic-year-chart-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:15px; }
 .academic-year-chart-heading>div>span { color:var(--accent); font-size:10px; font-weight:750; letter-spacing:1.4px; }
 .academic-year-chart-heading h4 { margin-top:4px; font-size:18px; font-weight:600; line-height:1.35; }
 .academic-year-chart-heading svg { margin-top:4px; color:var(--accent); flex-shrink:0; }
-.academic-year-bars { display:flex; flex:1; align-items:stretch; justify-content:space-around; gap:8px; min-height:205px; height:clamp(205px,24vh,270px); padding:10px 4px 0; border-bottom:1px solid #dcd5cd; }
+.academic-year-bars { display:flex; flex:none; align-items:stretch; justify-content:space-around; gap:8px; min-height:205px; height:clamp(205px,24vh,270px); padding:10px 4px 0; border-bottom:1px solid #dcd5cd; }
 .academic-year-bar-column { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; }
 .academic-year-bar-column strong { color:#574d47; font-size:12px; font-variant-numeric:tabular-nums; }
 .academic-year-bar-track { height:125px; width:min(34px,100%); display:flex; align-items:flex-end; justify-content:center; background:linear-gradient(to bottom,transparent 24%,#f0ece7 25%,transparent 26%,transparent 49%,#f0ece7 50%,transparent 51%,transparent 74%,#f0ece7 75%,transparent 76%); }
