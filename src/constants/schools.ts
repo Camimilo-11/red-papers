@@ -7,6 +7,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias Agropecuarias',
     accent: '#00b7b4',
     logoCrop: { x: 55, y: 7, width: 190, height: 60 },
+    emblemCrop: { x: 64, y: 10, width: 43, height: 52 },
     iconTilePosition: { x: 23, y: 14 },
     researchLines: [
       'Ciencias Agrícolas',
@@ -21,6 +22,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias Biológicas e Ingeniería',
     accent: '#68b347',
     logoCrop: { x: 392, y: 7, width: 205, height: 60 },
+    emblemCrop: { x: 400, y: 10, width: 45, height: 52 },
     iconTilePosition: { x: 151, y: 14 },
     researchLines: [
       'Ecología, evolución y conservación de ecosistemas terrestres',
@@ -37,6 +39,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias Físicas y Nanotecnología',
     accent: '#f4c400',
     logoCrop: { x: 735, y: 7, width: 205, height: 63 },
+    emblemCrop: { x: 742, y: 10, width: 49, height: 52 },
     iconTilePosition: { x: 23, y: 141 },
     researchLines: [
       'Materiales nanoestructurados, síntesis y caracterización',
@@ -53,6 +56,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias de la Tierra, Energía y Ambiente',
     accent: '#f4863e',
     logoCrop: { x: 1075, y: 7, width: 200, height: 60 },
+    emblemCrop: { x: 1082, y: 10, width: 47, height: 52 },
     iconTilePosition: { x: 151, y: 141 },
     researchLines: [
       'Geología física y aplicada',
@@ -68,6 +72,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias Matemáticas y Computacionales',
     accent: '#ef4035',
     logoCrop: { x: 55, y: 151, width: 200, height: 60 },
+    emblemCrop: { x: 59, y: 153, width: 49, height: 56 },
     iconTilePosition: { x: 23, y: 270 },
     researchLines: [
       'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización',
@@ -84,6 +89,7 @@ export const SCHOOLS = [
     shortName: 'Ciencias Químicas e Ingeniería',
     accent: '#21acd5',
     logoCrop: { x: 398, y: 148, width: 180, height: 68 },
+    emblemCrop: { x: 405, y: 148, width: 45, height: 62 },
     iconTilePosition: { x: 151, y: 270 },
     researchLines: [
       'Materiales funcionales',
@@ -98,6 +104,7 @@ export const SCHOOLS = [
     shortName: 'Yachay Tech Language Center',
     accent: '#0ca2b0',
     logoCrop: { x: 737, y: 149, width: 180, height: 68 },
+    emblemCrop: { x: 744, y: 145, width: 54, height: 70 },
     iconTilePosition: { x: 23, y: 398 },
     researchLines: [
       'Education technology & AI',

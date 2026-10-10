@@ -1,5 +1,6 @@
 import React from 'react';
 import { SchoolConfig, UNIVERSITY_HOME_URL } from '../../constants/schools';
+import { EcmcLogo } from '../../assets/EcmcLogo';
 
 export function SchoolLogo({ school, className = '', scale = 1 }: { school: SchoolConfig; className?: string; scale?: number }) {
   const { x, y } = school.logoCrop;
@@ -30,6 +31,30 @@ export function SchoolIconTile({ school, className = '', size = 112 }: { school:
         src="./assets/school-icon-tiles.png"
         alt=""
         style={{ left: -x * scale, top: -y * scale, transform: `scale(${scale})`, transformOrigin: 'top left' }}
+      />
+    </span>
+  );
+}
+
+export function SchoolEmblem({ school, size = 260 }: { school: SchoolConfig; size?: number }) {
+  if (school.code === 'ECMC') {
+    return <EcmcLogo className="school-emblem-ecmc" size={size} variant="white" />;
+  }
+
+  const { x, y, width, height } = school.emblemCrop;
+  const scale = size / Math.max(width, height);
+  return (
+    <span
+      className="school-emblem-crop"
+      role="img"
+      aria-label={`Emblema de ${school.name}`}
+      style={{ width: width * scale, height: height * scale }}
+    >
+      <img
+        className="school-emblem-sheet"
+        src="./assets/school-logos.png"
+        alt=""
+        style={{ width: 1282 * scale, height: 238 * scale, left: -x * scale, top: -y * scale }}
       />
     </span>
   );
