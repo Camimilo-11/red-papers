@@ -13,7 +13,7 @@ function SchoolSelectorMark({ school, size = 76 }: { school: SchoolConfig; size?
     >
       <img
         className="school-symbol-svg"
-        src={`./assets/school-symbols/${school.code}.svg`}
+        src={`./assets/school-symbols/${school.code}.png`}
         alt=""
         draggable={false}
       />

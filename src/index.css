@@ -1928,7 +1928,7 @@ body {
   display: flex;
   min-height: min(760px, calc(100svh - var(--landing-header-height)));
   align-items: center;
-  padding: 78px 24px 90px;
+  padding: 78px max(24px, calc((100vw - 1320px) / 2)) 90px;
   overflow: clip;
 }
 
@@ -1936,7 +1936,7 @@ body {
   position: relative;
   z-index: 2;
   width: min(790px, 62vw);
-  margin-left: max(0px, calc((100vw - 1320px) / 2));
+  margin-left: 0;
 }
 
 .institutional-landing-eyebrow,
@@ -2183,7 +2183,7 @@ body {
 @media (max-width: 600px) {
   .institutional-landing { --landing-header-height: 72px; }
   .institutional-landing-brand-logo { width: min(150px, 52vw); max-height: 52px; }
-  .institutional-landing-hero { min-height: 640px; align-items: center; padding: 70px 22px 88px; }
+  .institutional-landing-hero { min-height: 640px; align-items: center; padding: 70px 20px 88px; }
   .institutional-landing-hero-copy { width: 100%; margin: 0; }
   .institutional-landing-eyebrow,
   .institutional-landing-section-heading > p,

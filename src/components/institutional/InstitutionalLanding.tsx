@@ -87,7 +87,7 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
   return (
     <img
       className="institutional-landing-emblem-image"
-      src={`./assets/school-symbols/${school.code}.svg`}
+      src={`./assets/school-symbols/${school.code}.png`}
       alt=""
       draggable={false}
       style={{ width: size, height: size }}
