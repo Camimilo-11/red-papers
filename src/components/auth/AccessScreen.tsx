@@ -11,7 +11,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
  return <div className="welcome-access">
   <header className="welcome-access-header">
-   <div className="welcome-access-brand"><EcmcLogo size={48} variant="white"/><span>RED PAPERS<small>UNIVERSIDAD YACHAY TECH</small></span></div>
+   <div className="welcome-access-brand"><EcmcLogo size={48} variant="color"/><span>RED PAPERS<small>UNIVERSIDAD YACHAY TECH</small></span></div>
    <nav aria-label="Acceso a la plataforma"><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
