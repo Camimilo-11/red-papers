@@ -1,5 +1,5 @@
 /**
- * Tipos de datos centrales de RED PAPERS - ECMC Yachay Tech
+ * Tipos de datos centrales de SIMAPC - Universidad Yachay Tech
  * Conforme al Documento de Requisitos e Historias de Usuario (HU01 - HU11)
  */
 

@@ -55,7 +55,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="account-register-title" className="text-base font-bold text-neutral-900">Registro de Profesor ECMC</h2>
+              <h2 id="account-register-title" className="text-base font-bold text-neutral-900">Registro de docente</h2>
               <p className="text-xs text-neutral-500">
                 Complete sus datos para crear su cuenta.
               </p>
@@ -76,7 +76,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
             <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto animate-bounce" />
             <h3 className="text-lg font-bold text-neutral-900">¡Cuenta Creada Exitosamente!</h3>
             <p className="text-xs text-neutral-600">
-              Bienvenido a RED PAPERS. Tu sesión ha sido iniciada automáticamente.
+              Bienvenido a SIMAPC. Tu sesión ha sido iniciada automáticamente.
             </p>
           </div>
         ) : (

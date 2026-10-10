@@ -1,5 +1,5 @@
 import React from 'react';
-import { EcmcLogo } from '../../assets/EcmcLogo';
+import { YachayLogo } from '../institutional/SchoolLogo';
 import { ActiveTab } from './Header';
 import { RotateCcw } from 'lucide-react';
 
@@ -21,23 +21,20 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Columna 1: Identidad Institucional */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#EF4035] flex items-center justify-center font-black text-white text-lg">
-                Y
-              </div>
+              <YachayLogo width={144} />
               <div>
                 <h3 className="text-base font-bold text-white tracking-tight">
-                  RED PAPERS • ECMC Yachay Tech
+                  SIMAPC · Yachay Tech
                 </h3>
                 <p className="text-xs text-neutral-400">
-                  Portal de Visualización y Gestión de Producción Científica
+                  Sistema de Información, Monitoreo y Administración de la Producción Científica
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
               Plataforma de gestión, verificación y visibilización de la producción científica y
-              proyectos de investigación para docentes de la Escuela de Ciencias Matemáticas y
-              Computacionales.
+              proyectos de investigación para docentes de las escuelas de la Universidad Yachay Tech.
             </p>
 
             <p className="text-[11px] text-neutral-500">

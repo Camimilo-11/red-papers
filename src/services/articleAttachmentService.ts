@@ -65,7 +65,7 @@ export async function removeArticleAttachment(id: string): Promise<void> {
 
 function buildSyntheticPdf(): Blob {
   const lines = [
-    'RED PAPERS | ECMC',
+    'SIMAPC | Universidad Yachay Tech',
     'ARTICULO DE INVESTIGACION',
     'ANALISIS DE DATOS PARA INVESTIGACION ACADEMICA',
     '',

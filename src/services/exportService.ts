@@ -69,7 +69,7 @@ export const exportService = {
 
     // Encabezado de metadatos institucionales
     const metaHeader = [
-      `# RED PAPERS - PORTAL DE PRODUCCIÓN CIENTÍFICA`,
+      `# SIMAPC - Sistema de Información, Monitoreo y Administración de la Producción Científica`,
       `# ${meta.school} - ${meta.institution}`,
       `# Fecha de Generación: ${meta.generatedAt}`,
       `# Total Registros Exportados: ${meta.totalRecords}`,
@@ -145,7 +145,7 @@ export const exportService = {
 
     // Hoja secundaria con metadatos de la consulta
     const metaData = [
-      { Parámetro: 'Portal', Valor: 'RED PAPERS' },
+      { Parámetro: 'Portal', Valor: 'SIMAPC' },
       { Parámetro: 'Escuela', Valor: meta.school },
       { Parámetro: 'Institución', Valor: meta.institution },
       { Parámetro: 'Fecha Generación', Valor: meta.generatedAt },
@@ -218,7 +218,7 @@ export const exportService = {
       <html lang="es">
       <head>
         <meta charset="UTF-8">
-        <title>Reporte de Producción Científica - RED PAPERS ECMC</title>
+        <title>Reporte de Producción Científica - SIMAPC</title>
         <style>
           @page { size: A4 landscape; margin: 12mm; }
           body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1F2937; margin: 0; padding: 20px; }
@@ -236,8 +236,8 @@ export const exportService = {
         <div class="header">
           <div class="brand">
             <div>
-              <div class="brand-title">RED PAPERS</div>
-              <div class="brand-subtitle">Escuela de Ciencias Matemáticas y Computacionales • Yachay Tech</div>
+              <div class="brand-title">SIMAPC</div>
+              <div class="brand-subtitle">${escapeHtml(meta.school)} · Universidad Yachay Tech</div>
             </div>
           </div>
           <div class="meta-box">
@@ -267,7 +267,7 @@ export const exportService = {
 
         <div class="footer">
           <div>Universidad de Investigación de Tecnología Experimental Yachay Tech • San Miguel de Urcuquí, Imbabura, Ecuador</div>
-          <div>Reporte generado desde RED PAPERS ECMC</div>
+          <div>Reporte generado desde SIMAPC</div>
         </div>
       </body>
       </html>
@@ -329,15 +329,15 @@ export const exportService = {
         h3{font-size:11pt;margin:3px 0}.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}.facts p{margin:2px 0}.muted,.product-meta{color:#6a625b;font-size:9pt}.links{font-size:9pt}.links a{color:#8b2a23;text-decoration:none}.product{padding:8px 0;border-bottom:1px solid #e5dfd8;break-inside:avoid}.product p{margin:2px 0}.authors{font-weight:600}.bio{white-space:pre-wrap}.footer{margin-top:24px;padding-top:8px;border-top:1px solid #ded7ce;color:#777;font-size:8pt;display:flex;justify-content:space-between}
         @media print{a{color:inherit}}
       </style></head><body>
-      <header><p class="eyebrow">Currículum académico · RED PAPERS · ECMC</p><h1>${escapeHtml(teacher.name)}</h1>
+      <header><p class="eyebrow">Currículum académico · SIMAPC</p><h1>${escapeHtml(teacher.name)}</h1>
         <p>${escapeHtml(teacher.rank)}${teacher.academicDegree ? ` · ${escapeHtml(teacher.academicDegree)}${teacher.academicField ? ` en ${escapeHtml(teacher.academicField)}` : ''}` : ''}</p>
         <p>${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}</p></header>
-      <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico de la Escuela de Ciencias Matemáticas y Computacionales.')}</p></section>
+      <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico del personal investigador de la Universidad Yachay Tech.')}</p></section>
       <section><h2>Áreas de investigación</h2>${researchAreasHtml}</section>
       <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p>${externalIndex('Google Scholar', teacher.googleScholarHIndex)}${externalIndex('Scopus', teacher.scopusHIndex)}</div></section>
       <section><h2>Identificadores y perfiles académicos</h2><p class="links">${links || 'No registrados'}</p></section>
       <section><h2>Producción académica verificada (${products.length})</h2>${productsHtml}</section>
-      <div class="footer"><span>Universidad Yachay Tech · Escuela de Ciencias Matemáticas y Computacionales</span><span>Generado ${escapeHtml(generatedAt)}</span></div>
+      <div class="footer"><span>Universidad Yachay Tech · SIMAPC</span><span>Generado ${escapeHtml(generatedAt)}</span></div>
       </body></html>`;
 
     printWindow.document.write(html);

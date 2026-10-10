@@ -50,3 +50,22 @@ export function SchoolEmblem({ school, size = 260 }: { school: SchoolConfig; siz
     />
   );
 }
+
+export function YachayLogo({ width = 136, className = '' }: { width?: number; className?: string }) {
+  const scale = width / 146;
+  return (
+    <span
+      className={`yachay-logo-crop ${className}`}
+      role="img"
+      aria-label="Universidad Yachay Tech"
+      style={{ width, height: 52 * scale }}
+    >
+      <img
+        src="./assets/university-logo.png"
+        alt=""
+        aria-hidden="true"
+        style={{ width: 219 * scale, height: 96 * scale, left: -36 * scale, top: -18 * scale }}
+      />
+    </span>
+  );
+}

@@ -252,7 +252,7 @@ export default function App() {
     );
   }
 
-  // Vista principal del Portal RED PAPERS
+  // Vista principal de SIMAPC
   return (
     <div className="portal-app min-h-screen font-sans" style={{ '--accent': `color-mix(in srgb, ${selectedSchool.accent} 45%, #292522)`, '--school-accent': selectedSchool.accent } as React.CSSProperties}>
       {/* 1. Encabezado Horizontal */}
@@ -365,7 +365,7 @@ export default function App() {
       </main>
 
       {/* 3. Pie de Página Institucional */}
-      <footer className="portal-footer"><span>RED PAPERS · {selectedSchool.code}</span><span>Universidad Yachay Tech</span></footer>
+      <footer className="portal-footer"><span>SIMAPC · {selectedSchool.code}</span><span>Universidad Yachay Tech</span></footer>
 
       {/* 4. Modales Globales */}
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}

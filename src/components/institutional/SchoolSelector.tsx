@@ -1,15 +1,15 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { SchoolIconTile } from './SchoolLogo';
+import { SchoolIconTile, YachayLogo } from './SchoolLogo';
 
 export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   return (
     <div className="school-selector-page">
       <header className="school-selector-header">
-        <a className="school-selector-brand" href="#inicio" aria-label="RED PAPERS, inicio">
-          <span className="school-selector-brand-mark">Σ·</span>
-          <span>RED PAPERS<small>Investigación · Yachay Tech</small></span>
+        <a className="school-selector-brand" href="#inicio" aria-label="SIMAPC, inicio">
+          <YachayLogo width={136} />
+          <span>SIMAPC<small>Sistema de Información, Monitoreo y Administración de la Producción Científica</small></span>
         </a>
       </header>
 
@@ -37,7 +37,7 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
       </main>
 
       <footer className="school-selector-footer">
-        <span>RED PAPERS · Universidad Yachay Tech</span>
+        <span>SIMAPC · Universidad Yachay Tech</span>
       </footer>
     </div>
   );

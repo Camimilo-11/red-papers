@@ -537,11 +537,12 @@ html, body {
 .school-logo-sheet{position:absolute!important;width:1282px!important;height:238px!important;max-width:none!important;object-fit:initial!important;}
 .school-icon-crop{position:relative;display:inline-block;flex:none;overflow:hidden;background:transparent;vertical-align:middle;}
 .school-icon-sheet{position:absolute!important;width:285px!important;height:523px!important;max-width:none!important;object-fit:initial!important;}
+.yachay-logo-crop{position:relative;display:inline-block;flex:none;overflow:hidden;background:#f0f0f0;vertical-align:middle;border-radius:2px;}
+.yachay-logo-crop img{position:absolute;max-width:none!important;object-fit:initial!important;}
 .school-selector-page{min-height:100dvh;background:#f7f5f1;color:#292522;display:flex;flex-direction:column;padding:22px clamp(20px,5vw,76px) 18px;}
 .school-selector-header{width:min(1280px,100%);margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px;border-bottom:1px solid #e4ddd5;padding-bottom:14px;}
 .school-selector-brand{display:flex;align-items:center;gap:12px;color:#202d3a;text-decoration:none;font-size:20px;font-weight:800;letter-spacing:.4px;}
-.school-selector-brand-mark{width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#ef4035;color:white;font-family:Georgia,serif;font-size:26px;}
-.school-selector-brand small{display:block;margin-top:3px;font-size:11px;letter-spacing:.6px;font-weight:500;color:#6d6862;}
+.school-selector-brand small{display:block;max-width:570px;margin-top:3px;font-size:10px;line-height:1.4;letter-spacing:0;font-weight:500;color:#6d6862;}
 .school-selector-main{width:min(1280px,100%);margin:0 auto;padding:34px 0 30px;}
 .school-selector-eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#ad3228;margin-bottom:8px;}
 .school-selector-main>h1{font:400 clamp(32px,4vw,48px)/1.1 Georgia,serif;letter-spacing:-.7px;color:#272421;}

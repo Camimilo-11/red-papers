@@ -1,7 +1,7 @@
 import React, {useState,useRef,useEffect} from 'react';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
-import {SchoolEmblem,SchoolLogo} from '../institutional/SchoolLogo';
+import {SchoolEmblem,YachayLogo} from '../institutional/SchoolLogo';
 interface AccessScreenProps {
  school:SchoolConfig; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
@@ -12,7 +12,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
  return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
   <header className="welcome-access-header">
-   <div className="welcome-access-brand"><SchoolLogo school={p.school} scale={.62}/><span>RED PAPERS<small>{p.school.shortName}</small></span></div>
+   <div className="welcome-access-brand"><YachayLogo width={130}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
    <nav aria-label="Acceso a la plataforma"><button className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
@@ -29,7 +29,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
   </div>
   <dialog ref={dialog} className="welcome-login-dialog" onCancel={()=>setLoginOpen(false)} onClose={()=>setLoginOpen(false)} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setLoginOpen(false);}}} aria-labelledby="welcome-login-title">
    <button className="welcome-login-close" aria-label="Cerrar inicio de sesión" onClick={()=>setLoginOpen(false)}><X size={22}/></button>
-   <div className="login-form"><p className="eyebrow">RED PAPERS</p><h2 id="welcome-login-title">Iniciar sesión</h2><p>Ingrese con su cuenta institucional.</p>
+   <div className="login-form"><p className="eyebrow">SIMAPC</p><h2 id="welcome-login-title">Iniciar sesión</h2><p>Ingrese con su cuenta institucional.</p>
    <form onSubmit={e=>{e.preventDefault();const result=p.onLogin(email,password);setError(result.success?'':result.error||'No se pudo iniciar sesión.');}}>
     <label htmlFor="login-email">Correo institucional</label><input id="login-email" type="email" autoComplete="username" placeholder="nombre@yachaytech.edu.ec" required value={email} onChange={e=>setEmail(e.target.value)}/>
     <label htmlFor="login-password">Contraseña</label><div className="password-field"><input id="login-password" type={visible?'text':'password'} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={visible?'Ocultar contraseña':'Mostrar contraseña'} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={22}/>:<Eye size={22}/>}</button></div>

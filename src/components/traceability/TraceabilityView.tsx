@@ -40,7 +40,7 @@ export const TraceabilityView: React.FC = () => {
     setShowLiveSuiteModal(true);
 
     const steps = [
-      'Iniciando ejecutor de pruebas automatizadas RED PAPERS (ECMC Yachay Tech)...',
+      'Iniciando ejecutor de pruebas automatizadas SIMAPC (Yachay Tech)...',
       '[PR-HU01-01] Validando registro docente con dominio @yachaytech.edu.ec y rechazo de dominios externos -> APROBADO',
       '[PR-HU01-02] Verificando no persistencia de credenciales en texto plano (RNF01) -> APROBADO',
       '[PR-HU02-01] Comprobando inicio de sesión con token y cierre de sesión activo -> APROBADO',

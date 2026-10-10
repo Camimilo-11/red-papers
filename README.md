@@ -1,13 +1,13 @@
-# RED PAPERS — Portal Web de Producción Científica (ECMC - Yachay Tech)
+# SIMAPC — Sistema de Información, Monitoreo y Administración de la Producción Científica
 
-**Portal Web para la Visualización y Gestión de la Producción Científica de los Docentes de la Escuela de Ciencias Matemáticas y Computacionales (ECMC) de la Universidad de Investigación de Tecnología Experimental Yachay Tech.**
+**Portal institucional para consultar y administrar la producción científica de las escuelas de la Universidad Yachay Tech.**
 
 ---
 
 ## 1. Identidad Visual y Lineamientos de Marca
-- **Color Principal Institucional:** Rojo `#EF4035`, con variantes `#D02B20` (hover/acciones) y `#991B1B` (contraste de texto accesible).
-- **Fondos de selección y sutilezas:** `#FEF2F2` / `#FDF2F2` (fondos de selección y avisos institucionales).
-- **Logotipo Institucional ECMC:** Vector SVG exacto con la Sigma segmentada (`Σ`) y columna de bloques cromáticos en proporción original (Screenshot 01/04).
+- **Identidad del sistema:** SIMAPC usa el logotipo institucional de Yachay Tech; cada escuela conserva su color e identidad visual.
+- **Colores de interfaz:** Los controles y estados usan el color correspondiente a la escuela seleccionada.
+- **Identidad de escuela:** Los logotipos y colores propios de cada escuela aparecen en sus espacios y tarjetas correspondientes.
 - **Esquema de color:** Blanco, gris muy claro (`#F8FAFC`), texto carbón (`#111827`), y bordes tenues (`#E5E7EB`). Se removió totalmente el azul marino y degradado burdeos de identidades preliminares.
 
 ---
@@ -65,7 +65,7 @@ src/
 │   ├── metricsService.ts          # Cálculo de índice h escuela, citas, evolución
 │   └── exportService.ts           # Descargas auténticas CSV (BOM), Excel XLSX y PDF
 ├── components/
-│   ├── auth/                      # Pantalla de acceso roja (Boceto 03) y registro docente
+│   ├── auth/                      # Pantalla de acceso y registro docente
 │   ├── layout/                    # Header horizontal, Footer institucional, Notificaciones
 │   ├── dashboard/                 # Banner ECMC, 5 tarjetas KPI, Gráfico semestral, Tabla
 │   ├── catalog/                   # Catálogo, filtros, fichas y seguimiento de proyectos
@@ -86,7 +86,7 @@ src/
    - Verificados: 11 productos = **73% de verificación institucional**.
    - Seguimiento: se incluyen informes sintéticos de avance y cierre para demostrar el flujo del Comité Científico.
    - Citas Totales: **182 citas** en publicaciones verificadas.
-   - No se calcula un índice h institucional en RED PAPERS. Los índices h de docente se identifican por su fuente (Google Scholar o Scopus); los valores del modo demostración son sintéticos y se marcan como **DEMO**.
+   - No se calcula un índice h institucional en SIMAPC. Los índices h de docente se identifican por su fuente (Google Scholar o Scopus); los valores del modo demostración son sintéticos y se marcan como **DEMO**.
    - Coautorías: los artículos con coautores docentes de la ECMC computan una sola vez a nivel Escuela.
    - Docentes sin publicaciones (ej. Dr. Andrés Villacís): muestran cero (0) publicaciones y cero citas; sus índices h se muestran según la fuente externa disponible.
 

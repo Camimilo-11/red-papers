@@ -10,7 +10,7 @@ interface EcmcLogoProps {
 
 /**
  * Logotipo Institucional de la Escuela de Ciencias Matemáticas y Computacionales (ECMC)
- * Yachay Tech - RED PAPERS
+ * Identidad visual de la Escuela de Ciencias Matemáticas y Computacionales.
  * Fiel a la captura oficial 01 y 04 de especificación visual.
  */
 export const EcmcLogo: React.FC<EcmcLogoProps> = ({
@@ -121,7 +121,7 @@ export const EcmcLogo: React.FC<EcmcLogoProps> = ({
               variant === 'white' ? 'text-white' : 'text-neutral-900'
             }`}
           >
-            RED PAPERS
+            SIMAPC
           </span>
           <span
             className={`text-[10px] font-semibold tracking-wider uppercase ${

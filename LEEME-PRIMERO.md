@@ -1,9 +1,9 @@
-# RED PAPERS · Nuevo diseño
+# SIMAPC · Sistema de Información, Monitoreo y Administración de la Producción Científica
 
 ## Abrir el proyecto
 
 1. Extraiga este ZIP en una carpeta nueva para conservar su versión anterior.
-2. Abra la carpeta RED-PAPERS en Visual Studio Code.
+2. Abra la carpeta del proyecto SIMAPC en Visual Studio Code.
 3. Abra Terminal > Nueva terminal y ejecute:
 
 ```powershell
