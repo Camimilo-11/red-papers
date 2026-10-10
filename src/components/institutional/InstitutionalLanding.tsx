@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { EcmcLogo } from '../../assets/EcmcLogo';
 
 const INTRO_TIMING_MS = {
   intro: 1500,
@@ -85,14 +84,10 @@ const emblemPositions = [
 ] as const;
 
 function LandingEmblem({ school, size }: { school: SchoolConfig; size: number }) {
-  if (school.code === 'ECMC') {
-    return <EcmcLogo className="institutional-landing-emblem-ecmc" size={size} variant="color" />;
-  }
-
   return (
     <img
       className="institutional-landing-emblem-image"
-      src={`./assets/school-emblems/${school.code}.svg`}
+      src={`./assets/school-symbols/${school.code}.svg`}
       alt=""
       draggable={false}
       style={{ width: size, height: size }}
