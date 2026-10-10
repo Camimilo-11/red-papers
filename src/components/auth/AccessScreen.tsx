@@ -1,7 +1,7 @@
 import React, {useState,useRef,useEffect} from 'react';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
-import {SchoolEmblem,YachaySymbol} from '../institutional/SchoolLogo';
+import {SchoolEmblem,YachayLogo} from '../institutional/SchoolLogo';
 interface AccessScreenProps {
  school:SchoolConfig; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
@@ -12,7 +12,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
  return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
   <header className="welcome-access-header">
-   <div className="welcome-access-brand"><YachaySymbol size={48}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
+   <div className="welcome-access-brand"><YachayLogo width={130}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
    <nav aria-label="Acceso a la plataforma"><button className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
