@@ -63,7 +63,9 @@ export function YachayLogo({ width = 136, className = '' }: { width?: number; cl
 }
 
 export function YachaySymbol({ size = 48, className = '' }: { size?: number; className?: string }) {
-  const scale = size / 42;
+  // Crop the emblem from the high-resolution university logo instead of the
+  // older 219 × 96 raster, which looked soft in the sidebar.
+  const scale = size / 234;
   return (
     <span
       className={`yachay-symbol-crop ${className}`}
@@ -72,10 +74,10 @@ export function YachaySymbol({ size = 48, className = '' }: { size?: number; cla
       style={{ width: size, height: size }}
     >
       <img
-        src="./assets/university-logo.png"
+        src="./assets/yachay-logo-clean.svg"
         alt=""
         aria-hidden="true"
-        style={{ width: 219 * scale, height: 96 * scale, left: -132 * scale, top: -22 * scale }}
+        style={{ width: 731 * scale, height: 252 * scale, left: -489 * scale, top: -8 * scale }}
       />
     </span>
   );
