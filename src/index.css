@@ -2006,19 +2006,18 @@ body {
   height: var(--emblem-size);
   opacity: 0;
   mix-blend-mode: multiply;
-  transform: translate3d(var(--entry-x), 30px, 0) rotate(var(--entry-rotation));
-  transition: opacity 50ms var(--landing-ease), transform 50ms var(--landing-ease);
+  transform: translate3d(calc(-50% + var(--entry-x)), calc(-50% + 30px), 0) rotate(var(--entry-rotation));
+  transition: opacity 350ms var(--landing-ease), transform 350ms var(--landing-ease);
   will-change: transform, opacity;
 }
 
 .institutional-landing-hero-emblem.is-visible {
   opacity: .94;
-  transform: translate3d(0, var(--parallax-y, 0px), 0) rotate(var(--emblem-rotation));
+  transform: translate3d(-50%, calc(-50% + var(--parallax-y, 0px)), 0) rotate(var(--emblem-rotation));
 }
 
 .institutional-landing-hero-emblem-float { display: block; width: 100%; height: 100%; }
-.institutional-landing-hero-emblem.is-visible .institutional-landing-hero-emblem-float { animation: institutional-emblem-settle 50ms var(--landing-ease) both; }
-.institutional-landing-hero-emblem-float.is-floating { animation: institutional-emblem-float 5.5s ease-in-out infinite; }
+.institutional-landing-hero-emblem.is-visible .institutional-landing-hero-emblem-float.is-floating { animation: institutional-emblem-float 6.5s ease-in-out var(--float-delay, 0s) infinite; }
 .institutional-landing-emblem-image { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .institutional-landing-emblem-ecmc { display: block; }
 
@@ -2157,7 +2156,12 @@ body {
   margin-top: 12px;
   background: #f0f5f7;
   color: #303942;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 300ms var(--landing-ease), transform 300ms var(--landing-ease);
 }
+
+.institutional-landing-footer[data-revealed="true"] { opacity: 1; transform: translateY(0); }
 
 .institutional-landing-footer-ribbon { display: flex; height: 9px; }
 .institutional-landing-footer-ribbon span { flex: 1 1 0; }
@@ -2206,14 +2210,15 @@ body {
   .institutional-landing-title { font-size: clamp(47px, 13.5vw, 72px); }
   .institutional-landing-subtitle { max-width: 440px; margin-top: 18px; font-size: 18px; }
   .institutional-landing-hero-link { margin-top: 24px; font-size: 15px; }
-  .institutional-landing-hero-emblem { opacity: 0; }
-  .institutional-landing-hero-emblem.is-visible { opacity: .24; }
-  .institutional-landing-hero-emblem[data-school="ECIAA"] { left: 80% !important; top: 35% !important; }
-  .institutional-landing-hero-emblem[data-school="ECBI"] { left: 78% !important; top: 22% !important; }
-  .institutional-landing-hero-emblem[data-school="ECFN"] { left: 78% !important; top: 49% !important; }
-  .institutional-landing-hero-emblem[data-school="ECMC"] { left: 78% !important; top: 76% !important; }
-  .institutional-landing-hero-emblem-image { width: min(64px, var(--emblem-size)) !important; height: min(64px, var(--emblem-size)) !important; }
-  .institutional-landing-hero-emblem-ecmc { width: min(64px, var(--emblem-size)) !important; height: auto !important; }
+  .institutional-landing-hero-emblem { width: min(112px, 28vw); height: min(112px, 28vw); opacity: 0; }
+  .institutional-landing-hero-emblem.is-visible { opacity: .18; }
+  .institutional-landing-hero-emblem[data-school="ECIAA"] { left: 72% !important; top: 15% !important; }
+  .institutional-landing-hero-emblem[data-school="ECBI"] { left: 94% !important; top: 24% !important; }
+  .institutional-landing-hero-emblem[data-school="ECFN"] { left: 84% !important; top: 42% !important; }
+  .institutional-landing-hero-emblem[data-school="ECTEA"] { left: 96% !important; top: 61% !important; }
+  .institutional-landing-hero-emblem[data-school="ECMC"] { left: 76% !important; top: 76% !important; }
+  .institutional-landing-hero-emblem[data-school="ECQI"] { left: 94% !important; top: 91% !important; }
+  .institutional-landing-hero-emblem[data-school="YTLC"] { left: 61% !important; top: 88% !important; }
   .institutional-landing-section-heading,
   .institutional-landing-school-scene { width: calc(100% - 40px); }
   .institutional-landing-section-heading { padding: 42px 0 8px; }
@@ -2259,6 +2264,7 @@ body {
   .institutional-landing.is-reduced .institutional-landing-hero,
   .institutional-landing.is-reduced .institutional-landing-section-heading,
   .institutional-landing.is-reduced .institutional-landing-school-scene { animation: institutional-reduced-fade 200ms ease both; }
+  .institutional-landing-footer { opacity: 1; transform: none; transition: none; }
 }
 .portal-app .welcome-seal .school-icon-crop { transform: scale(.9); transform-origin: center; }
 .portal-app .featured-paper-card[data-theme] { --feature-line-color: var(--accent); --feature-glow: color-mix(in srgb, var(--accent) 15%, transparent); }

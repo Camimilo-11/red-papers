@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
-import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
+import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { RESEARCH_LINE_MOTIFS } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
@@ -29,10 +29,8 @@ const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
 export function getStageState(value: number) {
   const progress = clamp(value, 0, TOTAL_UNITS);
   const current = clamp(Math.floor(progress / STAGE_TIMING.step), 0, STAGE_PLANES.length - 1);
-  const localProgress = progress - current * STAGE_TIMING.step;
-  const pairStart = localProgress < STAGE_TIMING.overlap && current > 0 ? current - 1 : current;
   const activeIndex = current;
-  return { progress, pairStart, activeIndex };
+  return { progress, activeIndex };
 }
 // The same entry curve is used for words, fills and the circular school reveal.
 // CSS handles cubic-bezier(.22, 1, .36, 1); these are its sampled scroll values.
@@ -47,8 +45,9 @@ function entryEase(x: number) {
   const t = (low + high) / 2;
   return 1 - (1 - t) ** 3;
 }
-type Plane = (typeof STAGE_PLANES)[number];
+type ActiveSlide = { school: SchoolConfig; index: number };
 const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
+const slideForIndex = (index: number): ActiveSlide => ({ school: STAGE_PLANES[index].school, index });
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
@@ -86,7 +85,7 @@ const TracedMotif = memo(function TracedMotif({ line }: { line: OfficialResearch
   );
 });
 
-function ShotArt({ index, progress, preview = false, selected = false }: { index: number; progress: MotionValue<number>; preview?: boolean; selected?: boolean }) {
+function ShotArt({ index, progress, preview = false, selected = false, selectedToken = 0, frozen = false }: { index: number; progress: MotionValue<number>; preview?: boolean; selected?: boolean; selectedToken?: number; frozen?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -95,6 +94,13 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
   const update = (value: number) => {
     const node = root.current;
     if (!node || selectedRef.current) return;
+    if (frozen) {
+      node.style.setProperty('--plane-opacity', '1');
+      node.style.setProperty('--plane-draw', '1');
+      node.style.setProperty('--wash-opacity', '.1');
+      node.style.setProperty('--wash-radius', '150%');
+      return;
+    }
     if (preview) {
       node.style.setProperty('--plane-opacity', '.27');
       node.style.setProperty('--plane-draw', '1');
@@ -118,7 +124,7 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
       return;
     }
     update(progress.get());
-  }, [index, progress, selected, preview]);
+  }, [index, progress, selected, preview, frozen]);
   useMotionValueEvent(progress, 'change', update);
   useEffect(() => {
     if (!selected) return;
@@ -133,7 +139,7 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [index, selected]);
+  }, [index, selected, selectedToken]);
   return (
     <div ref={root} className={`research-stage-shot-art ${schoolChange ? 'is-school-change' : ''} ${preview ? 'is-preview' : ''} ${selected ? 'is-selected-draw' : ''}`} data-school={plane.school.code} data-plane-index={index} style={{ ...schoolStyle(plane.school), zIndex: STAGE_PLANES.length - index }} aria-hidden="true">
       <div className="research-stage-wash-parallax"><div className="research-stage-wash" /></div>
@@ -142,59 +148,33 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
   );
 }
 
-/** One continuous emblem layer; only adjacent schools crossfade at a boundary. */
-function StageEmblems({ progress }: { progress: MotionValue<number> }) {
-  const root = useRef<HTMLDivElement>(null);
-  const update = (value: number) => {
-    root.current?.querySelectorAll<HTMLImageElement>('[data-stage-emblem] img').forEach((emblem, index) => {
-      const start = SCHOOL_LINE_OFFSETS[index] * STAGE_TIMING.step;
-      const end = (SCHOOL_LINE_OFFSETS[index] + stageLinesFor(SCHOOLS[index]).length) * STAGE_TIMING.step;
-      const entrance = index === 0 ? 1 : clamp((value - start + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
-      const departure = index === SCHOOLS.length - 1 ? 0 : clamp((value - end + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
-      emblem.style.opacity = String(entrance * (1 - departure));
-    });
-  };
-  useLayoutEffect(() => update(progress.get()), [progress]);
-  useMotionValueEvent(progress, 'change', update);
-  return <div ref={root} className="research-stage-emblems" aria-hidden="true">{SCHOOLS.map((school) => <div className="research-stage-emblem-camera" data-stage-emblem data-school={school.code} key={school.code}><div className="research-stage-emblem-ambient"><Emblem school={school} /></div></div>)}</div>;
-}
-
-function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectLine, onPreviewLine }: {
-  plane: Plane;
-  index: number;
+function StageSlide({ slide, isActive, progress, previewIndex, drawRequest, onSelectLine, onPreviewLine, onSelectSchool }: {
+  slide: ActiveSlide;
+  isActive: boolean;
   progress: MotionValue<number>;
-  manualIndex: number | null;
-  showSelector: boolean;
+  previewIndex: number | null;
+  drawRequest: { index: number; token: number } | null;
   onSelectLine: (school: SchoolConfig, lineIndex: number) => void;
   onPreviewLine: (index: number | null) => void;
+  onSelectSchool: (school: SchoolConfig) => void;
 }) {
-  const root = useRef<HTMLElement>(null);
+  const { school, index } = slide;
+  const plane = STAGE_PLANES[index];
   const words = plane.line.split(' ');
   const highlight = words.findIndex((word) => !/^(de|del|y|e|la|el|en|ciencias|investigación)$/i.test(word));
-  const update = (value: number) => {
-    const node = root.current;
-    if (!node) return;
-    if (manualIndex !== null) {
-      const selected = manualIndex === index;
-      node.style.opacity = String(Number(selected));
-      node.style.transform = 'translateY(0)';
-      return;
-    }
-    const p = clamp(value - index * STAGE_TIMING.step);
-    const entered = value >= index * STAGE_TIMING.step;
-    const exit = index === STAGE_PLANES.length - 1 ? 0 : entryEase((p - 0.75) / 0.25);
-    const entrance = entryEase(p / 0.16);
-    node.style.opacity = String(entered ? entrance * (1 - exit) : 0);
-    node.style.transform = `translateY(${(1 - entrance) * 12 - exit * 18}px)`;
-  };
-  useLayoutEffect(() => update(progress.get()), [index, progress, manualIndex]);
-  useMotionValueEvent(progress, 'change', update);
   return (
-    <article ref={root} className="research-stage-shot-copy" data-school={plane.school.code} style={schoolStyle(plane.school)} aria-labelledby={`research-shot-title-${index}`}>
-      <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
-        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
-      </h2>
-      {showSelector && <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${plane.school.name}`}>
+    <section className={`research-stage-slide ${isActive ? 'is-active' : 'is-leaving'}`} data-school={school.code} style={schoolStyle(school)} aria-hidden={!isActive} inert={!isActive}>
+      <div className="research-stage-art" aria-hidden="true">
+        <ShotArt index={index} progress={progress} selected={drawRequest?.index === index} selectedToken={drawRequest?.token ?? 0} frozen={!isActive} />
+        {isActive && previewIndex !== null && previewIndex !== index && <ShotArt index={previewIndex} progress={progress} preview key={`preview-${previewIndex}`} />}
+      </div>
+      <div className="research-stage-slide-emblem" aria-hidden="true"><Emblem school={school} /></div>
+      <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
+        <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageLinesFor(school).length).padStart(2, '0')}</span></p>
+        <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
+          {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
+        </h2>
+        <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${school.name}`}>
         {stageLinesFor(plane.school).map((line, lineIndex) => {
           const planeIndex = STAGE_PLANES.findIndex((item) => item.school.code === plane.school.code && item.line === line);
           return <button
@@ -208,8 +188,12 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
             onPointerLeave={() => onPreviewLine(null)}
           ><span aria-hidden="true" /></button>;
         })}
-      </nav>}
-    </article>
+        </nav>
+      </div>
+      <div className="research-stage-bottom">
+        <button type="button" onClick={() => onSelectSchool(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
   );
 }
 
@@ -237,71 +221,110 @@ function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: Schoo
   );
 }
 
-function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
+function AnimatedStage({ onSelect, logosReady }: { onSelect: (school: SchoolConfig) => void; logosReady: boolean }) {
   const track = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const rail = useRef<HTMLElement>(null);
   const geometry = useRef({ start: 0, unit: 1 });
+  const transitionTimer = useRef<number | null>(null);
+  const drawTimer = useRef<number | null>(null);
+  const pendingIndex = useRef<number | null>(null);
+  const drawToken = useRef(0);
+  const initialSync = useRef(true);
   const target = useMotionValue(0);
   const progress = useSpring(target, { stiffness: 120, damping: 30, mass: 1, restDelta: 0.0001, restSpeed: 0.0001 });
-  const [pairStart, setPairStart] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [manualIndex, setManualIndex] = useState<number | null>(null);
+  const [activeSlide, setActiveSlide] = useState<ActiveSlide>(() => slideForIndex(0));
+  const activeSlideRef = useRef(activeSlide);
+  const [outgoingSlide, setOutgoingSlide] = useState<ActiveSlide | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const displayIndex = manualIndex ?? activeIndex;
-  const activePlane = STAGE_PLANES[displayIndex];
+  const [drawRequest, setDrawRequest] = useState<{ index: number; token: number } | null>(null);
+
+  const activateSlide = (index: number) => {
+    const next = slideForIndex(clamp(index, 0, STAGE_PLANES.length - 1));
+    const previous = activeSlideRef.current;
+    if (previous.index === next.index) return;
+    activeSlideRef.current = next;
+    setActiveSlide(next);
+    setOutgoingSlide(previous);
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+    transitionTimer.current = window.setTimeout(() => {
+      setOutgoingSlide((current) => current?.index === previous.index ? null : current);
+      transitionTimer.current = null;
+    }, 350);
+  };
+
+  const requestDraw = (index: number) => {
+    const request = { index, token: ++drawToken.current };
+    setDrawRequest(request);
+    if (drawTimer.current !== null) window.clearTimeout(drawTimer.current);
+    drawTimer.current = window.setTimeout(() => {
+      setDrawRequest((current) => current?.token === request.token ? null : current);
+      drawTimer.current = null;
+    }, STAGE_TIMING.drawMs);
+  };
 
   useEffect(() => {
     let frame = 0;
     let disposed = false;
+    const update = () => {
+      frame = 0;
+      if (disposed || !track.current) return;
+      const sceneOffset = clamp((window.scrollY - geometry.current.start) / geometry.current.unit, 0, SCHOOLS.length);
+      const sceneIndex = Math.min(SCHOOLS.length - 1, Math.floor(sceneOffset));
+      const localProgress = clamp(sceneOffset - sceneIndex);
+      const school = SCHOOLS[sceneIndex];
+      const value = clamp((SCHOOL_LINE_OFFSETS[sceneIndex] + localProgress * stageLinesFor(school).length) * STAGE_TIMING.step, 0, TOTAL_UNITS);
+      target.set(value);
+      if (initialSync.current) {
+        initialSync.current = false;
+        const initialSlide = slideForIndex(getStageState(value).activeIndex);
+        activeSlideRef.current = initialSlide;
+        setActiveSlide(initialSlide);
+        progress.jump(value);
+      }
+      if (scene.current) scene.current.dataset.scrolled = String(sceneOffset > 0.02);
+    };
+    const scheduleUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
     const measure = () => {
       if (disposed || !track.current) return;
       const header = parseFloat(getComputedStyle(track.current).getPropertyValue('--landing-header-height')) || 86;
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const unit = viewportHeight * STAGE_TIMING.sceneVh / 100;
-      const totalLength = unit * SCHOOLS.length;
-      track.current.style.setProperty('--stage-scroll-length', `${totalLength}px`);
+      track.current.style.setProperty('--stage-scroll-length', `${unit * SCHOOLS.length}px`);
       track.current.querySelectorAll<HTMLElement>('[data-snap-position]').forEach((marker) => {
         marker.style.top = `${Number(marker.dataset.snapPosition) * unit}px`;
       });
       geometry.current = { start: track.current.getBoundingClientRect().top + window.scrollY - header, unit };
-      update();
+      scheduleUpdate();
     };
-    const update = () => {
-      frame = 0;
-      const sceneOffset = clamp((window.scrollY - geometry.current.start) / geometry.current.unit, 0, SCHOOLS.length);
-      const sceneIndex = Math.min(SCHOOLS.length - 1, Math.floor(sceneOffset));
-      const localProgress = clamp(sceneOffset - sceneIndex);
-      const school = SCHOOLS[sceneIndex];
-      const value = (SCHOOL_LINE_OFFSETS[sceneIndex] + localProgress * stageLinesFor(school).length) * STAGE_TIMING.step;
-      target.set(clamp(value, 0, TOTAL_UNITS));
-      if (scene.current) scene.current.dataset.scrolled = String(sceneOffset > 0.02);
-    };
-    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
-    const releaseManualSelection = () => setManualIndex(null);
+    const clearPending = () => { pendingIndex.current = null; };
     measure();
     document.fonts.ready.then(measure);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('scrollend', releaseManualSelection);
-    window.addEventListener('wheel', releaseManualSelection, { passive: true });
-    window.addEventListener('touchstart', releaseManualSelection, { passive: true });
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('scrollend', clearPending);
+    window.addEventListener('wheel', clearPending, { passive: true });
+    window.addEventListener('touchstart', clearPending, { passive: true });
     window.addEventListener('resize', measure);
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('scrollend', releaseManualSelection);
-      window.removeEventListener('wheel', releaseManualSelection);
-      window.removeEventListener('touchstart', releaseManualSelection);
+      if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+      if (drawTimer.current !== null) window.clearTimeout(drawTimer.current);
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('scrollend', clearPending);
+      window.removeEventListener('wheel', clearPending);
+      window.removeEventListener('touchstart', clearPending);
       window.removeEventListener('resize', measure);
     };
-  }, [target]);
+  }, [target, progress]);
 
   useMotionValueEvent(progress, 'change', (value) => {
-    // Keep the outgoing shot until its full fade; its successor starts 20% earlier.
-    const { progress: v, pairStart: base, activeIndex: active } = getStageState(value);
-    setPairStart((old) => old === base ? old : base);
-    setActiveIndex((old) => old === active ? old : active);
+    const { progress: v, activeIndex } = getStageState(value);
+    const pending = pendingIndex.current;
+    if (pending === null || pending === activeIndex) {
+      pendingIndex.current = null;
+      activateSlide(activeIndex);
+    }
     if (scene.current) scene.current.dataset.timeline = v.toFixed(4);
     rail.current?.querySelectorAll<HTMLElement>('[data-school-fill]').forEach((button) => {
       const index = Number(button.dataset.schoolIndex);
@@ -309,29 +332,33 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
       const length = stageLinesFor(SCHOOLS[index]).length * STAGE_TIMING.step;
       button.style.setProperty('--school-progress', String(clamp((v - start) / length)));
     });
-    rail.current?.querySelectorAll<HTMLElement>('[data-line-progress]').forEach((mark) => {
-      const index = Number(mark.dataset.lineProgress);
-      mark.style.setProperty('--line-progress', String(clamp((v - index * STAGE_TIMING.step) / STAGE_TIMING.step)));
-    });
   });
 
-  const jump = (school: SchoolConfig, lineIndex = 0) => {
+  const jump = (school: SchoolConfig, lineIndex = 0, behavior: ScrollBehavior = 'smooth') => {
     const index = STAGE_PLANES.findIndex((plane) => plane.school.code === school.code && plane.lineIndex === lineIndex);
     const schoolIndex = SCHOOLS.findIndex((item) => item.code === school.code);
     if (index < 0 || schoolIndex < 0) return;
-    setManualIndex(index);
+    const lineCount = stageLinesFor(school).length;
+    const lineOffset = behavior === 'instant' ? lineIndex : lineIndex + 0.5;
+    const value = (SCHOOL_LINE_OFFSETS[schoolIndex] + lineOffset) * STAGE_TIMING.step;
+    const scenePosition = schoolIndex + lineOffset / lineCount;
+    pendingIndex.current = index;
+    activateSlide(index);
     setHoveredIndex(null);
-    const linePosition = (lineIndex + 0.5) / stageLinesFor(school).length;
-    const scenePosition = schoolIndex + linePosition;
-    window.scrollTo({ top: geometry.current.start + scenePosition * geometry.current.unit, behavior: 'smooth' });
+    requestDraw(index);
+    target.set(value);
+    window.scrollTo({ top: geometry.current.start + scenePosition * geometry.current.unit, behavior });
+    if (behavior === 'instant') progress.jump(value);
   };
+
   const keyboardNavigation = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).isContentEditable) return;
-    const currentPlane = STAGE_PLANES[manualIndex ?? activeIndex];
-    const currentSchoolIndex = SCHOOLS.findIndex((school) => school.code === currentPlane.school.code);
+    const targetElement = event.target as HTMLElement;
+    if (targetElement.isContentEditable || targetElement.closest('input, textarea, select')) return;
+    const plane = STAGE_PLANES[activeSlide.index];
+    const currentSchoolIndex = SCHOOLS.findIndex((school) => school.code === activeSlide.school.code);
     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-      const next = clamp((manualIndex ?? activeIndex) + (event.key === 'ArrowRight' ? 1 : -1), 0, STAGE_PLANES.length - 1);
-      if (next !== (manualIndex ?? activeIndex)) {
+      const next = clamp(activeSlide.index + (event.key === 'ArrowRight' ? 1 : -1), 0, STAGE_PLANES.length - 1);
+      if (next !== activeSlide.index) {
         event.preventDefault();
         jump(STAGE_PLANES[next].school, STAGE_PLANES[next].lineIndex);
       }
@@ -342,69 +369,72 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
       if (nextSchoolIndex !== currentSchoolIndex) {
         event.preventDefault();
         const nextSchool = SCHOOLS[nextSchoolIndex];
-        jump(nextSchool, Math.min(currentPlane.lineIndex, stageLinesFor(nextSchool).length - 1));
+        jump(nextSchool, Math.min(plane.lineIndex, stageLinesFor(nextSchool).length - 1));
       }
       return;
     }
     if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault();
-      const plane = event.key === 'Home' ? STAGE_PLANES[0] : STAGE_PLANES[STAGE_PLANES.length - 1];
-      jump(plane.school, plane.lineIndex);
+      const next = event.key === 'Home' ? STAGE_PLANES[0] : STAGE_PLANES[STAGE_PLANES.length - 1];
+      jump(next.school, next.lineIndex);
     }
   };
-  const baseRendered = manualIndex !== null
-    ? [manualIndex, manualIndex + 1]
-    : [pairStart, pairStart + 1];
-  const rendered = hoveredIndex !== null ? [baseRendered[0], hoveredIndex] : baseRendered;
+
+  const visibleSlides = outgoingSlide && outgoingSlide.index !== activeSlide.index
+    ? [outgoingSlide, activeSlide]
+    : [activeSlide];
+  const previewIndex = outgoingSlide === null ? hoveredIndex : null;
+
   return (
-      <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
-        <div className="research-stage-snap-markers" aria-hidden="true">
-          {SCHOOLS.flatMap((school, schoolIndex) => [
-            <span key={`${school.code}-start`} data-school={school.code} data-school-scene data-snap-position={schoolIndex} />,
-            ...stageLinesFor(school).map((line, lineIndex) => {
-              const position = schoolIndex + (lineIndex + 0.5) / stageLinesFor(school).length;
-              return <span key={`${school.code}-${line}`} data-snap-position={position} />;
-            }),
-          ])}
-        </div>
-        <div ref={scene} className="research-stage" data-school={activePlane.school.code} data-timeline="0" data-scrolled="false" role="region" aria-label="Recorrido por las líneas de investigación">
-          <div className="research-stage-art" aria-hidden="true">
-            {rendered.filter((index, itemIndex) => index >= 0 && index < STAGE_PLANES.length && rendered.indexOf(index) === itemIndex).map((index) => <ShotArt index={index} progress={progress} selected={manualIndex === index} preview={hoveredIndex === index && manualIndex !== index && index !== activeIndex} key={index} />)}
-            <StageEmblems progress={progress} />
-          </div>
-          <p className="research-stage-eyebrow">INVESTIGACIÓN QUE CONECTA</p>
-          <div className="research-stage-copy-stack">
-            {STAGE_PLANES.map((plane, index) => <ShotText
-              key={`${plane.school.code}-${plane.line}`}
-              plane={plane}
-              index={index}
-              progress={progress}
-              manualIndex={manualIndex}
-              showSelector={index === displayIndex}
-              onSelectLine={jump}
-              onPreviewLine={setHoveredIndex}
-            />)}
-          </div>
-          <div className="research-stage-bottom" data-school={activePlane.school.code} style={schoolStyle(activePlane.school)}>
-            <button type="button" onClick={() => onSelect(activePlane.school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
-          </div>
-          <span className="research-stage-scroll-hint">Desliza <span aria-hidden="true">↓</span></span>
-        </div>
-        <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación">
-          <ol>{SCHOOLS.map((school, index) => (
-            <li key={school.code} data-school={school.code} style={schoolStyle(school)} className={activePlane.school.code === school.code ? 'is-active' : ''}>
-              <button className="research-stage-school-button" type="button" data-school-fill data-school-index={index} aria-label={`Ir a ${school.name}`} aria-current={activePlane.school.code === school.code ? 'step' : undefined} onClick={() => jump(school)}>
-                <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span>
-                <small>{displaySchoolCode(school)}</small>
-              </button>
-            </li>
-          ))}</ol>
-        </nav>
+    <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
+      <div className="research-stage-snap-markers" aria-hidden="true">
+        {SCHOOLS.flatMap((school, schoolIndex) => [
+          <span key={`${school.code}-start`} data-school={school.code} data-school-scene data-snap-position={schoolIndex} />,
+          ...stageLinesFor(school).map((line, lineIndex) => {
+            const position = schoolIndex + (lineIndex + 0.5) / stageLinesFor(school).length;
+            return <span key={`${school.code}-${line}`} data-snap-position={position} />;
+          }),
+        ])}
       </div>
+      <div ref={scene} className="research-stage" data-school={activeSlide.school.code} data-timeline="0" data-scrolled="false" style={schoolStyle(activeSlide.school)} role="region" aria-label="Recorrido por las líneas de investigación" aria-busy={!logosReady}>
+        {logosReady && visibleSlides.map((slide) => <StageSlide
+          key={`${slide.school.code}-${slide.index}`}
+          slide={slide}
+          isActive={slide.index === activeSlide.index}
+          progress={progress}
+          previewIndex={slide.index === activeSlide.index ? previewIndex : null}
+          drawRequest={drawRequest}
+          onSelectLine={(school, lineIndex) => jump(school, lineIndex)}
+          onPreviewLine={setHoveredIndex}
+          onSelectSchool={onSelect}
+        />)}
+        <span className="research-stage-scroll-hint">Desliza <span aria-hidden="true">↓</span></span>
+      </div>
+      {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación">
+        <ol>{SCHOOLS.map((school, index) => (
+          <li key={school.code} data-school={school.code} style={schoolStyle(school)} className={activeSlide.school.code === school.code ? 'is-active' : ''}>
+            <button className="research-stage-school-button" type="button" data-school-fill data-school-index={index} aria-label={`Ir a ${school.name}`} aria-current={activeSlide.school.code === school.code ? 'step' : undefined} onClick={() => jump(school, 0, 'instant')}>
+              <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span>
+              <small>{displaySchoolCode(school)}</small>
+            </button>
+          </li>
+        ))}</ol>
+      </nav>}
+      <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">
+        {STAGE_PLANES.map(({ school, line }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {line}</li>)}
+      </ol>
+    </div>
   );
 }
 
 export function ResearchStage({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   const reduced = useReducedMotion();
-  return reduced ? <div id="escuelas"><SelectionGrid onSelect={onSelect} reduced /></div> : <AnimatedStage onSelect={onSelect} />;
+  const [logosReady, setLogosReady] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    void ensureSchoolLogosDecoded().then((ready) => { if (mounted) setLogosReady(ready); });
+    return () => { mounted = false; };
+  }, []);
+  if (reduced) return <div id="escuelas" aria-busy={!logosReady}>{logosReady ? <SelectionGrid onSelect={onSelect} reduced /> : null}</div>;
+  return <AnimatedStage onSelect={onSelect} logosReady={logosReady} />;
 }

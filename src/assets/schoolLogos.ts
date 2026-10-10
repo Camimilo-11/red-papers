@@ -17,3 +17,17 @@ export const SCHOOL_LOGOS: Record<SchoolConfig['code'], string> = {
   ECQI: ecqi,
   YTLC: ytlc,
 };
+
+let schoolLogosDecoded: Promise<boolean> | undefined;
+
+/** Resolve only after each school mark is available for an uninterrupted slide swap. */
+export function ensureSchoolLogosDecoded() {
+  schoolLogosDecoded ??= Promise.all(Object.values(SCHOOL_LOGOS).map(async (src) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = src;
+    await image.decode();
+  })).then(() => true).catch(() => false);
+
+  return schoolLogosDecoded;
+}

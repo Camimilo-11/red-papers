@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { SCHOOL_LOGOS } from '../../assets/schoolLogos';
+import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { ResearchStage } from './ResearchStage';
 
 const INTRO_TIMING_MS = {
@@ -12,7 +12,7 @@ const INTRO_TIMING_MS = {
   curtainRetraction: 600,
   contentStart: 1850,
   contentStagger: 70,
-  emblemsStart: 1950,
+  emblemsStart: 0,
   emblemStagger: 50,
   total: 1500 + 800,
   reducedFade: 200,
@@ -97,13 +97,13 @@ function getInitialPhase(): IntroPhase {
 }
 
 const emblemPositions = [
-  { left: '57%', top: '52%', size: 94, rotation: '-17deg', parallax: 0.035 },
-  { left: '62%', top: '34%', size: 74, rotation: '12deg', parallax: 0.055 },
-  { left: '77%', top: '42%', size: 88, rotation: '-9deg', parallax: 0.03 },
-  { left: '83%', top: '16%', size: 102, rotation: '15deg', parallax: 0.05 },
-  { left: '76%', top: '72%', size: 82, rotation: '11deg', parallax: 0.045 },
-  { left: '67%', top: '69%', size: 76, rotation: '-13deg', parallax: 0.06 },
-  { left: '91%', top: '57%', size: 70, rotation: '8deg', parallax: 0.04 },
+  { left: '67%', top: '14%', size: 224, rotation: '-17deg', parallax: 0.035, floatDelay: '0s' },
+  { left: '86%', top: '16%', size: 184, rotation: '12deg', parallax: 0.055, floatDelay: '-1.1s' },
+  { left: '73%', top: '40%', size: 220, rotation: '-9deg', parallax: 0.03, floatDelay: '-2.2s' },
+  { left: '91%', top: '43%', size: 204, rotation: '15deg', parallax: 0.05, floatDelay: '-3.3s' },
+  { left: '66%', top: '70%', size: 204, rotation: '11deg', parallax: 0.045, floatDelay: '-4.4s' },
+  { left: '84%', top: '72%', size: 190, rotation: '-13deg', parallax: 0.06, floatDelay: '-5.5s' },
+  { left: '94%', top: '89%', size: 176, rotation: '8deg', parallax: 0.04, floatDelay: '-6.1s' },
 ] as const;
 
 function LandingEmblem({ school, size }: { school: SchoolConfig; size: number }) {
@@ -124,9 +124,35 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const [visibleEmblems, setVisibleEmblems] = useState<boolean[]>(() =>
     SCHOOLS.map(() => phase === 'done' || phase === 'reduced'),
   );
+  const [logosReady, setLogosReady] = useState(false);
+  const [footerRevealed, setFooterRevealed] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
   const introTimersRef = useRef<number[]>([]);
   const introActiveRef = useRef(phase === 'intro');
+
+  useEffect(() => {
+    let mounted = true;
+    void ensureSchoolLogosDecoded().then((ready) => { if (mounted) setLogosReady(ready); });
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer) return;
+    if (!('IntersectionObserver' in window)) {
+      setFooterRevealed(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setFooterRevealed(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.04 });
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
 
   const completeIntro = () => {
     introActiveRef.current = false;
@@ -252,7 +278,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
             const position = emblemPositions[index];
             return (
               <span
-                className={`institutional-landing-hero-emblem ${visibleEmblems[index] ? 'is-visible' : ''}`}
+                className={`institutional-landing-hero-emblem ${logosReady && visibleEmblems[index] ? 'is-visible' : ''}`}
                 key={school.code}
                 data-school={school.code}
                 data-parallax-emblem
@@ -262,11 +288,12 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
                   top: position.top,
                   '--emblem-rotation': position.rotation,
                   '--emblem-size': `${position.size}px`,
+                  '--float-delay': position.floatDelay,
                   '--entry-x': index % 2 === 0 ? '42px' : '-42px',
                   '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg',
                 } as React.CSSProperties}
               >
-                <span className={`institutional-landing-hero-emblem-float ${phase === 'done' ? 'is-floating' : ''}`}>
+                <span className={`institutional-landing-hero-emblem-float ${logosReady ? 'is-floating' : ''}`}>
                   <LandingEmblem school={school} size={position.size} />
                 </span>
               </span>
@@ -291,7 +318,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
       <ResearchStage onSelect={onSelect} />
 
-      <footer className="institutional-landing-footer" aria-label="Enlaces institucionales">
+      <footer ref={footerRef} className="institutional-landing-footer" data-revealed={footerRevealed} aria-label="Enlaces institucionales">
         <div className="institutional-landing-footer-ribbon" aria-hidden="true">
           {SCHOOLS.map((school) => <span key={school.code} style={{ backgroundColor: school.accent }} />)}
         </div>
