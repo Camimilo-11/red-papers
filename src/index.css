@@ -1407,8 +1407,11 @@ body {
   }
 
   .portal-main-public-dashboard .featured-publications-heading {
-    gap: 7px;
-    margin-bottom: 11px;
+    margin-bottom: 7px;
+  }
+
+  .portal-main-public-dashboard .featured-publications-selection {
+    display: none;
   }
 
   .portal-main-public-dashboard .featured-publications-heading h2 {
