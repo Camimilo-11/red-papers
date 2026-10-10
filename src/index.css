@@ -1315,3 +1315,59 @@ body {
   .product-detail-doi-link,
   .product-detail-close-button { animation: none; transition: none; }
 }
+
+/* Carrusel público: jerarquía editorial, acción clara y progreso accesible. */
+.featured-publications-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 12px;
+}
+
+.featured-publications-heading > div { min-width: 0; }
+.featured-publications-kicker { margin: 0 0 5px; color: #bd3027; font-size: 10px; font-weight: 800; letter-spacing: 1.65px; }
+.featured-publications-heading h2 { color: #262321; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(22px, 2.15vw, 28px); font-weight: 500; letter-spacing: -.35px; line-height: 1.18; }
+.featured-publications-heading > div > p:last-child { margin-top: 5px; color: #625b55; font-size: 13px; line-height: 1.4; }
+.featured-publications-selection { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid #e5d9ce; border-radius: 999px; background: #fffdfa; color: #5f5148; font-size: 11px; font-weight: 650; }
+.featured-publications-selection svg { color: #bd3027; }
+
+.featured-paper-card { --feature-line-color: #bd3027; }
+.featured-paper-card[data-theme="mathematics"] { --feature-line-color: #bd3027; --feature-glow: rgba(189, 48, 39, .11); }
+.featured-paper-card[data-theme="data"] { --feature-line-color: #7452a0; --feature-glow: rgba(116, 82, 160, .16); }
+.featured-paper-card[data-theme="computing"] { --feature-line-color: #a96320; --feature-glow: rgba(169, 99, 32, .17); }
+.featured-paper-card[data-theme="artificial-intelligence"] { --feature-line-color: #a44170; --feature-glow: rgba(164, 65, 112, .14); }
+.featured-paper-card[data-theme="technology"] { --feature-line-color: #32728e; --feature-glow: rgba(50, 114, 142, .16); }
+.featured-paper-card[data-theme="society"] { --feature-line-color: #87602f; --feature-glow: rgba(135, 96, 47, .19); }
+.featured-paper-backdrop { --bd-opacity: .4; }
+.featured-paper-line { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; padding: 6px 10px; border: 1px solid rgba(91, 75, 63, .16); border-radius: 999px; background: rgba(255, 253, 250, .9); color: #48413c; font-size: 12px; font-weight: 650; line-height: 1.35; }
+.featured-paper-line-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--feature-line-color); box-shadow: 0 0 0 3px rgba(85, 70, 58, .08); }
+.featured-paper-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 13px; margin-top: 12px; }
+.featured-paper-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; margin: 0; padding: 0 14px; border: 1px solid #a92b22; border-radius: 6px; background: #bd3027; box-shadow: 0 3px 9px rgba(150, 37, 29, .17); color: #fff; font-size: 13px; font-weight: 750; text-decoration: none; transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.featured-paper-link:hover { transform: translateY(-1px); background: #a92b22; box-shadow: 0 5px 13px rgba(150, 37, 29, .22); color: #fff; text-decoration: none; }
+.featured-paper-doi { max-width: 100%; overflow-wrap: anywhere; color: #625b55; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; line-height: 1.45; }
+.featured-paper-citations { border-color: rgba(91, 75, 63, .2); background: rgba(255, 253, 250, .94); }
+.featured-paper-citations strong { color: #262321; }
+.featured-paper-rank { display: flex; align-items: center; gap: 7px; }
+.featured-paper-rank svg { flex: 0 0 auto; color: var(--feature-line-color); }
+.featured-paper-controls { flex-wrap: wrap; row-gap: 8px; }
+.featured-paper-controls > button { flex: 0 0 32px; }
+.featured-paper-controls > .featured-paper-pause { border-color: #bd3027; background: #fff8f5; color: #a92b22; }
+.featured-paper-controls > .featured-paper-pause:hover { border-color: #a92b22; background: #fbe8e2; }
+.featured-paper-progress { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 3px; transform: scaleX(0); transform-origin: left center; background: var(--feature-line-color); animation-name: featured-paper-progress; animation-timing-function: linear; animation-fill-mode: both; pointer-events: none; }
+@keyframes featured-paper-progress { to { transform: scaleX(1); } }
+
+@media (max-width: 760px) {
+  .featured-publications-heading { align-items: flex-start; flex-direction: column; gap: 9px; margin-bottom: 10px; }
+  .featured-publications-heading h2 { font-size: 24px; }
+  .featured-publications-heading > div > p:last-child { font-size: 12px; }
+  .featured-publications-selection { padding: 6px 9px; font-size: 10px; }
+  .featured-paper-backdrop { --bd-opacity: .3; }
+  .featured-paper-actions { align-items: flex-start; }
+  .featured-paper-link { min-height: 42px; }
+  .featured-paper-doi { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-paper-link { transition: none; }
+}
