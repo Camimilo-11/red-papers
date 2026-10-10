@@ -3,10 +3,20 @@ import { Award, ChevronLeft, ChevronRight, ExternalLink, Pause, Play } from 'luc
 import { SCHOOLS } from '../../constants/schools';
 import { normalizeDoi } from '../../services/doiService';
 import { OfficialResearchLine, ScientificProduct } from '../../types';
+import { FeaturedPublicationBackdrop, ResearchTheme } from './FeaturedPublicationBackdrop';
 import { ResearchLineBackdrop } from './ResearchLineBackdrop';
 
 const numberFormat = new Intl.NumberFormat('es-EC');
 const ROTATION_MS = 5000;
+
+const ECMC_RESEARCH_THEMES: Partial<Record<OfficialResearchLine, ResearchTheme>> = {
+  'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización': 'mathematics',
+  'Ciencia de datos': 'data',
+  'Computación científica': 'computing',
+  'Inteligencia artificial': 'artificial-intelligence',
+  'Tecnologías de la información': 'technology',
+  'Ciencia, Tecnología y Sociedad': 'society',
+};
 
 /** Anima el número sin movimiento si la persona prefiere reducirlo. */
 function useCountUp(value: number, resetKey: string | undefined) {
@@ -105,6 +115,7 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
   }
 
   const school = SCHOOLS.find((candidate) => candidate.researchLines.some((line) => line === publication.researchLine));
+  const ecmcTheme = school?.code === 'ECMC' ? ECMC_RESEARCH_THEMES[publication.researchLine] : undefined;
   const cleanDoi = normalizeDoi(publication.doi);
   const goTo = (offset: number) => {
     setActiveIndex((index) => (index + offset + publications.length) % publications.length);
@@ -129,7 +140,11 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
         }}
       >
-        <ResearchLineBackdrop key={`backdrop-${publication.researchLine}`} researchLine={publication.researchLine} />
+        {ecmcTheme ? (
+          <FeaturedPublicationBackdrop key={`backdrop-${publication.researchLine}`} theme={ecmcTheme} />
+        ) : (
+          <ResearchLineBackdrop key={`backdrop-${publication.researchLine}`} researchLine={publication.researchLine} />
+        )}
         <div className="featured-paper-copy" key={publication.id}>
           <p className="eyebrow">PUBLICACIÓN DESTACADA</p>
           <p className="featured-paper-line">

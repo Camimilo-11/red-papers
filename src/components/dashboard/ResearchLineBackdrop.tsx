@@ -479,21 +479,35 @@ function MedicinalChemistry(): Node {
 }
 
 function SustainableDevelopment(): Node {
-  const cx = 450, cy = 190, R = 98;
-  const arrow = (start: number, k: string) => {
-    const a1 = start, a2 = start + (Math.PI * 2) / 3 - 0.55;
-    const [x1, y1] = polar(cx, cy, R, a1), [x2, y2] = polar(cx, cy, R, a2);
-    const t = a2 + Math.PI / 2;
-    const tip = [x2 + Math.cos(t) * 14, y2 + Math.sin(t) * 14] as const;
-    const l = polar(x2, y2, 12, t + 2.5), rr = polar(x2, y2, 12, t - 2.5);
-    return <g key={k}><path d={`M${f(x1)} ${f(y1)}A${R} ${R} 0 0 1 ${f(x2)} ${f(y2)}`} {...line} strokeWidth={3} /><path d={toPath([l, tip, rr])} {...line} strokeWidth={3} /></g>;
-  };
   return (
     <g>
-      {arrow(-Math.PI / 2, 'a')}{arrow(-Math.PI / 2 + (Math.PI * 2) / 3, 'b')}{arrow(-Math.PI / 2 + (Math.PI * 4) / 3, 'c')}
-      <path d="M450 232C412 214 412 168 450 148C488 168 488 214 450 232Z" {...solid} opacity={0.22} /><path d="M450 232V150" {...line} />
-      <circle cx={cx} cy={cy} r={150} {...thin} strokeDasharray="2 8" opacity={0.7} />
-      <path d="M580 70q14 22 0 36q-14 -14 0 -36Z" {...line} /><path d="M330 290q10 16 0 26q-10 -10 0 -26Z" {...line} opacity={0.7} />
+      {/* Energía solar: sol, panel fotovoltaico y soporte. */}
+      <circle cx={548} cy={66} r={21} {...line} strokeWidth={2} />
+      <circle cx={548} cy={66} r={9} {...solid} opacity={0.18} />
+      <path d="M548 31V23M548 109V101M513 66H505M591 66H583M523 41L517 35M579 97L573 91M573 41L579 35M517 97L523 91" {...thin} />
+      <path d="M365 72L466 72L484 125L383 125Z" {...line} strokeWidth={2} />
+      <path d="M389 72L407 125M419 72L437 125M449 72L467 125M374 98H475" {...thin} />
+      <path d="M405 125L394 151M459 125L470 151M387 152H478" {...line} />
+
+      {/* Agricultura: surcos, tallo y espigas. */}
+      <path d="M278 326C325 299 372 299 419 326M289 344C337 317 384 317 431 344M305 359C348 337 389 337 426 357" {...thin} opacity={0.8} />
+      <path d="M340 305C346 261 349 218 346 170" {...line} strokeWidth={2} />
+      <path d="M344 268C326 257 318 244 317 228C334 233 344 245 346 259M345 246C362 235 369 222 368 206C352 211 344 224 345 239M346 219C329 208 324 195 326 180C340 186 347 198 347 212" {...line} />
+      <path d="M346 186C337 178 335 167 339 156C348 163 351 173 348 183M347 184C355 175 365 174 374 179C367 188 357 190 349 187M345 199C336 193 333 184 336 175" {...thin} />
+
+      {/* Alimentos: cesta de cosecha con frutos y hojas. */}
+      <path d="M430 235Q472 171 515 235" {...line} strokeWidth={2} />
+      <path d="M418 238Q472 254 527 238L515 300Q472 316 430 300Z" {...line} strokeWidth={2} />
+      <path d="M424 256Q472 270 521 256M427 276Q472 290 518 276M434 298L441 255M455 306L458 263M480 307L480 264M501 303L497 258" {...thin} />
+      <path d="M447 231C438 217 444 202 459 198C470 209 466 225 451 234Z" fill="currentColor" fillOpacity={0.13} stroke="currentColor" strokeWidth={1.5} />
+      <path d="M461 231C454 216 463 202 478 202C486 216 479 229 465 234Z" fill="currentColor" fillOpacity={0.22} stroke="currentColor" strokeWidth={1.5} />
+      <path d="M478 231C478 216 491 207 504 213C505 228 493 236 480 235Z" fill="currentColor" fillOpacity={0.1} stroke="currentColor" strokeWidth={1.5} />
+      <path d="M456 205Q460 196 468 195M473 209Q477 200 485 198M487 214Q493 206 500 206" {...thin} />
+
+      {/* Medio ambiente: agua y una hoja, vinculadas al paisaje agrícola. */}
+      <path d="M570 155C570 155 546 185 546 200A24 24 0 0 0 594 200C594 185 570 155 570 155Z" fill="currentColor" fillOpacity={0.08} stroke="currentColor" strokeWidth={1.8} />
+      <path d="M566 209C556 195 560 181 575 174C585 187 581 201 566 209ZM566 208L574 184" {...line} />
+      <path d="M534 238C548 222 562 218 577 224C573 240 558 249 539 245M538 245L565 226" {...thin} />
     </g>
   );
 }
