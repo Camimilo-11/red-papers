@@ -1,27 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
+import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
 import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { RESEARCH_LINE_MOTIFS, useBackdropMotionVisibility } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
 
-export const STAGE_RESEARCH_LINES: Record<SchoolCode, readonly OfficialResearchLine[]> = {
-  ECIAA: ['Ciencias Agrícolas', 'Investigación del mercado de productos agroindustriales'],
-  ECBI: ['Ecología, evolución y conservación de ecosistemas terrestres', 'Biomedicina'],
-  ECFN: ['Materiales nanoestructurados, síntesis y caracterización', 'Astrofísica, Cosmología y Física Teórica'],
-  ECTEA: ['Geología física y aplicada', 'Medioambiente y clima'],
-  ECMC: ['Ciencia de datos', 'Inteligencia artificial'],
-  ECQI: ['Química medicinal y farmacología molecular', 'Desarrollo sostenible: Energía, alimentos, agricultura y medio ambiente'],
-  YTLC: ['Education technology & AI', 'Sociolinguistics/Language and Culture'],
-};
-const stageLinesFor = (school: SchoolConfig) => STAGE_RESEARCH_LINES[school.code];
+export const STAGE_RESEARCH_LINES = SCHOOLS.reduce((lines, school) => {
+  lines[school.code] = RESEARCH_STAGE_SLIDES[school.code].map((slide) => slide.line);
+  return lines;
+}, {} as Record<SchoolCode, readonly OfficialResearchLine[]>);
+const stageSlidesFor = (school: SchoolConfig) => RESEARCH_STAGE_SLIDES[school.code];
 export const STAGE_PLANES = SCHOOLS.flatMap((school) =>
-  stageLinesFor(school).map((line, lineIndex) => ({ school, line, lineIndex })),
+  stageSlidesFor(school).map((slide, lineIndex) => ({ school, ...slide, lineIndex })),
 );
 export const STAGE_TIMING = { sceneVh: 130, overlap: 0.2, step: 0.8, drawMs: 600 } as const;
 const TOTAL_UNITS = STAGE_PLANES.length * STAGE_TIMING.step;
 const SCHOOL_LINE_OFFSETS = SCHOOLS.map((school, schoolIndex) =>
-  SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + stageLinesFor(previous).length, 0),
+  SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + stageSlidesFor(previous).length, 0),
 );
 const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
 export function getStageState(value: number) {
@@ -118,8 +114,7 @@ function StageSlide({ index, timeline, live, registerHost, onSelectLine, onPrevi
   const scale = useTransform(drift, [0, 1], [1, 1.05]);
   const rotate = useTransform(drift, [0, 1], [0, 4]);
   const emblemRotate = useTransform(drift, [0, 1], [-3, 3]);
-  const words = plane.line.split(' ');
-  const highlight = words.findIndex((word) => !/^(de|del|y|e|la|el|en|ciencias|investigación)$/i.test(word));
+  const words = plane.title.split(' ');
 
   return <motion.section className="research-stage-slide" data-school={school.code} data-slide-index={index} style={{ ...schoolStyle(school), opacity, y }} aria-hidden={index !== 0} inert={index !== 0}>
     <div className="research-stage-art" aria-hidden="true">
@@ -132,12 +127,12 @@ function StageSlide({ index, timeline, live, registerHost, onSelectLine, onPrevi
     </div>
     <motion.div className="research-stage-slide-emblem" style={{ rotate: emblemRotate }} aria-hidden="true"><Emblem school={school} /></motion.div>
     <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
-      <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageLinesFor(school).length).padStart(2, '0')}</span></p>
-      <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
-        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
+      <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageSlidesFor(school).length).padStart(2, '0')}</span></p>
+      <h2 id={`research-shot-title-${index}`} aria-label={plane.title}>
+        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{plane.accentWords.includes(wordIndex) ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
       </h2>
       <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${school.name}`}>
-        {stageLinesFor(school).map((line, lineIndex) => <button key={line} type="button" className={plane.lineIndex === lineIndex ? 'is-active' : ''} aria-label={`Mostrar ${line}`} aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
+        {stageSlidesFor(school).map((slide, lineIndex) => <button key={`${school.code}-${lineIndex}`} type="button" className={plane.lineIndex === lineIndex ? 'is-active' : ''} aria-label={`Mostrar ${slide.title}`} aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
           onClick={() => onSelectLine(school, lineIndex)}
           onPointerEnter={(event) => { if (event.pointerType === 'mouse') onPreviewLine(SCHOOL_LINE_OFFSETS[SCHOOLS.indexOf(school)] + lineIndex); }}
           onPointerLeave={() => onPreviewLine(-1)}><span aria-hidden="true" /></button>)}
@@ -151,7 +146,7 @@ function SchoolNavigationItem({ school, schoolIndex, timeline, jump }: {
   school: SchoolConfig; schoolIndex: number; timeline: MotionValue<number>;
   jump: (school: SchoolConfig, lineIndex?: number) => void;
 }) {
-  const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageLinesFor(school).length));
+  const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageSlidesFor(school).length));
   return <li data-school={school.code} style={schoolStyle(school)}>
     <button className="research-stage-school-button" type="button" data-school-index={schoolIndex} aria-label={`Ir a ${school.name}`} aria-current={schoolIndex === 0 ? 'step' : undefined} onClick={() => jump(school)}>
       <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{displaySchoolCode(school)}</small>
@@ -168,14 +163,14 @@ function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: Schoo
       <div className="research-stage-school-grid">
         {SCHOOLS.map((school) => (
           <article id={`research-school-${school.code}`} className="research-stage-school-card" data-school={school.code} style={schoolStyle(school)} key={school.code}>
-            {reduced && <svg className="research-stage-static-motif" viewBox="170 -30 510 430" aria-hidden="true" focusable="false">{React.createElement(RESEARCH_LINE_MOTIFS[stageLinesFor(school)[0]])}</svg>}
+            {reduced && <svg className="research-stage-static-motif" viewBox="170 -30 510 430" aria-hidden="true" focusable="false">{React.createElement(RESEARCH_LINE_MOTIFS[stageSlidesFor(school)[0].line])}</svg>}
             <div className="research-stage-card-emblem" aria-hidden="true"><Emblem school={school} /></div>
             <p className="research-stage-eyebrow">{school.code}</p>
             <h3>{school.name}</h3>
             <button id={`research-select-${school.code}`} type="button" onClick={() => onSelect(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
             <details open={reduced || undefined}>
               <summary>Líneas de investigación <span aria-hidden="true">+</span></summary>
-              <ul>{stageLinesFor(school).map((line, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={line} tabIndex={-1}>{line}</li>)}</ul>
+              <ul>{stageSlidesFor(school).map((slide, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={`${school.code}-${lineIndex}`} tabIndex={-1}>{slide.title}</li>)}</ul>
             </details>
           </article>
         ))}
@@ -201,7 +196,11 @@ function AnimatedStage({ onSelect, logosReady, scrollY }: { onSelect: (school: S
   const navigationOpacity = useMotionValue(1);
   const navigationY = useMotionValue(0);
   const navigationAnimation = useRef<ReturnType<typeof animate>[]>([]);
-  const timeline = useTransform(() => clamp((scrollY.get() - start.get()) / unit.get() * 2, 0, STAGE_PLANES.length - .001));
+  const timeline = useTransform(() => {
+    const schoolProgress = clamp((scrollY.get() - start.get()) / unit.get(), 0, SCHOOLS.length - .001);
+    const schoolIndex = Math.floor(schoolProgress);
+    return SCHOOL_LINE_OFFSETS[schoolIndex] + (schoolProgress - schoolIndex) * stageSlidesFor(SCHOOLS[schoolIndex]).length;
+  });
   const previewOpacity = useTransform(preview, (index) => index < 0 ? 0 : .27);
   const hintOpacity = useTransform(timeline, [0, .06], [1, 0]);
   const hintY = useTransform(timeline, [0, .06], [0, 8]);
@@ -310,7 +309,8 @@ function AnimatedStage({ onSelect, logosReady, scrollY }: { onSelect: (school: S
     preview.set(-1);
     // Land beyond the blend boundary so a direct jump settles the whole target slide.
     const target = index + FADE + .001;
-    window.scrollTo({ top: start.get() + target / 2 * unit.get(), behavior: 'instant' });
+    const schoolProgress = schoolIndex + (target - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageSlidesFor(school).length;
+    window.scrollTo({ top: start.get() + schoolProgress * unit.get(), behavior: 'instant' });
     scrollY.set(window.scrollY);
     sync(target);
     navigationAnimation.current.forEach((control) => control.stop());
@@ -344,7 +344,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY }: { onSelect: (school: S
       {logosReady && <motion.span className="research-stage-scroll-hint" style={{ opacity: hintOpacity, x: '-50%', y: hintY }}>Desliza <span aria-hidden="true">↓</span></motion.span>}
     </div>
     {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}
-    <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">{STAGE_PLANES.map(({ school, line }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {line}</li>)}</ol>
+    <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">{STAGE_PLANES.map(({ school, title }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {title}</li>)}</ol>
   </div>;
 }
 
