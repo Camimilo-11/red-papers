@@ -95,25 +95,15 @@ function ShotArt({ index, progress, preview = false, selected = false }: { index
     if (preview) {
       node.style.setProperty('--plane-opacity', '.27');
       node.style.setProperty('--plane-draw', '1');
-      node.style.setProperty('--motif-scale', '1');
-      node.style.setProperty('--motif-rotate', '0deg');
-      node.style.setProperty('--motif-x', '0px');
-      node.style.setProperty('--motif-y', '0px');
       node.style.setProperty('--wash-opacity', '0');
       return;
     }
     const p = clamp(value - index * STAGE_TIMING.step);
     const entered = value >= index * STAGE_TIMING.step;
     const exit = index === STAGE_PLANES.length - 1 ? 0 : clamp((p - 0.75) / 0.25);
-    const camera = clamp((p - 0.35) / 0.4);
     node.dataset.planeProgress = p.toFixed(4);
     node.style.setProperty('--plane-opacity', String(entered ? 1 - exit : 0));
     node.style.setProperty('--plane-draw', String(clamp(p / 0.35)));
-    node.style.setProperty('--motif-scale', String(1 + camera * 0.15 + exit * 0.15));
-    node.style.setProperty('--motif-rotate', `${camera * 4 + exit * 2}deg`);
-    node.style.setProperty('--motif-x', `${(p - 0.35) * 38 * 0.6}px`);
-    node.style.setProperty('--motif-y', `${(p - 0.35) * -24 * 0.6}px`);
-    node.style.setProperty('--wash-y', `${(p - 0.35) * -24 * 0.3}px`);
     node.style.setProperty('--wash-opacity', String(index === 0 ? 0.1 : 0.1 * clamp(p / STAGE_TIMING.overlap)));
     node.style.setProperty('--wash-radius', schoolChange ? `${entryEase(p / 0.22) * 150}%` : '150%');
   };
@@ -159,10 +149,7 @@ function StageEmblems({ progress }: { progress: MotionValue<number> }) {
       const entrance = index === 0 ? 1 : clamp((value - start + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
       const departure = index === SCHOOLS.length - 1 ? 0 : clamp((value - end + STAGE_TIMING.overlap) / STAGE_TIMING.overlap);
       const opacity = entrance * (1 - departure);
-      const turn = -15 + value * 7 + departure * 65 - (1 - entrance) * 45;
       emblem.style.opacity = String(opacity);
-      emblem.style.setProperty('--emblem-turn', `${turn}deg`);
-      emblem.style.setProperty('--emblem-y', `${Math.sin(value * 0.7 + index) * 9}px`);
     });
   };
   useLayoutEffect(() => update(progress.get()), [progress]);
@@ -182,6 +169,7 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
   const root = useRef<HTMLElement>(null);
   const words = plane.line.split(' ');
   const highlight = words.findIndex((word) => !/^(de|del|y|e|la|el|en|ciencias|investigación)$/i.test(word));
+  const description = descriptions[plane.line];
   const update = (value: number) => {
     const node = root.current;
     if (!node) return;
@@ -189,25 +177,14 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
       const selected = manualIndex === index;
       node.style.opacity = String(Number(selected));
       node.style.transform = 'translateY(0)';
-      node.querySelectorAll<HTMLElement>('[data-word]').forEach((word) => {
-        word.style.transform = 'translateY(0)';
-        word.style.opacity = String(Number(selected));
-      });
-      node.style.setProperty('--caption-opacity', String(Number(selected)));
       return;
     }
     const p = clamp(value - index * STAGE_TIMING.step);
     const entered = value >= index * STAGE_TIMING.step;
     const exit = index === STAGE_PLANES.length - 1 ? 0 : entryEase((p - 0.75) / 0.25);
-    node.style.opacity = String(entered ? 1 - exit : 0);
-    node.style.transform = `translateY(${-exit * 28}px)`;
-    node.querySelectorAll<HTMLElement>('[data-word]').forEach((word, wordIndex) => {
-      const delay = (wordIndex / Math.max(1, words.length - 1)) * 0.12;
-      const wordIn = entryEase((p - delay) / 0.18);
-      word.style.transform = `translateY(${(1 - wordIn) * 110}%)`;
-      word.style.opacity = String(wordIn);
-    });
-    node.style.setProperty('--caption-opacity', String(entryEase((p - 0.16) / 0.14)));
+    const entrance = entryEase(p / 0.16);
+    node.style.opacity = String(entered ? entrance * (1 - exit) : 0);
+    node.style.transform = `translateY(${(1 - entrance) * 12 - exit * 18}px)`;
   };
   useLayoutEffect(() => update(progress.get()), [index, progress, manualIndex]);
   useMotionValueEvent(progress, 'change', update);
@@ -215,9 +192,9 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
     <article ref={root} className="research-stage-shot-copy" data-school={plane.school.code} style={schoolStyle(plane.school)} aria-labelledby={`research-shot-title-${index}`}>
       {showSelector && <p className="research-stage-shot-label">{displaySchoolCode(plane.school)} <span aria-hidden="true">·</span> {String(plane.lineIndex + 1).padStart(2, '0')} / {String(plane.school.researchLines.length).padStart(2, '0')}</p>}
       <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
-        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}><span className="research-stage-word-mask" aria-hidden="true"><span data-word className={wordIndex === highlight ? 'is-accent' : ''}>{word}</span></span>{' '}</React.Fragment>)}
+        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{wordIndex === highlight ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
       </h2>
-      <p className="research-stage-caption">{descriptions[plane.line]}</p>
+      {description && <p className="research-stage-caption">{description}</p>}
       {showSelector && <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${plane.school.name}`}>
         {plane.school.researchLines.map((line, lineIndex) => {
           const planeIndex = STAGE_PLANES.findIndex((item) => item.school.code === plane.school.code && item.line === line);
@@ -267,10 +244,6 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
   const geometry = useRef({ start: 0, unit: 1 });
   const target = useMotionValue(0);
   const progress = useSpring(target, { stiffness: 120, damping: 30, mass: 1, restDelta: 0.0001, restSpeed: 0.0001 });
-  const pointerX = useSpring(useMotionValue(0), { stiffness: 120, damping: 30 });
-  const pointerY = useSpring(useMotionValue(0), { stiffness: 120, damping: 30 });
-  const pointerTiltX = useSpring(useMotionValue(0), { stiffness: 120, damping: 30 });
-  const pointerTiltY = useSpring(useMotionValue(0), { stiffness: 120, damping: 30 });
   const [pairStart, setPairStart] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [manualIndex, setManualIndex] = useState<number | null>(null);
@@ -385,27 +358,6 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
   const rendered = hoveredIndex !== null
     ? [baseRendered[0], hoveredIndex]
     : baseRendered;
-  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse') return;
-    const rect = scene.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = clamp((event.clientX - rect.left) / rect.width * 2 - 1, -1, 1);
-    const y = clamp((event.clientY - rect.top) / rect.height * 2 - 1, -1, 1);
-    pointerX.set(x * 12);
-    pointerY.set(y * 12);
-    pointerTiltX.set(y * -6);
-    pointerTiltY.set(x * 6);
-  };
-  const resetPointer = () => {
-    pointerX.set(0);
-    pointerY.set(0);
-    pointerTiltX.set(0);
-    pointerTiltY.set(0);
-  };
-  useMotionValueEvent(pointerX, 'change', (value) => scene.current?.style.setProperty('--pointer-x', `${value.toFixed(2)}px`));
-  useMotionValueEvent(pointerY, 'change', (value) => scene.current?.style.setProperty('--pointer-y', `${value.toFixed(2)}px`));
-  useMotionValueEvent(pointerTiltX, 'change', (value) => scene.current?.style.setProperty('--pointer-tilt-x', `${value.toFixed(2)}deg`));
-  useMotionValueEvent(pointerTiltY, 'change', (value) => scene.current?.style.setProperty('--pointer-tilt-y', `${value.toFixed(2)}deg`));
   return (
       <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation} style={{ '--stage-units': SCHOOLS.length } as React.CSSProperties}>
         <div className="research-stage-snap-markers" aria-hidden="true">
@@ -417,7 +369,7 @@ function AnimatedStage({ onSelect }: { onSelect: (school: SchoolConfig) => void 
             }),
           ])}
         </div>
-        <div ref={scene} className="research-stage" data-school={activePlane.school.code} data-timeline="0" data-scrolled="false" role="region" aria-label="Recorrido por las líneas de investigación" onPointerMove={onPointerMove} onPointerLeave={resetPointer}>
+        <div ref={scene} className="research-stage" data-school={activePlane.school.code} data-timeline="0" data-scrolled="false" role="region" aria-label="Recorrido por las líneas de investigación">
           <div className="research-stage-art" aria-hidden="true">
             {rendered.filter((index, itemIndex) => index >= 0 && index < STAGE_PLANES.length && rendered.indexOf(index) === itemIndex).map((index) => <ShotArt index={index} progress={progress} selected={manualIndex === index} preview={hoveredIndex === index && manualIndex !== index && index !== activeIndex} key={index} />)}
             <StageEmblems progress={progress} />

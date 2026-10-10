@@ -2153,16 +2153,28 @@ body {
 .institutional-landing-school-emblem-float > .institutional-landing-emblem-ecmc { width: min(320px, 34vw) !important; height: auto; }
 
 .institutional-landing-footer {
-  display: flex;
-  width: min(1320px, calc(100% - 48px));
-  min-height: 96px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin: 0 auto;
-  border-top: 1px solid #e2e4e6;
-  color: #4b5056;
-  font-size: 14px;
+  width: 100%;
+  margin-top: 12px;
+  background: #f0f5f7;
+  color: #303942;
+}
+
+.institutional-landing-footer-ribbon { display: flex; height: 9px; }
+.institutional-landing-footer-ribbon span { flex: 1 1 0; }
+.institutional-landing-footer-content,
+.institutional-landing-footer-bottom { width: min(1320px, calc(100% - 64px)); margin-inline: auto; }
+.institutional-landing-footer-content { display: grid; grid-template-columns: 1.1fr .78fr 1.05fr 1.08fr; gap: clamp(24px, 4vw, 64px); padding: 54px 0 42px; }
+.institutional-landing-footer-brand img { display: block; width: min(220px, 100%); height: auto; object-fit: contain; object-position: left center; }
+.institutional-landing-footer-brand p { max-width: 300px; margin: 24px 0 0; color: #414b54; font-size: 15px; line-height: 1.55; }
+.institutional-landing-footer-group h2 { margin: 0 0 24px; color: #17191c; font-family: Georgia, 'Times New Roman', serif; font-size: 22px; line-height: 1.2; }
+.institutional-landing-footer-group ul { display: grid; gap: 13px; padding: 0; margin: 0; list-style: none; }
+.institutional-landing-footer-group a { color: #24618e; font-size: 15px; line-height: 1.45; text-decoration: none; }
+.institutional-landing-footer-group a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.institutional-landing-footer-group a:focus-visible { outline: 3px solid #17191c; outline-offset: 4px; border-radius: 2px; }
+.institutional-landing-footer-social ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px 9px; }
+.institutional-landing-footer-social a { display: flex; min-height: 40px; align-items: center; gap: 9px; }
+.institutional-landing-footer-social a > span:first-child { display: grid; width: 32px; height: 32px; flex: 0 0 32px; place-items: center; border-radius: 5px; background: #24618e; color: #fff; font-size: 13px; font-weight: 800; }
+.institutional-landing-footer-bottom { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid #d5e0e5; color: #4b5056; font-size: 12px;
 }
 
 .institutional-landing.is-reduced .institutional-landing-hero,
@@ -2179,6 +2191,8 @@ body {
   .institutional-landing-school-scene.is-reversed .institutional-landing-school-art { grid-column: 2; }
   .institutional-landing-school-scene.is-reversed .institutional-landing-school-copy { grid-column: 1; }
   .institutional-landing-school-art { min-height: 340px; }
+  .institutional-landing-footer-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .institutional-landing-footer-brand { grid-column: 1 / -1; }
 }
 
 @media (max-width: 600px) {
@@ -2198,8 +2212,7 @@ body {
   .institutional-landing-hero-emblem-image { width: min(64px, var(--emblem-size)) !important; height: min(64px, var(--emblem-size)) !important; }
   .institutional-landing-hero-emblem-ecmc { width: min(64px, var(--emblem-size)) !important; height: auto !important; }
   .institutional-landing-section-heading,
-  .institutional-landing-school-scene,
-  .institutional-landing-footer { width: calc(100% - 40px); }
+  .institutional-landing-school-scene { width: calc(100% - 40px); }
   .institutional-landing-section-heading { padding: 42px 0 8px; }
   .institutional-landing-section-heading h2 { font-size: clamp(38px, 10vw, 54px); }
   .institutional-landing-school-scene,
@@ -2216,7 +2229,20 @@ body {
   .institutional-landing-school-wash { width: min(270px, 82%); }
   .institutional-landing-school-emblem-float > .institutional-landing-emblem-image { width: min(240px, 64vw) !important; height: min(240px, 64vw) !important; }
   .institutional-landing-school-emblem-float > .institutional-landing-emblem-ecmc { width: min(220px, 58vw) !important; }
-  .institutional-landing-footer { min-height: 92px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 16px 0; font-size: 12px; }
+  .institutional-landing-footer-content,
+  .institutional-landing-footer-bottom { width: calc(100% - 40px); }
+  .institutional-landing-footer-content { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 20px; padding: 38px 0 30px; }
+  .institutional-landing-footer-brand { grid-column: 1 / -1; }
+  .institutional-landing-footer-brand img { width: min(190px, 70vw); }
+  .institutional-landing-footer-brand p { margin-top: 16px; font-size: 14px; }
+  .institutional-landing-footer-group h2 { margin-bottom: 17px; font-size: 19px; }
+  .institutional-landing-footer-group ul { gap: 11px; }
+  .institutional-landing-footer-group a { font-size: 14px; }
+  .institutional-landing-footer-social { grid-column: 1 / -1; }
+  .institutional-landing-footer-social ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .institutional-landing-footer-social a { gap: 7px; font-size: 13px; }
+  .institutional-landing-footer-social a > span:first-child { width: 30px; height: 30px; flex-basis: 30px; }
+  .institutional-landing-footer-bottom { min-height: 68px; align-items: flex-start; justify-content: center; flex-direction: column; gap: 6px; padding: 12px 0; font-size: 11px; }
   .institutional-landing-skip { right: 12px; bottom: 12px; font-size: 12px; }
 }
 

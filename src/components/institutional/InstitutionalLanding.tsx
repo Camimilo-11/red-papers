@@ -35,6 +35,37 @@ const landingTimingStyles = {
 const INTRO_STORAGE_KEY = 'simapc-institutional-intro-started';
 let introStartedInMemory = false;
 
+const FOOTER_LINK_GROUPS = [
+  {
+    title: 'Estudiantes',
+    label: 'Enlaces para estudiantes',
+    links: [
+      { label: 'Moodle Pregrado', href: 'https://eva.yachaytech.edu.ec/login/index.php' },
+      { label: 'Biblioteca en línea', href: 'https://biblioteca.yachaytech.edu.ec/' },
+    ],
+  },
+  {
+    title: 'Yachay Tech',
+    label: 'Enlaces de Yachay Tech',
+    links: [
+      { label: 'Folleto en español', href: 'https://yachaytech.edu.ec/wp-content/uploads/2026/01/FOLLETO-YT-2026_compressed.pdf' },
+      { label: 'English brochure', href: 'https://yachaytech.edu.ec/wp-content/uploads/2025/03/Yachay-Tech-Brochure-2025.pdf' },
+      { label: 'Acerca de', href: 'https://yachaytech.edu.ec/acerca-de/' },
+      { label: 'Investigación', href: 'https://yachaytech.edu.ec/investigacion/' },
+      { label: 'Noticias', href: 'https://yachaytech.edu.ec/noticias/' },
+    ],
+  },
+] as const;
+
+const SOCIAL_LINKS = [
+  { label: 'Facebook', shortLabel: 'f', href: 'https://www.facebook.com/universidadyachaytech/' },
+  { label: 'X', shortLabel: 'X', href: 'https://x.com/UniYachayTech' },
+  { label: 'Instagram', shortLabel: 'ig', href: 'https://www.instagram.com/uniyachaytech/' },
+  { label: 'YouTube', shortLabel: '▶', href: 'https://www.youtube.com/user/YachayTech/videos' },
+  { label: 'LinkedIn', shortLabel: 'in', href: 'https://www.linkedin.com/company/uni-yachay-tech/' },
+  { label: 'TikTok', shortLabel: '♪', href: 'https://www.tiktok.com/@uniyachaytech' },
+] as const;
+
 type IntroPhase = 'intro' | 'logo' | 'transition' | 'reduced' | 'done';
 
 function markIntroStarted() {
@@ -260,9 +291,39 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
       <ResearchStage onSelect={onSelect} />
 
-      <footer className="institutional-landing-footer">
-        <span>SIMAPC · Sistema de Manejo de Producción Científica</span>
-        <span>Universidad Yachay Tech</span>
+      <footer className="institutional-landing-footer" aria-label="Enlaces institucionales">
+        <div className="institutional-landing-footer-ribbon" aria-hidden="true">
+          {SCHOOLS.map((school) => <span key={school.code} style={{ backgroundColor: school.accent }} />)}
+        </div>
+        <div className="institutional-landing-footer-content">
+          <div className="institutional-landing-footer-brand">
+            <img src="./assets/yachay-logo-clean.svg" alt="Universidad Yachay Tech" />
+            <p>Producción científica y comunidad investigadora en un solo lugar.</p>
+          </div>
+          {FOOTER_LINK_GROUPS.map((group) => (
+            <nav className="institutional-landing-footer-group" aria-label={group.label} key={group.title}>
+              <h2>{group.title}</h2>
+              <ul>{group.links.map((link) => (
+                <li key={link.label}><a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a></li>
+              ))}</ul>
+            </nav>
+          ))}
+          <nav className="institutional-landing-footer-group institutional-landing-footer-social" aria-label="Redes sociales de Yachay Tech">
+            <h2>Síguenos en redes</h2>
+            <ul>{SOCIAL_LINKS.map((link) => (
+              <li key={link.label}>
+                <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label}>
+                  <span aria-hidden="true">{link.shortLabel}</span>
+                  <span>{link.label}</span>
+                </a>
+              </li>
+            ))}</ul>
+          </nav>
+        </div>
+        <div className="institutional-landing-footer-bottom">
+          <span>SIMAPC · Sistema de Manejo de Producción Científica</span>
+          <span>Universidad Yachay Tech</span>
+        </div>
       </footer>
     </main>
   );
