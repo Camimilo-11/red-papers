@@ -767,8 +767,9 @@ html, body {
 .welcome-emblem-solid{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:welcome-solid-turn 9s linear infinite;}
 .welcome-emblem-layer{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:visible;}
 .welcome-emblem-layer img{display:block;}
-.school-emblem-crop{position:relative;display:block;flex:none;overflow:hidden;}
-.school-emblem-sheet{position:absolute!important;max-width:none!important;object-fit:initial!important;mix-blend-mode:multiply;}
+.school-emblem-svg{display:block;flex:none;object-fit:contain;overflow:visible;}
+.welcome-emblem-layer.emblem-edge .school-emblem-svg{filter:brightness(.72) saturate(.94);}
+.welcome-emblem-layer.emblem-face .school-emblem-svg{filter:drop-shadow(2px 4px 3px rgba(50,35,20,.20));}
 .school-emblem-ecmc svg{display:block;}
 .welcome-emblem-layer.emblem-edge .school-emblem-ecmc svg [stroke]{stroke:#bc766d;}
 .welcome-emblem-layer.emblem-edge .school-emblem-ecmc svg [fill]:not([fill="none"]){fill:#bc766d;}

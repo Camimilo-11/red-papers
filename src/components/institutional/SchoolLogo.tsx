@@ -41,22 +41,13 @@ export function SchoolEmblem({ school, size = 260 }: { school: SchoolConfig; siz
     return <EcmcLogo className="school-emblem-ecmc" size={size} variant="white" />;
   }
 
-  const { x, y, width, height } = school.emblemCrop;
-  const scale = size / Math.max(width, height);
   return (
-    <span
-      className="school-emblem-crop"
-      role="img"
-      aria-label={`Emblema de ${school.name}`}
-      style={{ width: width * scale, height: height * scale }}
-    >
-      <img
-        className="school-emblem-sheet"
-        src="./assets/school-logos.png"
-        alt=""
-        style={{ width: 1282 * scale, height: 238 * scale, left: -x * scale, top: -y * scale }}
-      />
-    </span>
+    <img
+      className="school-emblem-svg"
+      src={`./assets/school-emblems/${school.code}.svg`}
+      alt={`Emblema de ${school.name}`}
+      style={{ width: size, height: size }}
+    />
   );
 }
 
