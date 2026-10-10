@@ -1,0 +1,18 @@
+import './check-roles';
+import assert from 'node:assert/strict';
+import {authService} from './src/services/authService';
+import {roleService} from './src/services/roleService';
+import {DEMO_ACCOUNTS} from './src/constants/demoAccounts';
+const [teacher,dev,committee]=DEMO_ACCOUNTS;
+const login=(a:typeof dev)=>authService.login(a.user.email,a.password);
+login(committee);
+assert.equal(roleService.assign(teacher.user.id,'reviewer_demo').success,false);
+assert.equal(roleService.assign(teacher.user.id,'teacher').success,false);
+login(teacher);
+assert.equal(roleService.assign(teacher.user.id,'reviewer_demo').success,false);
+login(dev);
+assert.equal(roleService.assign(dev.user.id,'reviewer_demo').success,false);
+assert.equal(roleService.assign(teacher.user.id,'reviewer_demo').success,true);
+login(teacher);
+assert.equal(authService.getCurrentUser()?.role,'reviewer_demo');
+console.log('PASS: only developer assigns committee; account permissions protected.');

@@ -1,0 +1,6 @@
+{
+  "name": "RED PAPERS - Portal de Producción Científica ECMC",
+  "description": "Portal Web para la Visualización y Gestión de la Producción Científica de los docentes de la Escuela de Ciencias Matemáticas y Computacionales (ECMC) de Yachay Tech.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

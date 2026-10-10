@@ -123,4 +123,3 @@ Se incorporó una suite de validación técnica ejecutable en vivo desde la pest
 - **Persistencia en Servidor:** Implementación de base de datos relacional (PostgreSQL / MySQL) según el esquema definido en `types/index.ts`.
 - **Servicio SMTP:** Conexión con el servidor de correo institucional para restablecimiento de contraseñas.
 - **Definición Organizacional del Rol Revisor:** Aprobación del reglamento de asignación y miembros del Comité Revisor Institucional (tarea técnica `T-HU08-02`).
-

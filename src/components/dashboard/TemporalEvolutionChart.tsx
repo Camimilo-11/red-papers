@@ -1,0 +1,185 @@
+import React, { useState } from 'react';
+import { TemporalDataPoint } from '../../services/metricsService';
+import { TrendingUp } from 'lucide-react';
+
+interface TemporalEvolutionChartProps {
+  data: TemporalDataPoint[];
+}
+
+type ChartSeriesMode = 'total' | 'publications' | 'projects';
+
+export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ data }) => {
+  const [seriesMode, setSeriesMode] = useState<ChartSeriesMode>('total');
+  const [hoveredPoint, setHoveredPoint] = useState<TemporalDataPoint | null>(null);
+
+  // Mantener una escala común para comparar publicaciones y proyectos.
+  const maxValue = Math.max(
+    ...data.map((d) => (seriesMode === 'total' ? d.total : seriesMode === 'publications' ? d.publications : d.projects)),
+    4 // Mínimo 4 para evitar división por cero o barras desproporcionadas
+  );
+
+  return (
+    <div className="research-chart-card research-semester-chart">
+      {/* Encabezado del gráfico */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-neutral-100">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-red-50 text-[#EF4035]">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm sm:text-base text-neutral-900 tracking-tight">
+              Evolución de la Producción Científica de la Escuela (2021 - 2026)
+            </h3>
+            <p className="text-[11px] text-neutral-500">
+              Publicaciones y proyectos por semestre
+            </p>
+          </div>
+        </div>
+
+        {/* Alternador de Series (Segmented control) */}
+        <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-lg self-start sm:self-auto text-xs font-semibold">
+          <button
+            type="button"
+            aria-pressed={seriesMode === 'total'}
+            onClick={() => setSeriesMode('total')}
+            className={`px-3 py-1.5 rounded-md transition-all ${
+              seriesMode === 'total'
+                ? 'bg-white text-neutral-900 shadow-xs'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Total Productos
+          </button>
+          <button
+            type="button"
+            aria-pressed={seriesMode === 'publications'}
+            onClick={() => setSeriesMode('publications')}
+            className={`px-3 py-1.5 rounded-md transition-all ${
+              seriesMode === 'publications'
+                ? 'bg-white text-[#EF4035] shadow-xs'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Solo Publicaciones
+          </button>
+          <button
+            type="button"
+            aria-pressed={seriesMode === 'projects'}
+            onClick={() => setSeriesMode('projects')}
+            className={`px-3 py-1.5 rounded-md transition-all ${
+              seriesMode === 'projects'
+                ? 'bg-white text-emerald-700 shadow-xs'
+                : 'text-neutral-600 hover:text-neutral-900'
+            }`}
+          >
+            Solo Proyectos
+          </button>
+        </div>
+      </div>
+
+      {seriesMode === 'total' && (
+        <div className="semester-chart-legend" aria-label="Leyenda del gráfico">
+          <span><i className="semester-legend-publications" />Publicaciones</span>
+          <span><i className="semester-legend-projects" />Proyectos</span>
+        </div>
+      )}
+
+      {/* Área del gráfico de barras */}
+      <div className="relative pt-6 pb-2">
+        {/* Tooltip flotante si hay hover */}
+        {hoveredPoint && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 pointer-events-none z-20">
+            <span className="font-bold">{hoveredPoint.semester}:</span>
+            <span>
+              {seriesMode === 'total' && `${hoveredPoint.total} productos (${hoveredPoint.publications} pub, ${hoveredPoint.projects} proy)`}
+              {seriesMode === 'publications' && `${hoveredPoint.publications} publicaciones`}
+              {seriesMode === 'projects' && `${hoveredPoint.projects} proyectos`}
+            </span>
+          </div>
+        )}
+
+        {/* Contenedor de barras */}
+        <div className="h-56 flex items-end justify-between gap-1 sm:gap-2 px-2 border-b border-neutral-200">
+          {data.map((d) => {
+            const val =
+              seriesMode === 'total'
+                ? d.total
+                : seriesMode === 'publications'
+                ? d.publications
+                : d.projects;
+
+            // En el modo total, ambas series usan la escala común y se agrupan lado a lado.
+            const heightPercent = val > 0 ? Math.max((val / maxValue) * 100, 8) : 0;
+            const publicationsHeight = d.publications > 0 ? Math.max((d.publications / maxValue) * 100, 8) : 0;
+            const projectsHeight = d.projects > 0 ? Math.max((d.projects / maxValue) * 100, 8) : 0;
+
+            const isHovered = hoveredPoint?.semester === d.semester;
+
+            return (
+              <div
+                key={d.semester}
+                onMouseEnter={() => setHoveredPoint(d)}
+                onMouseLeave={() => setHoveredPoint(null)}
+                className="flex-1 min-w-0 flex flex-col items-center justify-end h-full group cursor-pointer"
+              >
+                {/* Valor arriba de la barra */}
+                <span
+                  className={`text-[11px] font-bold mb-1 transition-opacity tabular-nums ${
+                    val > 0
+                      ? isHovered
+                        ? 'text-[#EF4035]'
+                        : 'text-neutral-600'
+                      : 'text-neutral-300 opacity-60'
+                  }`}
+                >
+                  {val}
+                </span>
+
+                {/* Barras agrupadas para que cada serie se identifique sin superponerse. */}
+                {seriesMode === 'total' ? (
+                  <div className="semester-chart-bars">
+                    <div className="semester-chart-series-track" title={`${d.publications} publicaciones`}>
+                      <div style={{ height: `${publicationsHeight}%` }} className={`semester-chart-series-bar semester-bar-publications ${isHovered ? 'is-hovered' : ''}`} />
+                    </div>
+                    <div className="semester-chart-series-track" title={`${d.projects} proyectos`}>
+                      <div style={{ height: `${projectsHeight}%` }} className={`semester-chart-series-bar semester-bar-projects ${isHovered ? 'is-hovered' : ''}`} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-[42px] bg-neutral-100 rounded-t-md relative flex items-end overflow-hidden h-full">
+                    <div
+                      style={{ height: `${heightPercent}%` }}
+                      className={`w-full rounded-t-md transition-all duration-300 ${
+                        val === 0
+                          ? 'bg-transparent'
+                          : isHovered
+                          ? 'bg-[#D02B20]'
+                          : seriesMode === 'projects'
+                          ? 'bg-emerald-600'
+                          : 'bg-[#EF4035]'
+                      }`}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Eje X con nombres de semestres */}
+        <div className="flex items-center justify-between gap-1 sm:gap-2 px-2 pt-2">
+          {data.map((d) => (
+            <div
+              key={d.semester}
+              className="flex-1 min-w-0 text-center text-[10px] sm:text-[11px] font-medium text-neutral-500 truncate"
+              title={d.semester}
+            >
+              {d.semester}
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+};
