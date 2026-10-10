@@ -634,3 +634,212 @@ html, body {
  .portal-main-public-dashboard .featured-paper-controls{min-height:28px;}
  .portal-main-public-dashboard .featured-paper-controls>button{width:30px;height:30px;}
 }
+
+/* Pulido visual: jerarquía más ligera y superficies consistentes. */
+:root {
+  --surface: #fff;
+  --line-soft: #ebe6df;
+  --shadow-panel: 0 8px 24px rgba(37, 35, 33, .045);
+}
+
+body {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.portal-topbar {
+  height: 76px;
+  border-bottom-color: var(--line-soft);
+}
+
+.portal-main {
+  padding-top: 36px;
+  padding-bottom: 38px;
+}
+
+.sidebar-link {
+  border-radius: 9px;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.primary-button {
+  border-radius: 9px;
+  transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.primary-button:hover {
+  background: #a92820;
+  box-shadow: 0 4px 12px rgba(189, 48, 39, .18);
+  transform: translateY(-1px);
+}
+
+.dashboard-home .home-welcome {
+  margin-bottom: 20px;
+}
+
+.welcome-heading {
+  gap: 26px;
+  padding-bottom: 24px;
+}
+
+.welcome-heading h1 {
+  font-size: clamp(34px, 3.45vw, 50px);
+  letter-spacing: -1.3px;
+}
+
+.welcome-seal {
+  width: 146px;
+  height: 158px;
+}
+
+.home-actions {
+  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: var(--shadow-panel);
+}
+
+.home-actions button {
+  min-height: 198px;
+  transition: background-color .18s ease, transform .18s ease;
+}
+
+.home-actions button:hover {
+  background: #fff8f5;
+}
+
+.featured-publications {
+  margin-bottom: 18px;
+}
+
+.featured-paper-card {
+  min-height: 272px;
+  gap: 22px;
+  padding: 26px 30px 18px;
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(37, 35, 33, .055);
+}
+
+.featured-paper-copy h3 {
+  font-size: clamp(22px, 2.25vw, 32px);
+}
+
+.featured-paper-citations {
+  min-height: 172px;
+  padding: 20px 22px;
+  border-radius: 12px;
+}
+
+.metrics-strip {
+  margin-bottom: 28px;
+}
+
+.metrics-strip dd {
+  line-height: 1.25;
+}
+
+.research-chart-card,
+.product-list {
+  border-radius: 14px;
+  box-shadow: var(--shadow-panel);
+}
+
+.product-row {
+  transition: background-color .18s ease;
+}
+
+.product-row:hover {
+  background: #fffdfa;
+}
+
+@media (min-width: 1600px) {
+  .portal-main {
+    padding-top: 42px;
+    padding-bottom: 44px;
+  }
+
+  .featured-paper-card {
+    min-height: 286px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .portal-topbar {
+    height: 72px;
+  }
+
+  .portal-main {
+    padding-top: 28px;
+    padding-bottom: 32px;
+  }
+
+  .home-actions button {
+    min-height: 112px;
+  }
+}
+
+@media (max-width: 760px) {
+  .portal-topbar {
+    height: 68px;
+  }
+
+  .portal-main {
+    padding: 22px 16px 28px;
+  }
+
+  .dashboard-home .home-welcome {
+    margin-bottom: 16px;
+  }
+
+  .welcome-heading {
+    padding-bottom: 18px;
+  }
+
+  .welcome-heading h1 {
+    font-size: clamp(31px, 8vw, 38px);
+    letter-spacing: -1px;
+  }
+
+  .welcome-seal {
+    width: 64px;
+    height: 82px;
+  }
+
+  .welcome-seal svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .featured-paper-card {
+    min-height: 0;
+    gap: 16px;
+    padding: 22px 18px 16px;
+    border-radius: 14px;
+  }
+
+  .featured-paper-copy h3 {
+    font-size: 23px;
+  }
+
+  .featured-paper-citations {
+    min-height: 0;
+    padding: 15px 17px;
+  }
+
+  .research-chart-card,
+  .product-list {
+    border-radius: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-link,
+  .primary-button,
+  .home-actions button,
+  .product-row {
+    transition: none;
+  }
+
+  .primary-button:hover {
+    transform: none;
+  }
+}
