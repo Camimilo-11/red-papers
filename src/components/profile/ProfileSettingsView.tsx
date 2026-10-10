@@ -57,13 +57,11 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
  const [rank,setRank]=useState(currentUser.rank);
  const [academicDegree,setAcademicDegree]=useState<AcademicDegreeValue>(currentUser.academicDegree||'');
  const [academicField,setAcademicField]=useState(currentUser.academicField||'');
- const [yachayEntryYear,setYachayEntryYear]=useState(currentUser.yachayEntryYear?.toString()||'');
  const [profileImage,setProfileImage]=useState(currentUser.profileImage);
  const [researchLines,setResearchLines]=useState<OfficialResearchLine[]>(currentUser.researchLines|| (currentUser.researchLine?[currentUser.researchLine]:[]));
  const [orcid,setOrcid]=useState(currentUser.orcid||'');
  const [githubUrl,setGithubUrl]=useState(currentUser.githubUrl||'');
  const [googleScholarId,setGoogleScholarId]=useState(currentUser.googleScholarId||'');
- const [googleScholarHIndex,setGoogleScholarHIndex]=useState(currentUser.googleScholarHIndex?.toString()||'');
  const [scopusAuthorId,setScopusAuthorId]=useState(currentUser.scopusAuthorId||'');
  const [webOfScienceId,setWebOfScienceId]=useState(currentUser.webOfScienceId||'');
  const [bio,setBio]=useState(currentUser.bio||'');
@@ -84,7 +82,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
  const saveProfile=(event:FormEvent)=>{
   event.preventDefault();setProfileMessage('');setProfileError('');
   if(!academicDegree){setProfileError('Seleccione su nivel de formación académica.');return;}
-  const result=authService.updateProfile({name,rank,academicDegree,academicField,yachayEntryYear:yachayEntryYear?Number(yachayEntryYear):undefined,researchLines,orcid,githubUrl,googleScholarId,googleScholarHIndex:googleScholarHIndex?Number(googleScholarHIndex):undefined,scopusAuthorId,webOfScienceId,bio,profileImage});
+  const result=authService.updateProfile({name,rank,academicDegree,academicField,researchLines,orcid,githubUrl,googleScholarId,scopusAuthorId,webOfScienceId,bio,profileImage});
   if(!result.success||!result.user){setProfileError(result.error||'No se pudo actualizar el perfil.');return;}
   onUpdated(result.user);setProfileMessage('La información del perfil se actualizó.');
  };
@@ -112,13 +110,11 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
     <label className="profile-settings-field"><span>Cargo</span><input required maxLength={100} value={rank} onChange={e=>setRank(e.target.value)} placeholder="Profesor titular, agregado, auxiliar…"/></label>
     <label className="profile-settings-field"><span>Grado académico</span><select required value={academicDegree} onChange={e=>setAcademicDegree(e.target.value as AcademicDegreeValue)}><option value="">Seleccione su formación</option>{degreeOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select><small>Se mostrará separado de su nombre en el perfil público.</small></label>
     <label className="profile-settings-field"><span>{academicDegree==='Other'?'Especifique su título':'Área o especialidad del título'}</span><input maxLength={100} value={academicField} onChange={e=>setAcademicField(e.target.value)} placeholder="Ej. Ciencias de la Computación"/><small>Opcional, salvo que seleccione «Otro título».</small></label>
-    <label className="profile-settings-field"><span>Año de ingreso a Yachay Tech</span><input type="number" min={1980} max={new Date().getFullYear()} value={yachayEntryYear} onChange={e=>setYachayEntryYear(e.target.value)} placeholder="Ej. 2018"/><small>Este año aparecerá en su perfil público.</small></label>
     <fieldset className="profile-settings-field-wide profile-research-lines-field"><legend>Líneas de investigación</legend><small>Seleccione todas las líneas que correspondan; aparecerán en su perfil público.</small><div className="profile-research-line-options">{OFFICIAL_RESEARCH_LINES.map(line=><label className="profile-research-line-option" key={line}><input type="checkbox" checked={researchLines.includes(line)} onChange={event=>setResearchLines(selected=>event.target.checked?[...selected,line]:selected.filter(item=>item!==line))}/><span>{line}</span></label>)}</div><small>{researchLines.length===0?'Aún no ha seleccionado líneas.':`${researchLines.length} ${researchLines.length===1?'línea seleccionada':'líneas seleccionadas'}.`}</small></fieldset>
     <label className="profile-settings-field"><span>Correo institucional</span><input value={currentUser.email} readOnly aria-describedby="profile-email-note"/><small id="profile-email-note">Para corregir el correo, solicite el cambio al administrador.</small></label>
     <label className="profile-settings-field"><span>ORCID iD</span><input placeholder="0000-0002-1825-0097" autoComplete="off" value={orcid} onChange={e=>setOrcid(e.target.value)}/><small>Acepte su iD o el enlace de ORCID.</small></label>
     <label className="profile-settings-field"><span>GitHub</span><input placeholder="usuario o github.com/usuario" autoComplete="url" value={githubUrl} onChange={e=>setGithubUrl(e.target.value)}/><small>Enlace a su perfil público.</small></label>
     <label className="profile-settings-field"><span>Google Scholar ID</span><input placeholder="ID o enlace del perfil" autoComplete="off" value={googleScholarId} onChange={e=>setGoogleScholarId(e.target.value)}/><small>Puede pegar el enlace completo; guardaremos el identificador.</small></label>
-    <label className="profile-settings-field"><span>Índice h de Google Scholar</span><input type="number" min={0} max={999} step={1} placeholder="Ej. 12" value={googleScholarHIndex} onChange={e=>setGoogleScholarHIndex(e.target.value)}/><small>Copie el valor que aparece en su perfil de Google Scholar.</small></label>
     <label className="profile-settings-field"><span>Scopus Author ID</span><input placeholder="ID o enlace del perfil Scopus" autoComplete="off" value={scopusAuthorId} onChange={e=>setScopusAuthorId(e.target.value)}/><small>Puede ingresar el ID numérico o pegar el enlace.</small></label>
     <label className="profile-settings-field"><span>Web of Science ResearcherID</span><input placeholder="ResearcherID o enlace del perfil" autoComplete="off" value={webOfScienceId} onChange={e=>setWebOfScienceId(e.target.value)}/><small>Agregue su identificador para que los visitantes consulten el perfil.</small></label>
     <label className="profile-settings-field profile-settings-field-wide"><span>Descripción del docente</span><textarea rows={4} maxLength={500} value={bio} onChange={e=>setBio(e.target.value)} placeholder="Describa brevemente su trayectoria, experiencia y áreas de trabajo."/><small>{bio.length}/500 caracteres</small></label>

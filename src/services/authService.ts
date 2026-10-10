@@ -29,10 +29,8 @@ export interface TeacherProfileUpdate {
   orcid?: string;
   githubUrl?: string;
   googleScholarId?: string;
-  googleScholarHIndex?: number;
   scopusAuthorId?: string;
   webOfScienceId?: string;
-  yachayEntryYear?: number;
   bio?: string;
   profileImage?: string;
 }
@@ -273,8 +271,6 @@ export const authService = {
     const googleScholarId=normalizeScholarId(data.googleScholarId);
     const scopusAuthorId=normalizeScopusId(data.scopusAuthorId);
     const webOfScienceId=normalizeWebOfScienceId(data.webOfScienceId);
-    const yachayEntryYear=data.yachayEntryYear;
-    const googleScholarHIndex=data.googleScholarHIndex;
     if(name.length<3) return {success:false,error:'Escriba su nombre completo (mínimo 3 caracteres).'};
     if(!rank) return {success:false,error:'Indique su cargo.'};
     if(!['PhD','MSc','BSc','Other'].includes(data.academicDegree)) return {success:false,error:'Seleccione su nivel de formación académica.'};
@@ -288,10 +284,8 @@ export const authService = {
     if(data.googleScholarId?.trim() && !googleScholarId) return {success:false,error:'Ingrese un ID o enlace válido de Google Scholar.'};
     if(data.scopusAuthorId?.trim() && !scopusAuthorId) return {success:false,error:'Ingrese un ID o enlace válido de Scopus.'};
     if(data.webOfScienceId?.trim() && !webOfScienceId) return {success:false,error:'Ingrese un ResearcherID o enlace válido de Web of Science.'};
-    if(googleScholarHIndex!==undefined && (!Number.isInteger(googleScholarHIndex)||googleScholarHIndex<0||googleScholarHIndex>999)) return {success:false,error:'El índice h debe ser un número entero entre 0 y 999.'};
-    if(yachayEntryYear!==undefined && (!Number.isInteger(yachayEntryYear)||yachayEntryYear<1980||yachayEntryYear>new Date().getFullYear())) return {success:false,error:'Indique un año de ingreso válido a Yachay Tech.'};
     if((data.bio?.trim().length || 0)>500) return {success:false,error:'La biografía debe tener 500 caracteres o menos.'};
-    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,yachayEntryYear,profileImage:data.profileImage||undefined,researchLines,researchLine:researchLines[0],orcid,githubUrl,googleScholarId,googleScholarHIndex,scopusAuthorId,webOfScienceId,bio:data.bio?.trim()||undefined};
+    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,profileImage:data.profileImage||undefined,researchLines,researchLine:researchLines[0],orcid,githubUrl,googleScholarId,scopusAuthorId,webOfScienceId,bio:data.bio?.trim()||undefined};
     const teachers=storageService.getTeachers();
     const index=teachers.findIndex(t=>t.id===current.id);
     if(index>=0) teachers[index]=updated; else teachers.push(updated);
