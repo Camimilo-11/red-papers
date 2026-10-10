@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { SchoolLogo, UniversityLogoLink } from './SchoolLogo';
+import { SchoolIconTile, UniversityLogoLink } from './SchoolLogo';
 
 export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
   return (
@@ -21,8 +21,8 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
 
         <section className="school-selector-grid" aria-label="Escuelas disponibles">
           {SCHOOLS.map((school) => (
-            <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent } as React.CSSProperties}>
-              <div className="school-selector-logo"><SchoolLogo school={school} /></div>
+            <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--accent': `color-mix(in srgb, ${school.accent} 45%, #292522)` } as React.CSSProperties}>
+              <div className="school-selector-logo"><SchoolIconTile school={school} size={76} /></div>
               <span className="school-selector-code">{school.code}</span>
               <h2>{school.name}</h2>
               <button type="button" className="school-selector-enter" onClick={() => onSelect(school)}>

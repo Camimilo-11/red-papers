@@ -13,11 +13,11 @@ const rankingOptions:{id:RankingMetric;label:string}[]=[
  {id:'scholarHIndex',label:'h Google Scholar'},
  {id:'scopusHIndex',label:'h Scopus'},
 ];
-const colors=['#bd3027','#e66a55','#b58a70','#d1b399','#625853'];
 const numberFormat=new Intl.NumberFormat('es-EC');
 const metricValue=(teacher:TeacherMetrics,metric:RankingMetric)=>metric==='citations'?teacher.citationsTotal:metric==='publications'?teacher.publicationsCount:metric==='scholarHIndex'?teacher.teacher.googleScholarHIndex||0:teacher.teacher.scopusHIndex||0;
 
-function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];products:ScientificProduct[]}) {
+function TeacherRankingChart({teachers,products,accent}:{teachers:TeacherUser[];products:ScientificProduct[];accent:string}) {
+ const rankingColors=[accent,'#e66a55','#b58a70','#d1b399','#625853'];
  const [metric,setMetric]=useState<RankingMetric>('citations');
  const verified=useMemo(()=>products.filter(product=>product.status==='verificado'),[products]);
  const top=useMemo(()=>teachers.filter(teacher=>teacher.role==='teacher')
@@ -46,12 +46,12 @@ function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];product
      const length=value/total*circumference;
      const dashOffset=-offset;
      offset+=length;
-     return <circle key={teacher.teacher.id} cx="100" cy="100" r="67" fill="none" stroke={colors[index%colors.length]} strokeWidth="26" strokeDasharray={`${length} ${circumference-length}`} strokeDashoffset={dashOffset} transform="rotate(-90 100 100)"/>;
+     return <circle key={teacher.teacher.id} cx="100" cy="100" r="67" fill="none" stroke={rankingColors[index%rankingColors.length]} strokeWidth="26" strokeDasharray={`${length} ${circumference-length}`} strokeDashoffset={dashOffset} transform="rotate(-90 100 100)"/>;
     })}
     <text x="100" y="94" textAnchor="middle" className="donut-center-label">Top {top.length}</text>
     <text x="100" y="116" textAnchor="middle" className="donut-center-caption">profesores</text>
    </svg>
-   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:colors[index%colors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}</strong></li>)}</ol>
+   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:rankingColors[index%rankingColors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}</strong></li>)}</ol>
   </div>:<div className="teacher-ranking-empty"><Quote size={22}/><p>No hay datos disponibles para comparar con esta métrica.</p></div>}
  </section>;
 }
@@ -78,7 +78,7 @@ export function ResearchDashboard({teachers,products,temporalData,school}:{teach
  return <section className="research-dashboard" aria-label={`Indicadores de investigación de ${school.name}`}>
   <div className="research-dashboard-grid">
    <TemporalEvolutionChart data={temporalData}/>
-   <TeacherRankingChart teachers={teachers} products={products}/>
+   <TeacherRankingChart teachers={teachers} products={products} accent={school.accent}/>
    <ResearchLineChart products={products} school={school}/>
   </div>
  </section>;

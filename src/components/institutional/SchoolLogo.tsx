@@ -15,6 +15,26 @@ export function SchoolLogo({ school, className = '', scale = 1 }: { school: Scho
   );
 }
 
+export function SchoolIconTile({ school, className = '', size = 112 }: { school: SchoolConfig; className?: string; size?: number }) {
+  const { x, y } = school.iconTilePosition;
+  const scale = size / 113;
+  return (
+    <span
+      className={`school-icon-crop ${className}`}
+      role="img"
+      aria-label={`Logo de ${school.name}`}
+      style={{ width: 113 * scale, height: 112 * scale }}
+    >
+      <img
+        className="school-icon-sheet"
+        src="./assets/school-icon-tiles.png"
+        alt=""
+        style={{ left: -x * scale, top: -y * scale, transform: `scale(${scale})`, transformOrigin: 'top left' }}
+      />
+    </span>
+  );
+}
+
 export function UniversityLogoLink({ className = '' }: { className?: string }) {
   return (
     <a

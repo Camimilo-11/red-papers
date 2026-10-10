@@ -11,7 +11,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  const [loginOpen,setLoginOpen]=useState(false);
  const dialog=useRef<HTMLDialogElement>(null);
  useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
- return <div className="welcome-access" style={{'--school-accent':p.school.accent} as React.CSSProperties}>
+ return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><SchoolLogo school={p.school} scale={.62}/><span>RED PAPERS<small>{p.school.shortName}</small></span></div>
    <nav aria-label="Acceso a la plataforma"><button className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><UniversityLogoLink className="welcome-university-link"/><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>

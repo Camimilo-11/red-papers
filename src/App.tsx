@@ -254,7 +254,7 @@ export default function App() {
 
   // Vista principal del Portal RED PAPERS
   return (
-    <div className="portal-app min-h-screen font-sans">
+    <div className="portal-app min-h-screen font-sans" style={{ '--accent': `color-mix(in srgb, ${selectedSchool.accent} 45%, #292522)`, '--school-accent': selectedSchool.accent } as React.CSSProperties}>
       {/* 1. Encabezado Horizontal */}
       <Header
         school={selectedSchool}

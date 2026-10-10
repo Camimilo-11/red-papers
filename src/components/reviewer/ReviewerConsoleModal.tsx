@@ -317,14 +317,14 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                   <section className="rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-3.5" aria-label="Artículo adjunto para revisión privada">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-2">
-                        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#b83229]" aria-hidden="true" />
+                        <FileText className="mt-0.5 h-4 w-4 shrink-0 school-accent-text" aria-hidden="true" />
                         <div className="min-w-0 text-xs">
                           <strong className="block text-neutral-800">Artículo adjunto · revisión privada</strong>
                           <span className="mt-1 block break-all text-neutral-600">{selectedProduct.articleAttachment.fileName}</span>
                           {selectedProduct.privacyConsentAt && <span className="mt-1 block text-[10px] text-neutral-500">Aceptó la política de privacidad antes del envío.</span>}
                         </div>
                       </div>
-                      <button type="button" onClick={handleDownloadArticle} disabled={isDownloadingArticle} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-[#b83229] hover:text-[#8f251e] disabled:cursor-wait disabled:opacity-60">
+                      <button type="button" onClick={handleDownloadArticle} disabled={isDownloadingArticle} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 school-accent-hover disabled:cursor-wait disabled:opacity-60">
                         <Download className="h-4 w-4" aria-hidden="true" />{isDownloadingArticle ? 'Preparando…' : 'Descargar PDF'}
                       </button>
                     </div>

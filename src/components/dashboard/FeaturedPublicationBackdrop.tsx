@@ -22,7 +22,7 @@ const W = 1200;
 const H = 420;
 
 // Paleta institucional ya usada en el proyecto.
-const RED = '#bd3027';
+const RED = 'var(--accent)';
 const WARM = '#b58a70';
 const INK = '#625853';
 

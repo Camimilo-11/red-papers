@@ -802,15 +802,15 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             {productType === 'publicacion' && (
               <section className="space-y-3 rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-4" aria-labelledby="article-upload-title">
                 <div className="flex items-start gap-2">
-                  <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 text-[#b83229]" aria-hidden="true" />
+                  <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 school-accent-text" aria-hidden="true" />
                   <div>
-                    <h3 id="article-upload-title" className="font-bold text-neutral-800">Artículo completo en PDF <span className="text-[#b83229]">*</span></h3>
+                    <h3 id="article-upload-title" className="font-bold text-neutral-800">Artículo completo en PDF <span className="school-accent-text">*</span></h3>
                     <p className="mt-1 text-[11px] leading-relaxed text-neutral-600">Es obligatorio adjuntar el artículo para que el Comité Científico pueda verificar la publicación. Máximo 10 MB.</p>
                   </div>
                 </div>
                 <input id="publication-article-input" type="file" accept="application/pdf,.pdf" onChange={handleArticleUpload} className="sr-only" aria-label="Adjuntar artículo completo en PDF" />
                 <div className="flex flex-wrap items-center gap-2">
-                  <label htmlFor="publication-article-input" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold text-neutral-700 hover:border-[#b83229] hover:text-[#8f251e]">
+                  <label htmlFor="publication-article-input" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold text-neutral-700 school-accent-hover">
                     <Upload className="h-4 w-4" aria-hidden="true" />
                     {articleFile ? 'Cambiar archivo' : initialProduct?.articleAttachment ? 'Reemplazar artículo PDF' : 'Seleccionar artículo PDF'}
                   </label>
@@ -820,7 +820,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 <div className="flex items-start gap-2 rounded-lg border border-neutral-200 bg-white p-3">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#47745e]" aria-hidden="true" />
                   <label className="flex cursor-pointer items-start gap-2 text-[11px] leading-relaxed text-neutral-700">
-                    <input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} className="mt-0.5 accent-[#b83229]" />
+                    <input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} className="mt-0.5 school-accent-checkbox" />
                     <span><strong>Política de privacidad *</strong><br />Confirmo que tengo autorización para compartir este archivo con el Comité Científico. Se utilizará únicamente para verificar la información y no se mostrará en el catálogo público.</span>
                   </label>
                 </div>
