@@ -213,7 +213,7 @@ function ShotText({ plane, index, progress, manualIndex, showSelector, onSelectL
   useMotionValueEvent(progress, 'change', update);
   return (
     <article ref={root} className="research-stage-shot-copy" data-school={plane.school.code} style={schoolStyle(plane.school)} aria-labelledby={`research-shot-title-${index}`}>
-      <p className="research-stage-shot-label">{displaySchoolCode(plane.school)} <span aria-hidden="true">·</span> {String(plane.lineIndex + 1).padStart(2, '0')} / {String(plane.school.researchLines.length).padStart(2, '0')}</p>
+      {showSelector && <p className="research-stage-shot-label">{displaySchoolCode(plane.school)} <span aria-hidden="true">·</span> {String(plane.lineIndex + 1).padStart(2, '0')} / {String(plane.school.researchLines.length).padStart(2, '0')}</p>}
       <h2 id={`research-shot-title-${index}`} aria-label={plane.line}>
         {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}><span className="research-stage-word-mask" aria-hidden="true"><span data-word className={wordIndex === highlight ? 'is-accent' : ''}>{word}</span></span>{' '}</React.Fragment>)}
       </h2>
