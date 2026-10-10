@@ -62,7 +62,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
  const [profileImage,setProfileImage]=useState(currentUser.profileImage);
  const [researchLines,setResearchLines]=useState<OfficialResearchLine[]>(currentUser.researchLines|| (currentUser.researchLine?[currentUser.researchLine]:[]));
  const [researchSublines,setResearchSublines]=useState<TeacherResearchSublines>(currentUser.researchSublines||{});
- const [orcid,setOrcid]=useState(currentUser.orcid||'');
+ const [orcid,setOrcid]=useState(currentUser.syntheticAcademicProfileFields?.includes('orcid')?'':currentUser.orcid||'');
  const [githubUrl,setGithubUrl]=useState(currentUser.syntheticAcademicProfileFields?.includes('githubUrl')?'':currentUser.githubUrl||'');
  const [googleScholarId,setGoogleScholarId]=useState(currentUser.syntheticAcademicProfileFields?.includes('googleScholarId')?'':currentUser.googleScholarId||'');
  const [scopusAuthorId,setScopusAuthorId]=useState(currentUser.syntheticAcademicProfileFields?.includes('scopusAuthorId')?'':currentUser.scopusAuthorId||'');

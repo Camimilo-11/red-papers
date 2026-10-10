@@ -15,7 +15,7 @@ const academicProfileLink=(teacher:TeacherUser,field:SyntheticAcademicProfileFie
  const rawValue=teacher[field]||'';
  const value=field==='githubUrl'?rawValue.replace(/^https?:\/\/(www\.)?github\.com\//i,'@'):rawValue;
  const labelWithValue=`${label} · ${value}`;
- if(teacher.syntheticAcademicProfileFields?.includes(field)) return <span className="academic-profile-unlinked">{label}</span>;
+ if(teacher.syntheticAcademicProfileFields?.includes(field)) return <span className="academic-profile-unlinked">{label} · {value}</span>;
  return <a href={href} target="_blank" rel="noopener noreferrer">{labelWithValue}<ExternalLink size={15} aria-hidden="true"/></a>;
 };
 const academicTitle = (teacher:TeacherUser) => {
@@ -193,7 +193,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         </section>
         <div className="academic-contact">
           <a href={`mailto:${activeTeacher.email}`}><Mail size={18} aria-hidden="true"/>{activeTeacher.email}</a>
-          {activeTeacher.orcid?<a href={`https://orcid.org/${activeTeacher.orcid}`} target="_blank" rel="noopener noreferrer">ORCID · {activeTeacher.orcid}<ExternalLink size={15} aria-hidden="true"/></a>:<span>ORCID no registrado</span>}
+          {activeTeacher.orcid?activeTeacher.syntheticAcademicProfileFields?.includes('orcid')?<span className="academic-profile-unlinked">ORCID · {activeTeacher.orcid}</span>:<a href={`https://orcid.org/${activeTeacher.orcid}`} target="_blank" rel="noopener noreferrer">ORCID · {activeTeacher.orcid}<ExternalLink size={15} aria-hidden="true"/></a>:<span>ORCID no registrado</span>}
           {academicProfileLink(activeTeacher,'githubUrl','GitHub',activeTeacher.githubUrl||'')}
           {academicProfileLink(activeTeacher,'googleScholarId','Google Scholar',`https://scholar.google.com/citations?user=${encodeURIComponent(activeTeacher.googleScholarId||'')}`)}
           {academicProfileLink(activeTeacher,'scopusAuthorId','Scopus',`https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(activeTeacher.scopusAuthorId||'')}`)}

@@ -1,9 +1,12 @@
 import { AcademicDegree, OfficialResearchLine, ScientificProduct, TeacherUser, UserNotification } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
+import { INITIAL_SCHOOL_PRODUCTS, INITIAL_SCHOOL_TEACHERS } from '../constants/schoolSeedData';
 import { ALL_OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
 const SEED_PRODUCT_BY_ID = new Map(INITIAL_PRODUCTS.map((product) => [product.id, product]));
-const SEED_TEACHER_BY_ID = new Map(INITIAL_TEACHERS.map((teacher) => [teacher.id, teacher]));
+const INITIAL_TEACHER_DATA = [...INITIAL_TEACHERS, ...INITIAL_SCHOOL_TEACHERS];
+const INITIAL_PRODUCT_DATA = [...INITIAL_PRODUCTS, ...INITIAL_SCHOOL_PRODUCTS];
+const SEED_TEACHER_BY_ID = new Map(INITIAL_TEACHER_DATA.map((teacher) => [teacher.id, teacher]));
 
 function completeSyntheticTeacher(teacher: TeacherUser): TeacherUser {
   const defaults = SEED_TEACHER_BY_ID.get(teacher.id);
@@ -176,17 +179,18 @@ export const storageService = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
       if (!data) {
-        this.saveProducts(INITIAL_PRODUCTS);
-        return INITIAL_PRODUCTS;
+        this.saveProducts(INITIAL_PRODUCT_DATA);
+        return INITIAL_PRODUCT_DATA;
       }
       const storedProducts: ScientificProduct[] = JSON.parse(data);
       const existingIds = new Set(storedProducts.map(product => product.id));
       const newDemoFixtures = INITIAL_PRODUCTS.filter(product => product.id === 'prod-015' && !existingIds.has(product.id));
-      const products = [...storedProducts.map(completeSyntheticProduct), ...newDemoFixtures];
+      const newSchoolFixtures = INITIAL_SCHOOL_PRODUCTS.filter(product => !existingIds.has(product.id));
+      const products = [...storedProducts.map(completeSyntheticProduct), ...newDemoFixtures, ...newSchoolFixtures];
       if (JSON.stringify(products) !== JSON.stringify(storedProducts)) this.saveProducts(products);
       return products;
     } catch {
-      return INITIAL_PRODUCTS;
+      return INITIAL_PRODUCT_DATA;
     }
   },
 
@@ -202,16 +206,18 @@ export const storageService = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.TEACHERS);
       if (!data) {
-        const teachers = INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
+        const teachers = INITIAL_TEACHER_DATA.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
         this.saveTeachers(teachers);
         return teachers;
       }
       const storedTeachers: TeacherUser[] = JSON.parse(data);
-      const teachers = storedTeachers.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
+      const existingIds = new Set(storedTeachers.map(teacher => teacher.id));
+      const newSchoolTeachers = INITIAL_SCHOOL_TEACHERS.filter(teacher => !existingIds.has(teacher.id));
+      const teachers = [...storedTeachers, ...newSchoolTeachers].map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
       if (JSON.stringify(teachers) !== JSON.stringify(storedTeachers)) this.saveTeachers(teachers);
       return teachers;
     } catch {
-      return INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
+      return INITIAL_TEACHER_DATA.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
     }
   },
 
@@ -293,8 +299,8 @@ export const storageService = {
 
   resetToSeed(): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHERS.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)))));
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCT_DATA));
+      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHER_DATA.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)))));
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(INITIAL_NOTIFICATIONS));
       localStorage.setItem(STORAGE_KEYS.PUBLIC_VISIBILITY_CONFIG, JSON.stringify(DEFAULT_CONFIG));
     } catch (err) {

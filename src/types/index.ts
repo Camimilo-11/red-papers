@@ -55,7 +55,7 @@ export type { OfficialResearchLine, SchoolCode } from '../constants/schools';
 import type { OfficialResearchLine } from '../constants/schools';
 
 export type TeacherResearchSublines = Partial<Record<OfficialResearchLine, string[]>>;
-export type SyntheticAcademicProfileField = 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId';
+export type SyntheticAcademicProfileField = 'orcid' | 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId';
 export type SyntheticBibliometricField = 'googleScholarHIndex' | 'scopusHIndex';
 
 export type AcademicDegree = 'PhD' | 'MSc' | 'BSc' | 'Other';
