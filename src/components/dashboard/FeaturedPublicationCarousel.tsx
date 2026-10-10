@@ -1,8 +1,9 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Award, ChevronLeft, ChevronRight, ExternalLink, Pause, Play } from 'lucide-react';
+import { SCHOOLS } from '../../constants/schools';
 import { normalizeDoi } from '../../services/doiService';
 import { OfficialResearchLine, ScientificProduct } from '../../types';
-import { FeaturedPublicationBackdrop, ResearchTheme } from './FeaturedPublicationBackdrop';
+import { ResearchLineBackdrop } from './ResearchLineBackdrop';
 
 const numberFormat = new Intl.NumberFormat('es-EC');
 const ROTATION_MS = 5000;
@@ -33,15 +34,6 @@ function useCountUp(value: number, resetKey: string | undefined) {
 
   return shown;
 }
-
-const themeByLine: Partial<Record<OfficialResearchLine, ResearchTheme>> = {
-  'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización': 'mathematics',
-  'Ciencia de datos': 'data',
-  'Computación científica': 'computing',
-  'Inteligencia artificial': 'artificial-intelligence',
-  'Tecnologías de la información': 'technology',
-  'Ciencia, Tecnología y Sociedad': 'society',
-};
 
 function getMostCitedByResearchLine(products: ScientificProduct[], researchLines: readonly OfficialResearchLine[]) {
   const topByLine = new Map<OfficialResearchLine, ScientificProduct>();
@@ -112,7 +104,7 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
     );
   }
 
-  const theme = themeByLine[publication.researchLine] || 'mathematics';
+  const school = SCHOOLS.find((candidate) => candidate.researchLines.some((line) => line === publication.researchLine));
   const cleanDoi = normalizeDoi(publication.doi);
   const goTo = (offset: number) => {
     setActiveIndex((index) => (index + offset + publications.length) % publications.length);
@@ -129,7 +121,7 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
 
       <div
         className="featured-paper-card"
-        data-theme={theme}
+        data-school={school?.code}
         onFocusCapture={(event) => {
           if ((event.target as HTMLElement).matches(':focus-visible')) setFocused(true);
         }}
@@ -137,7 +129,7 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
           if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false);
         }}
       >
-        <FeaturedPublicationBackdrop key={`backdrop-${publication.id}`} theme={theme} />
+        <ResearchLineBackdrop key={`backdrop-${publication.researchLine}`} researchLine={publication.researchLine} />
         <div className="featured-paper-copy" key={publication.id}>
           <p className="eyebrow">PUBLICACIÓN DESTACADA</p>
           <p className="featured-paper-line">
