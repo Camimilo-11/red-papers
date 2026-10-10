@@ -1,8 +1,7 @@
 import React, {useState,useRef,useEffect} from 'react';
-import {EcmcLogo} from '../../assets/EcmcLogo';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
-import {SchoolLogo,UniversityLogoLink} from '../institutional/SchoolLogo';
+import {SchoolIconTile,SchoolLogo,UniversityLogoLink} from '../institutional/SchoolLogo';
 interface AccessScreenProps {
  school:SchoolConfig; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
@@ -23,7 +22,11 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
    <button className="welcome-public" onClick={p.onExploreAsGuest}><span><strong>Consultar sin iniciar sesión</strong><small>Explore el catálogo y las estadísticas públicas.</small></span><ArrowRight size={24} aria-hidden="true"/></button>
   </main>
   <footer className="welcome-access-footer"><span>{p.school.name}</span><span>Investigación · {p.school.code}</span></footer>
-  {p.school.code==='ECMC'&&<div className="welcome-art" aria-hidden="true"><div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">{Array.from({length:25},(_,layer)=><div key={layer} className={`welcome-emblem-layer ${layer===0||layer===24?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-12}px)`}}><EcmcLogo size={340} variant="white"/></div>)}</div></div></div>}
+  <div className="welcome-art" aria-hidden="true" data-school={p.school.code}>
+   <div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">
+    {Array.from({length:21},(_,layer)=><div key={layer} className={`welcome-emblem-layer ${layer===0||layer===20?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-10}px)`}}><SchoolIconTile school={p.school} size={260}/></div>)}
+   </div></div>
+  </div>
   <dialog ref={dialog} className="welcome-login-dialog" onCancel={()=>setLoginOpen(false)} onClose={()=>setLoginOpen(false)} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setLoginOpen(false);}}} aria-labelledby="welcome-login-title">
    <button className="welcome-login-close" aria-label="Cerrar inicio de sesión" onClick={()=>setLoginOpen(false)}><X size={22}/></button>
    <div className="login-form"><p className="eyebrow">RED PAPERS</p><h2 id="welcome-login-title">Iniciar sesión</h2><p>Ingrese con su cuenta institucional.</p>

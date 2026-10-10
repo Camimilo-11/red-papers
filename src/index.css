@@ -601,11 +601,7 @@ html, body {
 /* Acceso público compacto y emblema con giro horizontal. */
 .welcome-public{width:min(440px,100%);margin:28px auto 0;padding:17px 22px;justify-content:center;text-align:center;position:relative;}
 .welcome-public>span{padding:0 18px;}.welcome-public strong{font-size:17px;}.welcome-public small{font-size:14px;line-height:1.45;}.welcome-public>svg{position:absolute;right:14px;width:18px;}
-.welcome-art{right:24px;opacity:.3;transform:none;perspective:1000px;}
-.welcome-art>svg{animation:welcome-emblem-turn 18s linear infinite;transform-origin:center;}
-@keyframes welcome-emblem-turn{from{transform:rotateY(0deg);}to{transform:rotateY(360deg);}}
-@media(max-width:600px){.welcome-art{right:-130px;bottom:18%;opacity:.2;}.welcome-public{padding:16px 18px;}.welcome-public>span{padding:0 14px;}}
-@media(prefers-reduced-motion:reduce){.welcome-art>svg{animation:none;}}
+@media(max-width:600px){.welcome-public{padding:16px 18px;}.welcome-public>span{padding:0 14px;}}
 
 /* Directorio compacto y legible en pantallas móviles. */
 .academic-mobile-back { display: none; }
@@ -765,20 +761,18 @@ html, body {
   .academic-year-bar-track { width: min(19px, 100%); }
 }
 
-/* Emblème extruido: inclinación fija y giro alrededor de su eje diagonal. */
-.welcome-art{width:340px;height:374px;right:30px;bottom:14%;opacity:.11;perspective:1100px;overflow:visible;}
-.welcome-emblem-tilt{width:100%;height:100%;transform:rotateZ(-28deg) rotateX(12deg);transform-style:preserve-3d;}
-.welcome-emblem-solid{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:welcome-solid-turn 22s linear infinite;}
-.welcome-emblem-layer{position:absolute;inset:0;backface-visibility:visible;}
-.welcome-emblem-layer svg{display:block;}
-.welcome-emblem-layer.emblem-edge svg [stroke]{stroke:#bc766d;}
-.welcome-emblem-layer.emblem-edge svg [fill]:not([fill="none"]){fill:#bc766d;}
-.welcome-emblem-layer.emblem-face svg [stroke]{stroke:#c95e54;}
-.welcome-emblem-layer.emblem-face svg [fill]:not([fill="none"]){fill:#c95e54;}
+/* Emblema 3D de la escuela seleccionada en la portada de acceso. */
+.welcome-art{width:320px;height:320px;right:clamp(24px,8vw,120px);bottom:14%;opacity:.13;perspective:1100px;overflow:visible;transform:none;}
+.welcome-emblem-tilt{width:100%;height:100%;transform:rotateZ(-18deg) rotateX(8deg);transform-style:preserve-3d;}
+.welcome-emblem-solid{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:welcome-solid-turn 9s linear infinite;}
+.welcome-emblem-layer{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:visible;}
+.welcome-emblem-layer .school-icon-crop{border-radius:16px;}
+.welcome-emblem-layer img{display:block;}
+.welcome-emblem-layer.emblem-edge img{filter:brightness(.68) saturate(1.08);}
+.welcome-emblem-layer.emblem-face img{filter:brightness(1.04) saturate(1.06);}
 @keyframes welcome-solid-turn{from{transform:rotateY(25deg);}to{transform:rotateY(385deg);}}
-@media(max-width:1100px){.welcome-art{right:-180px;bottom:16%;}.welcome-emblem-layer.emblem-face svg [stroke]{stroke:#c95e54;}.welcome-emblem-layer.emblem-face svg [fill]:not([fill="none"]){fill:#c95e54;}}
-@media(max-width:600px){.welcome-art{width:min(250px,70vw);height:auto;aspect-ratio:340/374;right:14px;bottom:24%;opacity:.09;}.welcome-emblem-layer svg{width:100%;height:100%;}.welcome-emblem-layer.emblem-edge svg [stroke],.welcome-emblem-layer.emblem-edge svg [fill]:not([fill="none"]){stroke:#bc766d;fill:#bc766d;}.welcome-emblem-layer.emblem-face svg [stroke],.welcome-emblem-layer.emblem-face svg [fill]:not([fill="none"]){stroke:#c95e54;fill:#c95e54;}.welcome-emblem-solid{animation:welcome-solid-turn-mobile 3s ease-in-out infinite alternate;}}
-@keyframes welcome-solid-turn-mobile{from{transform:rotateY(-18deg);}to{transform:rotateY(18deg);}}
+@media(max-width:1100px){.welcome-art{right:-105px;bottom:15%;opacity:.12;}}
+@media(max-width:600px){.welcome-art{width:min(210px,58vw);height:auto;aspect-ratio:1;right:-22px;bottom:20%;opacity:.11;}.welcome-emblem-tilt{transform:rotateZ(-14deg) rotateX(7deg);}.welcome-emblem-solid{animation-duration:9s;}}
 @media(prefers-reduced-motion:reduce){.welcome-emblem-solid{animation:none;transform:rotateY(25deg);}}
 
 /* Separación compacta cuando el visitante no tiene acciones rápidas. */
