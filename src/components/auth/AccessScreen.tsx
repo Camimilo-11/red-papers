@@ -1,6 +1,6 @@
 import React, {useState,useRef,useEffect} from 'react';
 import {EcmcLogo} from '../../assets/EcmcLogo';
-import {ArrowRight,Eye,EyeOff,X} from 'lucide-react';
+import {ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 interface AccessScreenProps {
  onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void;
 }
@@ -12,7 +12,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  return <div className="welcome-access">
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><EcmcLogo size={48} variant="white"/><span>RED PAPERS<small>UNIVERSIDAD YACHAY TECH</small></span></div>
-   <nav aria-label="Acceso a la plataforma"><button onClick={()=>{setError('');setLoginOpen(true);}}>Iniciar sesión</button></nav>
+   <nav aria-label="Acceso a la plataforma"><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
    <p className="welcome-access-kicker">EL CONOCIMIENTO NOS CONECTA</p>
