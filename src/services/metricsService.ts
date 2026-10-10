@@ -9,6 +9,26 @@ export interface TemporalDataPoint {
   total: number;
 }
 
+const academicSemesterSet = new Set<AcademicSemester>(ACADEMIC_SEMESTERS);
+
+function semesterForProduct(product: ScientificProduct): AcademicSemester | undefined {
+  if (product.semester && academicSemesterSet.has(product.semester)) return product.semester;
+
+  // Los registros recientes guardan una fecha precisa en vez del semestre antiguo.
+  const productDate = product.type === 'publicacion'
+    ? product.publicationDate
+    : product.projectStartDate;
+  const dateParts = productDate?.match(/^(\d{4})-(\d{2})/);
+  if (!dateParts) return undefined;
+
+  const year = Number(dateParts[1]);
+  const month = Number(dateParts[2]);
+  if (month < 1 || month > 12) return undefined;
+
+  const semester = `${year}-${month <= 6 ? 1 : 2}` as AcademicSemester;
+  return academicSemesterSet.has(semester) ? semester : undefined;
+}
+
 export const metricsService = {
   /**
    * Calcula las métricas institucionales de la Escuela de Ciencias Matemáticas y Computacionales (ECMC)
@@ -70,13 +90,22 @@ export const metricsService = {
    * Los semestres sin producción registran explícitamente 0
    */
   getTemporalEvolutionData(products: ScientificProduct[]): TemporalDataPoint[] {
-    // Agrupamos publicaciones y proyectos verificados (o total visible)
-    const verified = products.filter((p) => p.status === 'verificado');
+    const counts = new Map<AcademicSemester, { publications: number; projects: number }>(
+      ACADEMIC_SEMESTERS.map((semester) => [semester, { publications: 0, projects: 0 }])
+    );
+
+    products.forEach((product) => {
+      if (product.status !== 'verificado') return;
+      const semester = semesterForProduct(product);
+      if (!semester) return;
+
+      const count = counts.get(semester)!;
+      if (product.type === 'publicacion') count.publications += 1;
+      else if (product.type === 'proyecto') count.projects += 1;
+    });
 
     return ACADEMIC_SEMESTERS.map((semester) => {
-      const inSemester = verified.filter((p) => p.semester === semester);
-      const pubCount = inSemester.filter((p) => p.type === 'publicacion').length;
-      const projCount = inSemester.filter((p) => p.type === 'proyecto').length;
+      const { publications: pubCount, projects: projCount } = counts.get(semester)!;
 
       return {
         semester,

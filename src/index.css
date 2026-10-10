@@ -950,6 +950,9 @@ html, body {
 .semester-chart-legend { display:flex; align-items:center; gap:18px; margin:0 0 2px; color:#625f5b; font-size:12px; }
 .semester-chart-legend span { display:inline-flex; align-items:center; gap:7px; }
 .semester-chart-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; }
+.semester-chart-accent-icon { color:var(--accent); background:color-mix(in srgb,var(--accent) 9%,white); }
+.semester-chart-value.is-highlighted { color:var(--accent); }
+.semester-mode-publications[aria-pressed="true"] { color:var(--accent); }
 .semester-legend-publications { background:var(--accent); }
 .semester-legend-projects { background:#16835e; }
 .semester-chart-bars { display:flex; align-items:flex-end; gap:3px; width:100%; max-width:46px; height:100%; }
@@ -957,8 +960,14 @@ html, body {
 .semester-chart-series-bar { width:100%; min-height:0; border-radius:5px 5px 0 0; transition:height .3s ease,background-color .2s ease; }
 .semester-bar-publications { background:var(--accent); }
 .semester-bar-projects { background:#16835e; }
-.semester-bar-publications.is-hovered { background:#d02b20; }
+.semester-bar-publications.is-hovered { background:color-mix(in srgb,var(--accent) 86%,black); }
 .semester-bar-projects.is-hovered { background:#116b4d; }
+.semester-single-bar { width:100%; border-radius:5px 5px 0 0; transition:height .3s ease,background-color .2s ease; }
+.semester-single-bar.publication { background:var(--accent); }
+.semester-single-bar.project { background:#16835e; }
+.semester-single-bar.publication.is-hovered { background:color-mix(in srgb,var(--accent) 86%,black); }
+.semester-single-bar.project.is-hovered { background:#116b4d; }
+.semester-single-bar.is-empty { background:transparent; }
 .research-line-chart { grid-column:1/-1; }
 .research-line-bars { list-style:none; display:flex; flex-direction:column; gap:13px; margin:20px 0 0; padding:0; }
 .research-line-bars li { display:grid; grid-template-columns:minmax(190px,1.1fr) minmax(100px,2fr) 42px; align-items:center; gap:14px; }
@@ -1795,3 +1804,11 @@ body {
 .portal-app .product-detail-edit-button { border-color: color-mix(in srgb, var(--accent) 38%, white); }
 .portal-app .product-detail-edit-button:hover { background: color-mix(in srgb, var(--accent) 8%, white); }
 .portal-app .semester-bar-publications.is-hovered { background: color-mix(in srgb, var(--accent) 86%, black); }
+.portal-app .school-accent-button { background:var(--accent); }
+.portal-app .school-accent-button:hover:not(:disabled) { background:color-mix(in srgb,var(--accent) 86%,black); }
+.portal-app .school-accent-focus:focus { border-color:var(--accent); outline:2px solid color-mix(in srgb,var(--accent) 22%,transparent); outline-offset:1px; box-shadow:none; }
+.portal-app .catalog-type-filter-button[aria-pressed="true"].school-accent-text { color:var(--accent) !important; }
+.portal-app .product-detail-close-button { background:var(--accent); }
+.portal-app .product-detail-close-button:hover { background:color-mix(in srgb,var(--accent) 86%,black); }
+.portal-app .product-detail-edit-button { border-color:color-mix(in srgb,var(--accent) 38%,white); background:color-mix(in srgb,var(--accent) 5%,white); }
+.portal-app .product-detail-edit-button:hover { background:color-mix(in srgb,var(--accent) 9%,white); border-color:var(--accent); }

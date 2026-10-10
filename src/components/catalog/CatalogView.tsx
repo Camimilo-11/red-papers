@@ -187,7 +187,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   onClick={() => handleExport('pdf')}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 flex items-center gap-2 font-medium text-neutral-700"
                 >
-                  <Printer className="w-4 h-4 text-[#EF4035]" />
+                  <Printer className="w-4 h-4 school-accent-text" />
                   <span>Imprimir / Exportar PDF</span>
                 </button>
               </div>
@@ -197,7 +197,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           {/* Acceso al registro solo en Mis registros */}
           {onlyMine && allowRegister && <button
             onClick={onOpenRegister}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#EF4035] hover:bg-[#D02B20] text-white text-xs font-bold shadow-xs transition-colors"
+            className="school-accent-button flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-xs font-bold shadow-xs transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Registrar</span>
@@ -226,15 +226,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setFilters(current=>({...current,searchQuery:searchDraft.trim()}));}}}
               onChange={(e) => setSearchDraft(e.target.value)}
               aria-label="Buscar publicaciones y proyectos" placeholder="Escriba un título, autor o revista"
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#EF4035] bg-neutral-50/50 focus:bg-white transition-colors"
+              className="school-accent-focus w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-200 text-xs bg-neutral-50/50 focus:bg-white transition-colors"
             />
           </div>
 
           {/* Segmented control: Todos, Publicaciones, Proyectos */}
           <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-lg shrink-0 text-xs font-semibold">
             <button
+              type="button"
+              aria-pressed={filters.productType === 'todos'}
               onClick={() => setFilters({ ...filters, productType: 'todos' })}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`catalog-type-filter-button px-3 py-1.5 rounded-md transition-all ${
                 filters.productType === 'todos'
                   ? 'bg-white text-neutral-900 shadow-xs'
                   : 'text-neutral-600 hover:text-neutral-900'
@@ -243,18 +245,22 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               Todos ({visibleProducts.length})
             </button>
             <button
+              type="button"
+              aria-pressed={filters.productType === 'publicacion'}
               onClick={() => setFilters({ ...filters, productType: 'publicacion' })}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`catalog-type-filter-button px-3 py-1.5 rounded-md transition-all ${
                 filters.productType === 'publicacion'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white shadow-xs school-accent-text'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               Publicaciones
             </button>
             <button
+              type="button"
+              aria-pressed={filters.productType === 'proyecto'}
               onClick={() => setFilters({ ...filters, productType: 'proyecto' })}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`catalog-type-filter-button px-3 py-1.5 rounded-md transition-all ${
                 filters.productType === 'proyecto'
                   ? 'bg-white text-emerald-700 shadow-xs'
                   : 'text-neutral-600 hover:text-neutral-900'
@@ -276,7 +282,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <select
               value={filters.teacherId}
               onChange={(e) => setFilters({ ...filters, teacherId: e.target.value })}
-              className="w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800 focus:ring-1 focus:ring-[#EF4035]"
+              className="school-accent-focus w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800"
             >
               <option value="todos">Todos los docentes</option>
               {teachers.map((t) => (
@@ -295,7 +301,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <select
               value={filters.periodYear}
               onChange={(e) => setFilters({ ...filters, periodYear: e.target.value })}
-              className="w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800 focus:ring-1 focus:ring-[#EF4035]"
+              className="school-accent-focus w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800"
             >
               <option value="todos">Todos los años</option>
               <option value="2026">2026</option>
@@ -322,7 +328,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <select
               value={filters.researchLine}
               onChange={(e) => setFilters({ ...filters, researchLine: e.target.value as any })}
-              className="w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800 focus:ring-1 focus:ring-[#EF4035]"
+              className="school-accent-focus w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800"
             >
               <option value="todas">Todas las áreas</option>
               {researchLines.map((line) => (
@@ -387,7 +393,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
             <button
               onClick={resetFilters}
-              className="text-[11px] font-semibold text-[#EF4035] hover:underline"
+              className="school-accent-text text-[11px] font-semibold hover:underline"
             >
               Limpiar todos los filtros
             </button>
@@ -407,7 +413,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as any)}
-            className="py-1 px-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800 focus:ring-1 focus:ring-[#EF4035]"
+            className="school-accent-focus py-1 px-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800"
           >
             <option value="recent">Más recientes (Año desc)</option>
             <option value="citations">Más citados</option>

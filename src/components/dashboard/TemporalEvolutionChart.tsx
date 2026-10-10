@@ -23,7 +23,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
       {/* Encabezado del gráfico */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-neutral-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-red-50 text-[#EF4035]">
+          <div className="semester-chart-accent-icon p-1.5 rounded-lg">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
@@ -54,9 +54,9 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
             type="button"
             aria-pressed={seriesMode === 'publications'}
             onClick={() => setSeriesMode('publications')}
-            className={`px-3 py-1.5 rounded-md transition-all ${
+            className={`semester-mode-publications px-3 py-1.5 rounded-md transition-all ${
               seriesMode === 'publications'
-                ? 'bg-white text-[#EF4035] shadow-xs'
+                ? 'bg-white shadow-xs'
                 : 'text-neutral-600 hover:text-neutral-900'
             }`}
           >
@@ -124,11 +124,9 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
               >
                 {/* Valor arriba de la barra */}
                 <span
-                  className={`text-[11px] font-bold mb-1 transition-opacity tabular-nums ${
+                  className={`semester-chart-value text-[11px] font-bold mb-1 transition-opacity tabular-nums ${
                     val > 0
-                      ? isHovered
-                        ? 'text-[#EF4035]'
-                        : 'text-neutral-600'
+                      ? isHovered ? 'is-highlighted' : 'text-neutral-600'
                       : 'text-neutral-300 opacity-60'
                   }`}
                 >
@@ -149,15 +147,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
                   <div className="w-full max-w-[42px] bg-neutral-100 rounded-t-md relative flex items-end overflow-hidden h-full">
                     <div
                       style={{ height: `${heightPercent}%` }}
-                      className={`w-full rounded-t-md transition-all duration-300 ${
-                        val === 0
-                          ? 'bg-transparent'
-                          : isHovered
-                          ? 'bg-[#D02B20]'
-                          : seriesMode === 'projects'
-                          ? 'bg-emerald-600'
-                          : 'bg-[#EF4035]'
-                      }`}
+                      className={`semester-single-bar ${seriesMode === 'projects' ? 'project' : 'publication'} ${val === 0 ? 'is-empty' : ''} ${isHovered ? 'is-hovered' : ''}`}
                     />
                   </div>
                 )}
