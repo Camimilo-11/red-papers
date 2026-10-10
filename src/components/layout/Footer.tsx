@@ -89,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={onOpenReviewerConsole}
                   className="hover:text-emerald-400 font-semibold transition-colors"
                 >
-                  Comité Revisor Institucional (Propuesta)
+                  Comité Científico
                 </button>
               </li>
             </ul>

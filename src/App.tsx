@@ -170,7 +170,7 @@ export default function App() {
     newStatus: ProductStatus,
     reason?: string
   ) => {
-    if (!canReview(authService.getCurrentUser())) return {success:false,error:'Su perfil no tiene acceso al comité revisor.'};
+    if (!canReview(authService.getCurrentUser())) return {success:false,error:'Su perfil no tiene acceso al Comité Científico.'};
     const result = productService.updateProductStatus(productId, newStatus, reason);
     if (result.success && result.product) {
       setProducts(storageService.getProducts());

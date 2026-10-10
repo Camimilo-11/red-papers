@@ -1,7 +1,8 @@
 import React from 'react';
-import { ScientificProduct } from '../../types';
-import { BookOpen, FolderOpen, ArrowRight, CheckCircle2, Clock, ExternalLink, XCircle } from 'lucide-react';
+import { ScientificProduct, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { BookOpen, FolderOpen, ArrowRight, CheckCircle2, Clock, ExternalLink, AlertTriangle } from 'lucide-react';
 import { normalizeDoi } from '../../services/doiService';
+import { productDateLabel } from '../../services/productPresentation';
 
 export const ProductCard: React.FC<{
   product: ScientificProduct;
@@ -11,7 +12,7 @@ export const ProductCard: React.FC<{
   const Icon = product.type === 'publicacion' ? BookOpen : FolderOpen;
   const Status = product.status === 'verificado'
     ? CheckCircle2
-    : product.status === 'rechazado' ? XCircle : Clock;
+    : product.status === 'rechazado' ? AlertTriangle : Clock;
   const doi = product.type === 'publicacion' ? normalizeDoi(product.doi) : '';
 
   return (
@@ -19,11 +20,11 @@ export const ProductCard: React.FC<{
       <div className="product-type-icon"><Icon /></div>
       <div className="product-row-body">
         <div className="product-meta">
-          <span>{product.type === 'publicacion' ? 'Publicación' : 'Proyecto'} · {product.year}</span>
+          <span>{product.type === 'publicacion' ? 'Publicación' : 'Proyecto'} · {productDateLabel(product)}{product.type==='proyecto'&&product.projectStatus?` · ${PROJECT_STATUS_LABELS[product.projectStatus]}`:''}</span>
           {showStatus && (
             <span className={`status-label status-${product.status}`}>
               <Status size={17} />
-              {product.status === 'cargado' ? 'Cargado · En revisión' : product.status === 'verificado' ? 'Verificado' : 'Rechazado'}
+              {PRODUCT_STATUS_LABELS[product.status]}
             </span>
           )}
         </div>

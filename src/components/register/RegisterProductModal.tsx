@@ -3,10 +3,12 @@ import {
   ScientificProduct,
   ProductType,
   AcademicSemester,
+  ProjectStatus,
+  PROJECT_STATUS_LABELS,
   OfficialResearchLine,
   TeacherUser,
 } from '../../types';
-import { OFFICIAL_RESEARCH_LINES, ACADEMIC_SEMESTERS } from '../../constants/researchLines';
+import { OFFICIAL_RESEARCH_LINES } from '../../constants/researchLines';
 import { doiService, OrcidWorkItem } from '../../services/doiService';
 import { pdfExtractorService } from '../../services/pdfExtractorService';
 import { productService, DuplicateCheckResult } from '../../services/productService';
@@ -36,6 +38,11 @@ interface RegisterProductModalProps {
 
 type RegisterTab = 'identifier' | 'pdf' | 'manual';
 
+function semesterForDate(date: string): AcademicSemester {
+  const [year, month] = date.split('-').map(Number);
+  return `${year}-${month <= 6 ? 1 : 2}` as AcademicSemester;
+}
+
 export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   initialType = 'publicacion',
   lockType = false,
@@ -51,8 +58,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   // Campos del formulario
   const [title, setTitle] = useState('');
   const [authorsText, setAuthorsText] = useState(currentUser?.name || '');
-  const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [semester, setSemester] = useState<AcademicSemester>('2026-1');
+  const [productDate, setProductDate] = useState('');
   const [researchLine, setResearchLine] = useState<OfficialResearchLine>(
     'Computación científica'
   );
@@ -61,6 +67,11 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   const [projectCode, setProjectCode] = useState('');
   const [venue, setVenue] = useState('');
   const [volumeIssue, setVolumeIssue] = useState('');
+  const [projectStatus, setProjectStatus] = useState<ProjectStatus>('activo');
+  const [projectDirector, setProjectDirector] = useState(currentUser?.name || '');
+  const [projectEndDate, setProjectEndDate] = useState('');
+  const [projectDurationMonths, setProjectDurationMonths] = useState('');
+  const [expectedProductsText, setExpectedProductsText] = useState('');
 
   // Estados de carga e integración
   const [identifierInput, setIdentifierInput] = useState('');
@@ -153,8 +164,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       if (res.success && res.data) {
         setTitle(res.data.title);
         setAuthorsText(res.data.authors.join(', '));
-        setYear(res.data.year);
-        setSemester(res.data.semester);
+        setProductDate('');
         setDoi(res.data.doi);
         setVenue(res.data.venue);
         setAbstract(res.data.abstract);
@@ -163,7 +173,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         }
         setIdSearchMessage({
           type: 'success',
-          text: '¡Metadatos recuperados exitosamente! Revisa los campos y ajusta lo que consideres necesario.',
+          text: '¡Metadatos recuperados exitosamente! Verifica los campos y ajusta lo que consideres necesario.',
         });
       } else {
         setIdSearchMessage({
@@ -184,8 +194,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
 
   const handleSelectOrcidWork = (work: OrcidWorkItem) => {
     setTitle(work.title);
-    setYear(work.year);
-    setSemester(`${work.year}-1` as AcademicSemester);
+    setProductDate('');
     setVenue(work.venue);
     setDoi(work.doi || '');
     setAbstract(work.abstract);
@@ -216,8 +225,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       setTitle(result.data.title);
       setProjectCode(result.data.projectCode || '');
       setAuthorsText(result.data.participants.join(', '));
-      setYear(result.data.year);
-      setSemester(result.data.semester);
+      setProductDate('');
       setResearchLine(result.data.researchLine);
       setAbstract(result.data.abstract);
       setVenue(result.data.fundingVenue || '');
@@ -241,6 +249,12 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     if(step<3){
       if(!title.trim()){setErrorMessage('Escriba el título para continuar.');return;}
       if(step===2&&!authorsText.trim()){setErrorMessage('Escriba al menos un autor.');return;}
+      if(step===2&&!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
+      if(step===2&&productType==='proyecto'){
+        if(!projectDurationMonths||Number(projectDurationMonths)<1){setErrorMessage('Indique la duración estimada del proyecto en meses.');return;}
+        if(!expectedProductsText.trim()){setErrorMessage('Indique los productos que se espera alcanzar en el proyecto.');return;}
+        if(projectEndDate&&projectEndDate<productDate){setErrorMessage('La fecha de cierre no puede ser anterior al inicio del proyecto.');return;}
+      }
       setStep(step+1);return;
     }
 
@@ -258,6 +272,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       setErrorMessage('Debes indicar al menos un autor o investigador.');
       return;
     }
+    if(!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
 
     const ownerId = currentUser ? currentUser.id : 'doc-001';
 
@@ -267,8 +282,11 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       title: title.trim(),
       authors,
       school: 'ECMC',
-      year: Number(year),
-      semester,
+      year: Number(productDate.slice(0,4)),
+      semester: semesterForDate(productDate),
+      publicationDate: productType === 'publicacion' ? productDate : undefined,
+      projectStartDate: productType === 'proyecto' ? productDate : undefined,
+      projectEndDate: productType === 'proyecto' ? projectEndDate || undefined : undefined,
       researchLine,
       abstract: abstract.trim() || 'Sin resumen registrado.',
       doi: productType === 'publicacion' ? doi.trim() || undefined : undefined,
@@ -276,6 +294,11 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       volumeIssue: productType === 'publicacion' ? volumeIssue.trim() || undefined : undefined,
       projectCode: productType === 'proyecto' ? projectCode.trim() || undefined : undefined,
       fundingVenue: productType === 'proyecto' ? venue.trim() || undefined : undefined,
+      projectStatus: productType === 'proyecto' ? projectStatus : undefined,
+      projectDirector: productType === 'proyecto' ? projectDirector.trim() || undefined : undefined,
+      projectParticipants: productType === 'proyecto' ? authors : undefined,
+      projectDurationMonths: productType === 'proyecto' ? Number(projectDurationMonths) : undefined,
+      expectedProducts: productType === 'proyecto' ? expectedProductsText.split(/[;\n]+/).map(item=>item.trim()).filter(Boolean) : undefined,
     };
 
     const creationResult = productService.createProduct(productPayload, ownerId);
@@ -305,7 +328,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 {productType === 'publicacion' ? 'Registrar publicación' : 'Registrar proyecto'}
               </h2>
               <p className="text-xs text-neutral-500">
-                Complete los datos. Podrá revisarlos antes de guardar.
+                Complete los datos y verifique la información antes de guardar.
               </p>
             </div>
           </div>
@@ -318,7 +341,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           </button>
         </div>
 
-        <ol className="registration-steps" aria-label="Pasos del registro">{['Datos básicos','Autores y detalles','Revisar y guardar'].map((name,index)=><li key={name} aria-current={step===index+1?'step':undefined} className={step===index+1?'current':step>index+1?'complete':''}><span>{index+1}</span>{name}</li>)}</ol>
+        <ol className="registration-steps" aria-label="Pasos del registro">{['Datos básicos','Autores y detalles','Confirmar y guardar'].map((name,index)=><li key={name} aria-current={step===index+1?'step':undefined} className={step===index+1?'current':step>index+1?'complete':''}><span>{index+1}</span>{name}</li>)}</ol>
         {step===1 && <>
         {/* Pestañas de Vía de Ingreso */}
         <div className="bg-white border-b border-neutral-200 px-6 pt-3 flex items-center gap-2 overflow-x-auto">
@@ -568,9 +591,9 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             {/* Autores */}
             <div>
               <label className="block font-semibold text-neutral-700 mb-1">
-                Autores / Investigadores Participantes (separados por coma) *
+                {productType==='publicacion'?'Autores':'Investigadores participantes'} (separados por coma) *
               </label>
-              <input aria-label="Autores / Investigadores Participantes (separados por coma)"
+              <input aria-label={productType==='publicacion'?'Autores (separados por coma)':'Investigadores participantes (separados por coma)'}
                 type="text"
                 value={authorsText}
                 onChange={(e) => setAuthorsText(e.target.value)}
@@ -580,34 +603,12 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               />
             </div>
 
-            {/* Año, Semestre y Línea de Investigación */}
-            <div className="grid grid-cols-1 gap-4">
+            {/* Fecha del producto y línea de investigación */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Año *</label>
-              <input aria-label="Año"
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                  min={2020}
-                  max={2030}
-                  required
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-neutral-700 mb-1">Semestre *</label>
-              <select aria-label="Semestre"
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value as AcademicSemester)}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white"
-                >
-                  {ACADEMIC_SEMESTERS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                <label className="block font-semibold text-neutral-700 mb-1">{productType==='publicacion'?'Fecha de publicación *':'Fecha de inicio del proyecto *'}</label>
+                <input aria-label={productType==='publicacion'?'Fecha de publicación':'Fecha de inicio del proyecto'} type="date" value={productDate} onChange={e=>setProductDate(e.target.value)} required className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white"/>
+                <small className="mt-1 block text-neutral-500">El año se obtendrá automáticamente de esta fecha.</small>
               </div>
 
               <div>
@@ -627,6 +628,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 </select>
               </div>
             </div>
+
+            {productType==='proyecto'&&<fieldset className="project-registration-fields"><legend>Datos de planificación del proyecto</legend><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="block font-semibold text-neutral-700">Estado del proyecto *<select value={projectStatus} onChange={e=>setProjectStatus(e.target.value as ProjectStatus)} required className="mt-1 w-full px-3 py-2 rounded-lg border border-neutral-300 bg-white text-xs">{(Object.keys(PROJECT_STATUS_LABELS) as ProjectStatus[]).map(status=><option key={status} value={status}>{PROJECT_STATUS_LABELS[status]}</option>)}</select></label>
+              <label className="block font-semibold text-neutral-700">Duración estimada (meses) *<input type="number" min={1} max={600} step={1} value={projectDurationMonths} onChange={e=>setProjectDurationMonths(e.target.value)} placeholder="Ej. 18" required className="mt-1 w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs"/></label>
+              <label className="block font-semibold text-neutral-700">Dirección del proyecto<input value={projectDirector} onChange={e=>setProjectDirector(e.target.value)} placeholder="Nombre de quien dirige" className="mt-1 w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs"/></label>
+              <label className="block font-semibold text-neutral-700">Fecha de cierre prevista<input type="date" min={productDate||undefined} value={projectEndDate} onChange={e=>setProjectEndDate(e.target.value)} className="mt-1 w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs"/></label>
+              <label className="block font-semibold text-neutral-700 sm:col-span-2">Productos esperados *<textarea value={expectedProductsText} onChange={e=>setExpectedProductsText(e.target.value)} rows={3} required placeholder="Escriba un producto esperado por línea (ej. artículo científico, prototipo, dataset)" className="mt-1 w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs resize-y"/><small className="mt-1 block font-normal text-neutral-500">Separe cada resultado esperado en una línea.</small></label>
+            </div></fieldset>}
 
             {/* Campos condicionales por tipo de producto */}
             {productType === 'publicacion' ? (
@@ -702,7 +711,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             </div>
 
             </>}
-            {step===3 && <section className="review-summary"><h3>Revise su registro</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>Autores</dt><dd>{authorsText}</dd><dt>Período</dt><dd>{year} · {semester}</dd><dt>Línea de investigación</dt><dd>{researchLine}</dd><dt>Identificador</dt><dd>{doi||projectCode||'Sin identificador. No se podrá comprobar su existencia por código.'}</dd><dt>Medio / programa</dt><dd>{venue||'No indicado'}</dd><dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
+            {step===3 && <section className="review-summary"><h3>Verifique la información del registro</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd><dt>Identificador</dt><dd>{doi||projectCode||'Sin identificador. Se verificará la información registrada.'}</dd><dt>Medio / programa</dt><dd>{venue||'No indicado'}</dd><dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
             {/* Aviso sobre estado inicial "cargado" (Sección 8) */}
             <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-[11px] text-neutral-600 flex items-start gap-2">
               <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />

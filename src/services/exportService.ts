@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
-import { ScientificProduct, FilterState } from '../types';
+import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../types';
+import { productDateValue } from './productPresentation';
 
 export interface ExportMetadata {
   filters: FilterState;
@@ -7,6 +8,12 @@ export interface ExportMetadata {
   generatedAt: string;
   institution: string;
   school: string;
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character] || character);
 }
 
 export const exportService = {
@@ -24,11 +31,15 @@ export const exportService = {
       'Título',
       'Autores / Investigadores',
       'Año',
-      'Semestre',
+      'Fecha de publicación / inicio',
       'Línea de Investigación Oficial',
       'Estado Oficial',
       'Identificador (DOI / Código)',
       'Medio / Revista / Fondo',
+      'Estado del proyecto',
+      'Participantes del proyecto',
+      'Duración del proyecto (meses)',
+      'Productos esperados',
       'Citas Registradas',
       'Fecha Registro',
     ];
@@ -39,11 +50,15 @@ export const exportService = {
       `"${p.title.replace(/"/g, '""')}"`,
       `"${p.authors.join('; ').replace(/"/g, '""')}"`,
       p.year,
-      `"${p.semester}"`,
+      `"${productDateValue(p)}"`,
       `"${p.researchLine}"`,
-      `"${p.status}"`,
+      `"${PRODUCT_STATUS_LABELS[p.status]}"`,
       `"${(p.doi || p.projectCode || 'N/A').replace(/"/g, '""')}"`,
       `"${(p.venue || p.fundingVenue || 'N/A').replace(/"/g, '""')}"`,
+      `"${p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A'}"`,
+      `"${(p.projectParticipants || []).join('; ').replace(/"/g, '""')}"`,
+      p.projectDurationMonths ?? '',
+      `"${(p.expectedProducts || []).join('; ').replace(/"/g, '""')}"`,
       p.citations || 0,
       `"${new Date(p.createdAt).toLocaleDateString('es-EC')}"`,
     ]);
@@ -87,11 +102,15 @@ export const exportService = {
       'Título': p.title,
       'Autores / Investigadores': p.authors.join('; '),
       'Año': p.year,
-      'Semestre': p.semester,
+      'Fecha de publicación / inicio': productDateValue(p),
       'Línea de Investigación': p.researchLine,
-      'Estado': p.status,
+      'Estado de verificación': PRODUCT_STATUS_LABELS[p.status],
       'Identificador Digital / Código': p.doi || p.projectCode || 'N/A',
       'Medio de Difusión / Fondo': p.venue || p.fundingVenue || 'N/A',
+      'Estado del proyecto': p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
+      'Participantes del proyecto': (p.projectParticipants || []).join('; '),
+      'Duración del proyecto (meses)': p.projectDurationMonths ?? '',
+      'Productos esperados': (p.expectedProducts || []).join('; '),
       'Citas Indexadas': p.citations || 0,
       'Fecha Registro': new Date(p.createdAt).toLocaleDateString('es-EC'),
     }));
@@ -105,11 +124,15 @@ export const exportService = {
       { wch: 55 }, // Título
       { wch: 40 }, // Autores
       { wch: 8 },  // Año
-      { wch: 12 }, // Semestre
+      { wch: 24 }, // Fecha
       { wch: 45 }, // Línea
       { wch: 14 }, // Estado
       { wch: 30 }, // Identificador
       { wch: 35 }, // Medio
+      { wch: 18 }, // Estado del proyecto
+      { wch: 40 }, // Participantes
+      { wch: 22 }, // Duración
+      { wch: 45 }, // Productos esperados
       { wch: 14 }, // Citas
       { wch: 15 }, // Fecha
     ];
@@ -166,7 +189,7 @@ export const exportService = {
           <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${p.venue || p.fundingVenue || ''}</div>
         </td>
         <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${p.researchLine}</td>
-        <td style="padding: 8px 6px; text-align: center; color: #374151;">${p.semester}</td>
+        <td style="padding: 8px 6px; text-align: center; color: #374151;">${productDateValue(p)}</td>
         <td style="padding: 8px 6px; font-family: monospace; font-size: 10px; color: #4B5563;">
           ${p.doi ? `DOI: ${p.doi}` : p.projectCode ? `Cód: ${p.projectCode}` : '—'}
         </td>
@@ -178,7 +201,7 @@ export const exportService = {
               ? 'background: #FFFBEB; color: #B45309;'
               : 'background: #FEF2F2; color: #B91C1C;'
           }">
-            ${p.status.toUpperCase()}
+            ${PRODUCT_STATUS_LABELS[p.status].toUpperCase()}
           </span>
         </td>
         <td style="padding: 8px 6px; text-align: right; font-weight: bold; font-family: monospace;">${p.citations || 0}</td>
@@ -254,6 +277,58 @@ export const exportService = {
       printWindow.print();
     }, 400);
 
+    return true;
+  },
+
+  exportTeacherCv(teacher: TeacherUser, products: ScientificProduct[], metrics: TeacherMetrics, generatedAt: string): boolean {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return false;
+
+    const links = [
+      teacher.orcid && `<a href="https://orcid.org/${escapeHtml(teacher.orcid)}">ORCID · ${escapeHtml(teacher.orcid)}</a>`,
+      teacher.googleScholarId && `<a href="https://scholar.google.com/citations?user=${encodeURIComponent(teacher.googleScholarId)}">Google Scholar${teacher.googleScholarHIndex !== undefined ? ` · Índice h ${teacher.googleScholarHIndex}` : ''}</a>`,
+      teacher.scopusAuthorId && `<a href="https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(teacher.scopusAuthorId)}">Scopus · ${escapeHtml(teacher.scopusAuthorId)}</a>`,
+      teacher.webOfScienceId && `<a href="https://www.webofscience.com/wos/author/record/${encodeURIComponent(teacher.webOfScienceId)}">Web of Science · ${escapeHtml(teacher.webOfScienceId)}</a>`,
+      teacher.githubUrl && `<a href="${escapeHtml(teacher.githubUrl)}">GitHub</a>`,
+    ].filter(Boolean).join(' <span>·</span> ');
+    const researchLines = teacher.researchLines?.length
+      ? teacher.researchLines
+      : teacher.researchLine ? [teacher.researchLine] : [];
+    const productsHtml = products.length
+      ? products.map((product) => `<article class="product">
+          <div class="product-meta">${product.type === 'publicacion' ? 'Publicación científica' : 'Proyecto de investigación'} · ${escapeHtml(product.year)}${product.projectStatus ? ` · ${escapeHtml(PROJECT_STATUS_LABELS[product.projectStatus])}` : ''}</div>
+          <h3>${escapeHtml(product.title)}</h3>
+          <p class="authors">${escapeHtml((product.projectParticipants?.length ? product.projectParticipants : product.authors).join(' · '))}</p>
+          <p>${escapeHtml(product.venue || product.fundingVenue || product.researchLine)}${product.volumeIssue ? ` · ${escapeHtml(product.volumeIssue)}` : ''}</p>
+          <p class="product-meta">${escapeHtml(productDateValue(product))}${product.doi ? ` · DOI: ${escapeHtml(product.doi)}` : product.projectCode ? ` · Código: ${escapeHtml(product.projectCode)}` : ''}</p>
+          ${product.type === 'proyecto' && product.expectedProducts?.length ? `<p><strong>Productos esperados:</strong> ${escapeHtml(product.expectedProducts.join(' · '))}</p>` : ''}
+        </article>`).join('')
+      : '<p>No hay producción verificada registrada en el portal.</p>';
+
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>CV · ${escapeHtml(teacher.name)}</title>
+      <style>
+        @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#25221f;line-height:1.45;margin:0;font-size:10.5pt}
+        header{border-bottom:3px solid #bd3027;padding-bottom:14px;margin-bottom:22px}h1{font-size:25pt;line-height:1.15;margin:0 0 5px}header p{margin:3px 0;color:#645d56}
+        .eyebrow{font-size:9pt;font-weight:bold;letter-spacing:1.4px;text-transform:uppercase;color:#a62e26;margin:0 0 6px}
+        h2{font-size:13pt;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid #ded7ce;padding-bottom:5px;margin:19px 0 8px}
+        h3{font-size:11pt;margin:3px 0}.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}.facts p{margin:2px 0}.muted,.product-meta{color:#6a625b;font-size:9pt}.links{font-size:9pt}.links a{color:#8b2a23;text-decoration:none}.product{padding:8px 0;border-bottom:1px solid #e5dfd8;break-inside:avoid}.product p{margin:2px 0}.authors{font-weight:600}.bio{white-space:pre-wrap}.footer{margin-top:24px;padding-top:8px;border-top:1px solid #ded7ce;color:#777;font-size:8pt;display:flex;justify-content:space-between}
+        @media print{a{color:inherit}}
+      </style></head><body>
+      <header><p class="eyebrow">Currículum académico · RED PAPERS · ECMC</p><h1>${escapeHtml(teacher.name)}</h1>
+        <p>${escapeHtml(teacher.rank)}${teacher.academicDegree ? ` · ${escapeHtml(teacher.academicDegree)}${teacher.academicField ? ` en ${escapeHtml(teacher.academicField)}` : ''}` : ''}</p>
+        <p>${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}</p></header>
+      <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico de la Escuela de Ciencias Matemáticas y Computacionales.')}</p></section>
+      <section><h2>Áreas de investigación</h2><p>${researchLines.length ? researchLines.map(escapeHtml).join(' · ') : 'No registradas'}</p></section>
+      <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p><p><strong>Índice h de Google Scholar:</strong> ${teacher.googleScholarHIndex ?? 'No registrado'}</p></div></section>
+      <section><h2>Identificadores y perfiles académicos</h2><p class="links">${links || 'No registrados'}</p></section>
+      <section><h2>Producción académica verificada (${products.length})</h2>${productsHtml}</section>
+      <div class="footer"><span>Universidad Yachay Tech · Escuela de Ciencias Matemáticas y Computacionales</span><span>Generado ${escapeHtml(generatedAt)}</span></div>
+      </body></html>`;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 400);
     return true;
   },
 };

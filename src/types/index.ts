@@ -7,6 +7,8 @@ export type ProductType = 'publicacion' | 'proyecto';
 
 export type ProductStatus = 'cargado' | 'verificado' | 'rechazado';
 
+export type ProjectStatus = 'activo' | 'en_pausa' | 'finalizado' | 'cancelado';
+
 export type AcademicSemester =
   | '2021-1' | '2021-2'
   | '2022-1' | '2022-2'
@@ -26,6 +28,19 @@ export type OfficialResearchLine =
 
 export type AcademicDegree = 'PhD' | 'MSc' | 'BSc' | 'Other';
 
+export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+  cargado: 'Pendiente de verificación',
+  verificado: 'Verificado',
+  rechazado: 'Producto en observación',
+};
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  activo: 'Activo',
+  en_pausa: 'En pausa',
+  finalizado: 'Finalizado',
+  cancelado: 'Cancelado',
+};
+
 export interface ScientificProduct {
   id: string; // ej. prod-001
   type: ProductType;
@@ -34,7 +49,10 @@ export interface ScientificProduct {
   ownerId: string; // ID del profesor registrado propietario
   school: string; // Por defecto 'ECMC' (escalable para futuras escuelas)
   year: number;
-  semester: AcademicSemester;
+  semester?: AcademicSemester; // Compatibilidad con productos existentes y serie histórica
+  publicationDate?: string; // Fecha ISO para publicaciones
+  projectStartDate?: string;
+  projectEndDate?: string;
   researchLine: OfficialResearchLine;
   abstract: string;
   status: ProductStatus;
@@ -53,21 +71,29 @@ export interface ScientificProduct {
   projectCode?: string; // ej. ECMC-INV-2024-008
   projectDirector?: string;
   fundingVenue?: string;
+  projectStatus?: ProjectStatus;
+  projectParticipants?: string[];
+  projectDurationMonths?: number;
+  expectedProducts?: string[];
 }
 
 export interface TeacherUser {
   id: string;
   name: string;
   email: string; // Debe pertenecer al dominio @yachaytech.edu.ec
-  rank: string; // Escalafón docente (Profesor Principal, Profesor Auxiliar, etc.)
+  rank: string; // Cargo institucional
   academicDegree?: AcademicDegree;
   academicField?: string;
+  yachayEntryYear?: number;
   profileImage?: string; // Imagen optimizada en formato data URL
   researchLines?: OfficialResearchLine[];
   researchLine?: OfficialResearchLine; // Compatibilidad con perfiles guardados antes de la selección múltiple
   orcid?: string; // Formato 0000-000X-XXXX-XXXX
   githubUrl?: string;
   googleScholarId?: string;
+  googleScholarHIndex?: number;
+  scopusAuthorId?: string;
+  webOfScienceId?: string;
   bio?: string;
   school: string;
   role: 'teacher' | 'reviewer_demo' | 'developer'; // Revisor como consola demo propuesta

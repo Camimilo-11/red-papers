@@ -10,7 +10,7 @@ type RankingMetric='citations'|'publications'|'hIndex';
 const rankingOptions:{id:RankingMetric;label:string}[]=[
  {id:'citations',label:'Citas'},
  {id:'publications',label:'Publicaciones'},
- {id:'hIndex',label:'Índice h'},
+ {id:'hIndex',label:'Índice h RED PAPERS'},
 ];
 const colors=['#bd3027','#e66a55','#b58a70','#d1b399','#625853'];
 const numberFormat=new Intl.NumberFormat('es-EC');

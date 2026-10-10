@@ -3,7 +3,7 @@ import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
 import { storageService } from './storage';
 type Role = TeacherUser['role'];
 const key = 'red_papers_roles_v1';
-export const ROLE_LABELS: Record<Role,string> = {teacher:'Profesor', reviewer_demo:'Comité revisor', developer:'Desarrollador'};
+export const ROLE_LABELS: Record<Role,string> = {teacher:'Profesor', reviewer_demo:'Comité Científico', developer:'Desarrollador'};
 function assignments(): Record<string,Role> {
   try { const data=JSON.parse(localStorage.getItem(key)||'{}'); return data && typeof data==='object' && !Array.isArray(data)?data:{}; } catch { return {}; }
 }

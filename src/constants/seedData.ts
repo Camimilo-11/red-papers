@@ -395,7 +395,7 @@ export const INITIAL_NOTIFICATIONS: UserNotification[] = [
     productId: 'prod-001',
     productTitle: 'Lattice-Based Zero-Knowledge Cryptographic Proofs for Decentralized Academic Credential Verification',
     status: 'verificado',
-    message: 'El Comité Revisor Institucional ha verificado y certificado tu publicación científica. Ya es visible públicamente en el catálogo general.',
+    message: 'El Comité Científico ha verificado y certificado tu publicación científica. Ya es visible públicamente en el catálogo general.',
     read: true,
     createdAt: '2025-03-01T10:00:00Z',
   },

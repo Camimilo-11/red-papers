@@ -693,6 +693,39 @@ html, body {
 /* Separación compacta cuando el visitante no tiene acciones rápidas. */
 .home-welcome.home-welcome-public{margin-bottom:0;}
 
+/* Nuevos datos de proyectos, citas académicas y perfiles docentes. */
+.project-registration-fields{padding:16px;border:1px solid #e5dfd8;border-radius:10px;background:#fbfaf8;}
+.project-registration-fields legend{padding:0 6px;color:#292522;font-size:13px;font-weight:700;}
+.product-detail-citation-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.product-detail-citation-heading h3{display:flex;align-items:center;gap:8px;margin:0;font-size:16px;font-weight:700;color:#292522;}
+.product-detail-citation-heading h3 svg{color:#bd3027;}
+.product-detail-citation-heading>span{color:#706860;font-size:12px;}
+.product-detail-citation-styles{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
+.product-detail-citation-styles button{padding:7px 12px;border:1px solid #ddd5cc;border-radius:999px;background:#fff;color:#514b45;font-size:12px;font-weight:650;}
+.product-detail-citation-styles button.selected{border-color:#bd3027;background:#bd3027;color:#fff;}
+.product-detail-citation-text{margin:10px 0;padding:13px 15px;border:1px solid #e4ddd5;border-radius:9px;background:#fbfaf8;color:#393430;font-size:13px;line-height:1.65;overflow-wrap:anywhere;}
+.product-detail-copy-citation{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid #bd3027;border-radius:7px;background:#fff;color:#a72c23;font-size:13px;font-weight:700;}
+.product-detail-copy-citation:hover{background:#fff4f1;}
+.product-detail-project-status dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.product-detail-project-status dl>div{min-width:0;}
+.product-detail-project-status dt{color:#746c65;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.product-detail-project-status dd{margin:3px 0 0;color:#302b27;font-size:13px;overflow-wrap:anywhere;}
+.product-detail-expected-products{margin-top:12px;padding-top:10px;border-top:1px solid #e8e1d9;color:#302b27;font-size:12px;}
+.product-detail-expected-products ul,.review-project-summary ul{margin:6px 0 0;padding-left:20px;list-style:disc;}
+.product-detail-expected-products li,.review-project-summary li{margin:3px 0;}
+.product-detail-observation{padding:12px 14px;border:1px solid #ebd9b2;border-radius:9px;background:#fff9eb;color:#55411e;}
+.product-detail-observation>div{display:flex;align-items:center;gap:7px;margin-bottom:5px;color:#76591d;font-size:13px;}
+.product-detail-observation p{font-size:13px;line-height:1.55;}
+.academic-entry-year{margin-top:5px;color:#786f67;font-size:13px;}
+.review-project-summary{padding:13px 15px;border:1px solid #e5dfd8;border-radius:10px;background:#fbfaf8;font-size:12px;color:#46403a;}
+.review-project-summary h4{margin-bottom:9px;color:#292522;font-size:12px;font-weight:750;}
+.review-project-summary dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px;margin-bottom:8px;}
+.review-project-summary dt{color:#766e66;font-weight:650;}
+.review-project-summary dd{margin:1px 0 0;color:#302b27;}
+@media(max-width:600px){.product-detail-citation-heading{align-items:flex-start;flex-direction:column;gap:5px;}.product-detail-project-status dl,.review-project-summary dl{grid-template-columns:1fr;}}
+.status-rechazado,.academic-status.status-rechazado{color:#93621d;}
+.product-detail-status.is-rejected{border-color:#ebdbb7;background:#fff8e9;color:#87621d;}
+
 /* Tablero editorial del inicio. */
 .dashboard-home { display:flex; flex-direction:column; }
 .dashboard-home .home-welcome { margin-bottom:30px; }

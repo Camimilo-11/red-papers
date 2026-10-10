@@ -1,6 +1,6 @@
 import React from 'react';
-import { UserNotification } from '../../types';
-import { Bell, Check, CheckCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
+import { UserNotification, PRODUCT_STATUS_LABELS } from '../../types';
+import { Bell, Check, CheckCheck, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 interface NotificationsPopoverProps {
   notifications: UserNotification[];
@@ -73,7 +73,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                     )}
                     {isRechazado && (
                       <span className="p-1 rounded-md bg-red-100 text-red-700 flex items-center justify-center">
-                        <XCircle className="w-3.5 h-3.5" />
+                        <AlertTriangle className="w-3.5 h-3.5" />
                       </span>
                     )}
                   </div>
@@ -81,9 +81,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-1 mb-1">
                       <span className="text-xs font-semibold text-neutral-900 truncate">
-                        {isCargado && 'Producto Cargado'}
-                        {isVerificado && 'Producto Verificado'}
-                        {isRechazado && 'Producto Rechazado'}
+                        {PRODUCT_STATUS_LABELS[notif.status]}
                       </span>
                       <span className="text-[10px] text-neutral-400 shrink-0">
                         {new Date(notif.createdAt).toLocaleDateString('es-EC', {
@@ -93,11 +91,11 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-xs text-neutral-600 leading-relaxed mb-1.5">{notif.message}</p>
+                    <p className="text-xs text-neutral-600 leading-relaxed mb-1.5">{notif.message.replace(/Comité Revisor Institucional/gi,'Comité Científico').replace(/dictamen de rechazo/gi,'producto en observación').replace(/rechazad[oa]s?/gi,'en observación')}</p>
 
                     {notif.reason && (
                       <div className="p-2 rounded bg-red-50 border border-red-200 text-xs text-red-800 mb-1.5">
-                        <strong>Motivo del comité:</strong> {notif.reason}
+                        <strong>Observación del Comité Científico:</strong> {notif.reason}
                       </div>
                     )}
 

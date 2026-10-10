@@ -41,8 +41,8 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
               Directorio e Indicadores por Docente (ECMC)
             </h3>
             <p className="text-xs text-neutral-500">
-              Métricas consolidadas de producción: Publicaciones, Proyectos, Citas e Índice h
-              calculado según estándares bibliométricos.
+              Métricas de productos verificados: publicaciones, proyectos, citas e índice h
+              calculado con los datos de RED PAPERS.
             </p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
               <th className="py-3 px-4 text-center">Publicaciones</th>
               <th className="py-3 px-4 text-center">Proyectos</th>
               <th className="py-3 px-4 text-center">Citas Totales</th>
-              <th className="py-3 px-4 text-center">Índice h</th>
+              <th className="py-3 px-4 text-center">Índice h RED PAPERS</th>
               <th className="py-3 px-6 text-right">Acciones</th>
             </tr>
           </thead>

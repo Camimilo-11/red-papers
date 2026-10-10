@@ -65,7 +65,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
     // Ordenamiento
     if (sortOption === 'recent') {
-      result = [...result].sort((a, b) => b.year - a.year || b.semester.localeCompare(a.semester));
+      result = [...result].sort((a, b) => b.year - a.year || (b.semester||'').localeCompare(a.semester||''));
     } else if (sortOption === 'citations') {
       result = [...result].sort((a, b) => (b.citations || 0) - (a.citations || 0));
     } else if (sortOption === 'title') {

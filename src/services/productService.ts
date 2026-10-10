@@ -25,20 +25,22 @@ export const productService = {
    */
   getVisibleProducts(currentUserId: string | null): ScientificProduct[] {
     const all = storageService.getProducts();
-    const config = storageService.getPublicConfig();
 
     if (!currentUserId) {
-      if (config.showOnlyVerifiedForVisitors) {
-        return all.filter((p) => p.status === 'verificado');
-      }
-      return all;
+      return all.filter((p) => p.status === 'verificado');
+    }
+
+    const actor = authService.getCurrentUser();
+    if (!actor || actor.id !== currentUserId) {
+      return all.filter((p) => p.status === 'verificado');
     }
 
     return all.filter((p) => {
-      // El propietario ve todos sus productos (cargado, verificado, rechazado)
-      if (p.ownerId === currentUserId) return true;
-      // Para otros docentes, ve los verificados (o todos si la política lo autoriza)
-      return p.status === 'verificado';
+      // El propietario conserva acceso a sus registros en cualquier estado.
+      if (p.status === 'verificado') return true;
+      if (p.ownerId === actor.id) return true;
+      // Los proyectos no verificados quedan restringidos a docentes y al comité científico.
+      return p.type === 'proyecto' && ['teacher', 'reviewer_demo', 'developer'].includes(actor.role);
     });
   },
 
@@ -94,7 +96,7 @@ export const productService = {
     if (!targetDoi && !targetCode) {
       return {
         hasDuplicate: false,
-        warning: 'No fue posible verificar la existencia mediante identificador. El producto se registrará para posterior revisión del comité.',
+        warning: 'No fue posible verificar la existencia mediante identificador. El producto se registrará para verificación del Comité Científico.',
       };
     }
 
@@ -161,7 +163,7 @@ export const productService = {
     if (newStatus === 'rechazado' && (!rejectionReason || !rejectionReason.trim())) {
       return {
         success: false,
-        error: 'El motivo de rechazo es obligatorio para registrar la decisión del comité.',
+        error: 'Indique qué información debe corregirse o completarse antes de verificar el producto.',
       };
     }
 
@@ -196,8 +198,8 @@ export const productService = {
     // Notificación al autor (HU08 / CA23)
     const notifMessage =
       newStatus === 'verificado'
-        ? `El Comité Revisor Institucional ha verificado y certificado tu producto "${product.title}".`
-        : `El Comité Revisor Institucional ha emitido dictamen de rechazo para "${product.title}". Motivo: ${product.rejectionReason}`;
+        ? `El Comité Científico ha verificado y certificado tu producto "${product.title}".`
+        : `El Comité Científico dejó el producto "${product.title}" en observación. Información solicitada: ${product.rejectionReason}`;
 
     this.createNotification({
       userId: product.ownerId,

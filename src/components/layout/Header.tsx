@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   {id:'dashboard',label:'Inicio',icon:Home}, {id:'catalog',label:'Publicaciones y proyectos',icon:BookOpen},
   {id:'directory',label:'Docentes',icon:Users}];
  if(p.currentUser && p.currentUser.role!=='reviewer_demo') tabs.push({id:'mine',label:'Mis registros',icon:FolderOpen});
- if(p.currentUser?.role==='reviewer_demo') tabs.push({id:'reviewer',label:'Comité revisor',icon:ShieldCheck});
+ if(p.currentUser?.role==='reviewer_demo') tabs.push({id:'reviewer',label:'Comité Científico',icon:ShieldCheck});
  const navigate=(id:ActiveTab)=>{setMobileOpen(false);setNotificationsOpen(false); if(id==='mine'&&!p.currentUser)p.onLoginClick();else p.onTabChange(id);window.scrollTo(0,0);requestAnimationFrame(()=>document.getElementById('main-content')?.focus({preventScroll:true}));};
  const unread=p.notifications.filter(n=>!n.read).length;
  return <>
@@ -50,11 +50,11 @@ export const Header: React.FC<HeaderProps> = (p) => {
    <div className="sidebar-section-label">TU ESPACIO DE INVESTIGACIÓN</div>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
    <div className="sidebar-bottom">
-    {canDevelop(p.currentUser) && <details className="secondary-tools"><summary>Otras herramientas</summary><button onClick={()=>navigate('traceability')}><GitBranch size={19}/>Trazabilidad del proyecto</button><button aria-current={p.activeTab==='reviewer'?'page':undefined} onClick={()=>{setMobileOpen(false);setNotificationsOpen(false);p.onOpenReviewerConsole();}}><ShieldCheck size={19}/>Comité revisor</button>
+    {canDevelop(p.currentUser) && <details className="secondary-tools"><summary>Otras herramientas</summary><button onClick={()=>navigate('traceability')}><GitBranch size={19}/>Trazabilidad del proyecto</button><button aria-current={p.activeTab==='reviewer'?'page':undefined} onClick={()=>{setMobileOpen(false);setNotificationsOpen(false);p.onOpenReviewerConsole();}}><ShieldCheck size={19}/>Comité Científico</button>
 
      <button aria-current={p.activeTab==='roles'?'page':undefined} onClick={()=>navigate('roles')}><Users size={19}/>Asignar comité</button>
     </details>}
-    {p.currentUser?.role==='teacher' ? <button type="button" className={`sidebar-profile sidebar-profile-button ${p.activeTab==='settings'?'is-current':''}`} aria-label={`Abrir configuración del perfil de ${p.currentUser.name}`} aria-current={p.activeTab==='settings'?'page':undefined} onClick={()=>navigate('settings')}><span className="profile-initial">{p.currentUser.name.charAt(0).toUpperCase()}</span><span><strong>{p.currentUser.name}</strong><small>Profesor · Configuración</small></span><Settings className="sidebar-profile-settings-icon" size={17} aria-hidden="true"/></button> : <div className="sidebar-profile"><span className="profile-initial">{p.currentUser?'D':'V'}</span><div><strong>{p.currentUser?.name||'Visitante'}</strong><small>{p.currentUser ? (p.currentUser.role==='developer'?'Desarrollador':p.currentUser.role==='reviewer_demo'?'Comité revisor':'Profesor') : 'Consulta pública'}</small></div></div>}
+    {p.currentUser?.role==='teacher' ? <button type="button" className={`sidebar-profile sidebar-profile-button ${p.activeTab==='settings'?'is-current':''}`} aria-label={`Abrir configuración del perfil de ${p.currentUser.name}`} aria-current={p.activeTab==='settings'?'page':undefined} onClick={()=>navigate('settings')}><span className="profile-initial">{p.currentUser.name.charAt(0).toUpperCase()}</span><span><strong>{p.currentUser.name}</strong><small>Profesor · Configuración</small></span><Settings className="sidebar-profile-settings-icon" size={17} aria-hidden="true"/></button> : <div className="sidebar-profile"><span className="profile-initial">{p.currentUser?'D':'V'}</span><div><strong>{p.currentUser?.name||'Visitante'}</strong><small>{p.currentUser ? (p.currentUser.role==='developer'?'Desarrollador':p.currentUser.role==='reviewer_demo'?'Comité Científico':'Profesor') : 'Consulta pública'}</small></div></div>}
    </div>
   </aside>
  </>;

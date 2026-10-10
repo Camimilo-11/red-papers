@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ScientificProduct, ProductStatus } from '../../types';
+import { ScientificProduct, ProductStatus, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { productDateLabel } from '../../services/productPresentation';
 import {
   X,
   ShieldCheck,
   CheckCircle2,
-  XCircle,
+  AlertTriangle as ObservationIcon,
   Clock,
   AlertTriangle,
   Info,
@@ -60,14 +61,14 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
   const handleReject = () => {
     if (!selectedProduct) return;
     if (!rejectionReason.trim()) {
-      setActionNotice('Debes escribir un motivo de rechazo justificado.');
+      setActionNotice('Indica qué información debe corregirse o completarse.');
       return;
     }
 
     const res = onUpdateStatus(selectedProduct.id, 'rechazado', rejectionReason);
     if (res.success) {
       setActionNotice(
-        `Producto "${selectedProduct.title}" rechazado. El autor recibió una notificación con el motivo.`
+        `Producto "${selectedProduct.title}" puesto en observación. El docente recibió la información solicitada.`
       );
       setShowRejectForm(false);
       setRejectionReason('');
@@ -80,8 +81,8 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
       <div>
         <div className="reviewer-heading">
           <p className="eyebrow">REVISIÓN ACADÉMICA · ECMC</p>
-          <h1 id="reviewer-title">Comité revisor</h1>
-          <p>Revise los trabajos y comunique su dictamen al docente.</p>
+          <h1 id="reviewer-title">Comité Científico</h1>
+          <p>Verifique la información registrada y comunique sus observaciones al docente.</p>
         </div>
 
         {actionNotice && (
@@ -169,10 +170,10 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                               ? 'bg-emerald-100 text-emerald-800'
                               : p.status === 'cargado'
                               ? 'bg-amber-100 text-amber-800'
-                              : 'bg-red-100 text-red-800'
+                              : 'bg-amber-100 text-amber-800'
                           }`}
                         >
-                          {p.status}
+                          {PRODUCT_STATUS_LABELS[p.status]}
                         </span>
                       </div>
 
@@ -185,7 +186,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                       </h4>
 
                       <div className="text-[11px] text-neutral-500 truncate">
-                        {p.authors[0]} · {p.year}
+                        {p.authors[0]} · {productDateLabel(p)}
                       </div>
                     </div>
                   );
@@ -235,6 +236,8 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                   )}
                 </div>
 
+                {selectedProduct.type==='proyecto'&&<section className="review-project-summary" aria-label="Planificación del proyecto"><h4>Planificación del proyecto</h4><dl><div><dt>Estado</dt><dd>{selectedProduct.projectStatus?PROJECT_STATUS_LABELS[selectedProduct.projectStatus]:'No indicado'}</dd></div><div><dt>Dirección</dt><dd>{selectedProduct.projectDirector||'No indicada'}</dd></div><div><dt>Duración</dt><dd>{selectedProduct.projectDurationMonths?`${selectedProduct.projectDurationMonths} meses`:'No indicada'}</dd></div><div><dt>Inicio</dt><dd>{selectedProduct.projectStartDate||selectedProduct.year}</dd></div>{selectedProduct.projectEndDate&&<div><dt>Cierre previsto</dt><dd>{selectedProduct.projectEndDate}</dd></div>}</dl>{selectedProduct.expectedProducts&&selectedProduct.expectedProducts.length>0&&<div><strong>Productos esperados:</strong><ul>{selectedProduct.expectedProducts.map((item,index)=><li key={`${item}-${index}`}>{item}</li>)}</ul></div>}</section>}
+
                 {/* Resumen del documento */}
                 <div>
                   <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
@@ -273,22 +276,22 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                 {/* Sección de Dictamen */}
                 <div className="pt-4 border-t border-neutral-200 space-y-3">
                   <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                    Emitir Dictamen del Comité Revisor
+                    Verificar información del producto
                   </h4>
 
-                  {/* Formulario de Rechazo */}
+                  {/* Formulario de observación */}
                   {showRejectForm ? (
-                    <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-3 text-xs animate-in fade-in">
-                      <div className="flex items-center gap-1.5 font-bold text-red-900">
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3 text-xs animate-in fade-in">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-900">
                         <AlertTriangle className="w-4 h-4 text-red-600" />
-                        <span>Motivo de Rechazo Institucional (Obligatorio)</span>
+                        <span>Información por completar o corregir (obligatoria)</span>
                       </div>
-                      <textarea aria-label="Motivo de rechazo"
+                      <textarea aria-label="Información por completar o corregir"
                         value={rejectionReason}
                         onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder="Explica detalladamente por qué se rechaza o qué documento/corrección hace falta..."
+                        placeholder="Indica qué dato, evidencia o ajuste hace falta para verificar la información..."
                         rows={3}
-                        className="w-full p-2.5 rounded-lg border border-red-300 text-xs focus:ring-1 focus:ring-red-500 bg-white resize-none"
+                        className="w-full p-2.5 rounded-lg border border-amber-300 text-xs focus:ring-1 focus:ring-amber-500 bg-white resize-none"
                       />
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -303,28 +306,28 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                           onClick={handleReject}
                           className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
                         >
-                          Confirmar Rechazo con Notificación
+                          Enviar observación al docente
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-wrap items-center gap-3">
-                      {/* Botón Verificar */}
+                      {/* Botón de verificación */}
                       <button
                         onClick={handleVerify}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
                       >
                         <Check className="w-4 h-4 stroke-[3]" />
-                        <span>Verificar y Certificar Producto</span>
+                        <span>Verificar Información</span>
                       </button>
 
-                      {/* Botón Rechazar */}
+                      {/* Acción para solicitar ajustes */}
                       <button
                         onClick={() => setShowRejectForm(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-300 text-red-700 hover:bg-red-50 font-bold text-xs transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-300 text-amber-800 hover:bg-amber-50 font-bold text-xs transition-colors"
                       >
-                        <XCircle className="w-4 h-4" />
-                        <span>Rechazar con Motivo</span>
+                          <ObservationIcon className="w-4 h-4" />
+                        <span>Solicitar corrección</span>
                       </button>
 
                       {selectedProduct.status !== 'cargado' && (
@@ -332,7 +335,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                           onClick={() => onUpdateStatus(selectedProduct.id, 'cargado')}
                           className="text-xs text-neutral-500 hover:text-neutral-800 underline ml-auto"
                         >
-                          Regresar a "cargado" (auditoría)
+                          Regresar a pendiente de verificación
                         </button>
                       )}
                     </div>
@@ -349,7 +352,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
             <div className="mt-8 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
               <span className="text-[11px]">
                 La verificación actualiza los indicadores institucionales y el historial de
-                escalafón docente.
+                cargo docente.
               </span>
 
             </div>

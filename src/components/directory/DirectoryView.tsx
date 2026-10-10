@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AcademicDegree, TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
+import { productDateLabel } from '../../services/productPresentation';
 import { ProductDetailModal } from '../catalog/ProductDetailModal';
 import { Search, ExternalLink, Mail, Download, BarChart3, ArrowLeft, ChevronRight } from 'lucide-react';
 import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
@@ -80,11 +81,9 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
       : [...new Set(teacherProducts.map(product=>product.researchLine))]
     : [];
   const annualResearchCounts = (()=>{
-    if(!teacherProducts.length) return [];
-    const firstYear=Math.min(...teacherProducts.map(product=>product.year));
-    const lastYear=Math.max(...teacherProducts.map(product=>product.year));
-    return Array.from({length:lastYear-firstYear+1},(_,index)=>{
-      const year=firstYear+index;
+    const lastYear=new Date().getFullYear();
+    return Array.from({length:5},(_,index)=>{
+      const year=lastYear-4+index;
       return {year,count:teacherProducts.filter(product=>product.year===year).length};
     });
   })();
@@ -105,8 +104,8 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
   // Exportaciones de este docente
   const handleTeacherExport = (format: 'csv' | 'xlsx' | 'pdf') => {
-    if (!activeTeacher || teacherProducts.length === 0) {
-      setExportNotice('No hay productos registrados para este docente.');
+    if (!activeTeacher || (format !== 'pdf' && teacherProducts.length === 0)) {
+      setExportNotice('No hay productos para exportar en este formato.');
       setTimeout(() => setExportNotice(null), 3000);
       return;
     }
@@ -134,11 +133,11 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     } else if (format === 'xlsx') {
       success = exportService.exportToExcel(teacherProducts, meta, `${fileName}.xlsx`);
     } else if (format === 'pdf') {
-      success = exportService.exportToPrintablePdf(teacherProducts, meta);
+      success = exportService.exportTeacherCv(activeTeacher, teacherProducts, activeTeacherMetrics!, meta.generatedAt);
     }
 
     if (success) {
-      setExportNotice(`Historial exportado en formato ${format.toUpperCase()}.`);
+      setExportNotice(format === 'pdf' ? 'Currículum del docente listo para imprimir o guardar en PDF.' : `Historial exportado en formato ${format.toUpperCase()}.`);
     }
     setTimeout(() => setExportNotice(null), 3000);
   };
@@ -158,7 +157,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
-          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p></div>
+          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">Escuela de Ciencias Matemáticas y Computacionales</p>{activeTeacher.yachayEntryYear&&<p className="academic-entry-year">En Yachay Tech desde {activeTeacher.yachayEntryYear}</p>}</div>
         </header>
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">
@@ -184,20 +183,22 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           {activeTeacher.orcid?<a href={`https://orcid.org/${activeTeacher.orcid}`} target="_blank" rel="noopener noreferrer">ORCID · {activeTeacher.orcid}<ExternalLink size={15} aria-hidden="true"/></a>:<span>ORCID no registrado</span>}
           {activeTeacher.githubUrl&&<a href={activeTeacher.githubUrl} target="_blank" rel="noopener noreferrer">GitHub<ExternalLink size={15} aria-hidden="true"/></a>}
           {activeTeacher.googleScholarId&&<a href={`https://scholar.google.com/citations?user=${encodeURIComponent(activeTeacher.googleScholarId)}`} target="_blank" rel="noopener noreferrer">Google Scholar<ExternalLink size={15} aria-hidden="true"/></a>}
+          {activeTeacher.scopusAuthorId&&<a href={`https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(activeTeacher.scopusAuthorId)}`} target="_blank" rel="noopener noreferrer">Scopus<ExternalLink size={15} aria-hidden="true"/></a>}
+          {activeTeacher.webOfScienceId&&<a href={`https://www.webofscience.com/wos/author/record/${encodeURIComponent(activeTeacher.webOfScienceId)}`} target="_blank" rel="noopener noreferrer">Web of Science<ExternalLink size={15} aria-hidden="true"/></a>}
         </div>
         <dl className="academic-metrics">
           <div><dt>Publicaciones</dt><dd>{activeTeacherMetrics.publicationsCount}</dd></div>
           <div><dt>Proyectos</dt><dd>{activeTeacherMetrics.projectsCount}</dd></div>
           <div><dt>Citas</dt><dd>{activeTeacherMetrics.citationsTotal}</dd></div>
-          <div><dt>Índice h</dt><dd>{activeTeacherMetrics.hIndex}</dd></div>
+          <div><dt>{activeTeacher.googleScholarHIndex!==undefined?'Índice h Google Scholar':'Índice h RED PAPERS'}</dt><dd>{activeTeacher.googleScholarHIndex??activeTeacherMetrics.hIndex}</dd></div>
         </dl>
         <div className="academic-actions">
           <button className="primary-button" onClick={()=>onFilterInCatalog(activeTeacher.id)}>Ver publicaciones</button>
-          <details className="academic-download"><summary><Download size={18} aria-hidden="true"/>Descargar perfil</summary><div>{(['pdf','xlsx','csv'] as const).map(format=><button key={format} onClick={e=>{handleTeacherExport(format);e.currentTarget.closest('details')?.removeAttribute('open');}}>{format==='xlsx'?'Excel':format.toUpperCase()}</button>)}</div></details>
+          <details className="academic-download"><summary><Download size={18} aria-hidden="true"/>Descargar perfil</summary><div>{(['pdf','xlsx','csv'] as const).map(format=><button key={format} onClick={e=>{handleTeacherExport(format);e.currentTarget.closest('details')?.removeAttribute('open');}}>{format==='pdf'?'CV · PDF':format==='xlsx'?'Excel':'CSV'}</button>)}</div></details>
         </div>
         <section className="academic-products" aria-label="Producción académica">
           <h4>Producción académica <span>({teacherProducts.length})</span></h4>
-          {teacherProducts.length?teacherProducts.map(product=><button key={product.id} className="academic-product" onClick={()=>setViewingProduct(product)}><span className="academic-product-meta">{product.type==='publicacion'?'Publicación':'Proyecto'} · {product.semester}</span><span className="academic-product-title">{product.title}</span><span className="academic-product-venue">{product.venue||product.fundingVenue||(product.doi?`DOI: ${product.doi}`:'')}</span></button>):<p className="academic-empty">Este docente aún no tiene productos registrados.</p>}
+          {teacherProducts.length?teacherProducts.map(product=><button key={product.id} className="academic-product" onClick={()=>setViewingProduct(product)}><span className="academic-product-meta">{product.type==='publicacion'?'Publicación':'Proyecto'} · {productDateLabel(product)}</span><span className="academic-product-title">{product.title}</span><span className="academic-product-venue">{product.venue||product.fundingVenue||(product.doi?`DOI: ${product.doi}`:'')}</span></button>):<p className="academic-empty">Este docente aún no tiene productos registrados.</p>}
         </section>
       </article>:<p className="academic-empty">No hay docentes registrados.</p>}
     </div>

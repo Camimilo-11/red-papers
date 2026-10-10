@@ -67,8 +67,9 @@ export const metricsService = {
    * Calcula las métricas individuales para cada docente
    */
   calculateTeacherMetrics(teacher: TeacherUser, allProducts: ScientificProduct[]): TeacherMetrics {
-    // Productos en los que participa el docente (como propietario o coautor)
-    const teacherProducts = allProducts.filter((p) => {
+    // Las métricas de perfiles públicos se calculan solo con productos verificados.
+    const verifiedProducts = allProducts.filter((p) => p.status === 'verificado');
+    const teacherProducts = verifiedProducts.filter((p) => {
       if (p.ownerId === teacher.id) return true;
       return p.authors.some((author) => author.toLowerCase().includes(teacher.name.toLowerCase()));
     });
