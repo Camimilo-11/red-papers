@@ -135,8 +135,8 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
 
                   {/* Índices h reportados por las plataformas externas */}
                   <td className="py-4 px-4 text-center font-semibold text-neutral-800 tabular-nums text-xs">
-                    <span className="teacher-external-index">Scholar: {tm.teacher.googleScholarHIndex ?? '—'}{tm.teacher.syntheticBibliometricFields?.includes('googleScholarHIndex')&&<em className="demo-data-badge">DEMO</em>}</span>
-                    <span className="teacher-external-index">Scopus: {tm.teacher.scopusHIndex ?? '—'}{tm.teacher.syntheticBibliometricFields?.includes('scopusHIndex')&&<em className="demo-data-badge">DEMO</em>}</span>
+                    <span className="teacher-external-index">Scholar: {tm.teacher.googleScholarHIndex ?? '—'}</span>
+                    <span className="teacher-external-index">Scopus: {tm.teacher.scopusHIndex ?? '—'}</span>
                   </td>
 
                   {/* Acciones */}

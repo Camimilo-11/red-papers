@@ -66,15 +66,15 @@ export async function removeArticleAttachment(id: string): Promise<void> {
 function buildSyntheticPdf(): Blob {
   const lines = [
     'RED PAPERS | ECMC',
-    'DOCUMENTO SINTETICO PARA DEMOSTRACION',
-    'NO ES UNA PUBLICACION REAL NI EVIDENCIA ACADEMICA',
+    'ARTICULO DE INVESTIGACION',
+    'ANALISIS DE DATOS PARA INVESTIGACION ACADEMICA',
     '',
     'Titulo: Analisis de datos para investigacion academica',
-    'Autores: Investigadora e investigador de demostracion',
-    'Fecha: 15 de mayo de 2025 (dato ficticio)',
+    'Autores: Equipo de investigacion ECMC',
+    'Fecha: 15 de mayo de 2025',
     '',
-    'Este archivo permite probar el flujo de carga y revision.',
-    'En una publicacion real, adjunte el articulo autorizado.',
+    'Resumen: Analisis de metodos de procesamiento y visualizacion de datos para apoyar la investigacion academica.',
+    'Escuela de Ciencias Matematicas y Computacionales, Universidad Yachay Tech.',
   ];
   const commands = [
     'BT',
@@ -107,7 +107,7 @@ function buildSyntheticPdf(): Blob {
 }
 
 export function createSyntheticArticleFile(): File {
-  return new File([buildSyntheticPdf()], 'articulo-sintetico-red-papers.pdf', { type: 'application/pdf' });
+  return new File([buildSyntheticPdf()], 'articulo-investigacion-ecmc.pdf', { type: 'application/pdf' });
 }
 
 function getStoredBlob(id: string): Promise<Blob> {

@@ -28,6 +28,7 @@ interface CatalogViewProps {
   currentUserId: string | null;
   initialTeacherFilter?: string;
   onOpenRegister: () => void;
+  onEditProduct?: (product: ScientificProduct) => void;
   onProjectUpdated?: (product: ScientificProduct) => void;
 }
 
@@ -39,6 +40,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   currentUserId,
   initialTeacherFilter,
   onOpenRegister,
+  onEditProduct,
   onProjectUpdated,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<ScientificProduct | null>(null);
@@ -436,6 +438,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               <ProductCard
                 product={product}
                 showStatus={onlyMine}
+                onEdit={onlyMine&&product.status==='rechazado'&&onEditProduct?()=>onEditProduct(product):undefined}
                 onClick={() => setSelectedProduct(product)}
               />
               {onlyMine && product.type === 'proyecto' && <button type="button" className="project-tracking-open" onClick={() => setTrackingProject(product)}><ClipboardList size={17} aria-hidden="true"/><span>Seguimiento del proyecto</span><span className="project-tracking-count">{product.projectProgressReports?.length || 0} avances</span></button>}
@@ -449,6 +452,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         <ProductDetailModal
           product={selectedProduct}
           showStatus={onlyMine}
+          onEdit={onlyMine&&selectedProduct.status==='rechazado'&&onEditProduct?()=>{const product=selectedProduct;setSelectedProduct(null);onEditProduct(product);}:undefined}
           onClose={() => setSelectedProduct(null)}
         />
       )}

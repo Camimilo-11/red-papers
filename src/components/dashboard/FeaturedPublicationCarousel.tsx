@@ -167,10 +167,10 @@ export function FeaturedPublicationCarousel({ products }: { products: Scientific
           )}
         </div>
 
-        <aside className="featured-paper-citations" aria-label={`${publication.citations} citas registradas en los datos de demostración`}>
+        <aside className="featured-paper-citations" aria-label={`${publication.citations} citas registradas`}>
           <span>IMPACTO REGISTRADO</span>
           <strong>{numberFormat.format(citationsShown)}</strong>
-          <span>citas de demostración</span>
+          <span>citas registradas</span>
           <div className="featured-paper-rank"><Award size={16} aria-hidden="true" />La más citada de esta línea</div>
         </aside>
 

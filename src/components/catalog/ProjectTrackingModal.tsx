@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle2, ClipboardList, FileCheck2, X } from 'lucide-react';
+import { CheckCircle2, ClipboardList, FileCheck2, X } from 'lucide-react';
 import { ProjectStatus, ScientificProduct, PROJECT_STATUS_LABELS } from '../../types';
 import { productService } from '../../services/productService';
 
@@ -100,13 +100,11 @@ export const ProjectTrackingModal: React.FC<ProjectTrackingModalProps> = ({ prod
       </header>
 
       <div className="project-tracking-body">
-        {((product.projectProgressReports || []).some(report => report.isSynthetic) || product.projectClosureReport?.isSynthetic) && <p className="project-tracking-demo"><AlertCircle size={16}/> Los informes con etiqueta DEMO son datos sintéticos para mostrar cómo funciona el seguimiento.</p>}
-
         <section className="project-tracking-history" aria-labelledby="project-tracking-history-title">
           <div className="project-tracking-section-title"><ClipboardList size={18}/><h3 id="project-tracking-history-title">Historial de avances</h3><span>{product.projectProgressReports?.length || 0}</span></div>
           {product.projectProgressReports?.length ? <ol className="project-tracking-report-list">
             {[...product.projectProgressReports].sort((a, b) => b.periodEnd.localeCompare(a.periodEnd)).map(report => <li key={report.id}>
-              <div className="project-tracking-report-heading"><strong>{report.progressPercent}% de avance</strong><span>{formattedDate(report.periodStart)} – {formattedDate(report.periodEnd)}{report.isSynthetic && <em>DEMO</em>}</span></div>
+              <div className="project-tracking-report-heading"><strong>{report.progressPercent}% de avance</strong><span>{formattedDate(report.periodStart)} – {formattedDate(report.periodEnd)}</span></div>
               <p>{report.summary}</p>
               <div className="project-tracking-report-details"><span>Estado: {PROJECT_STATUS_LABELS[report.statusAfterReport]}</span><span>Próximos pasos: {report.nextSteps}</span></div>
             </li>)}
@@ -114,7 +112,7 @@ export const ProjectTrackingModal: React.FC<ProjectTrackingModalProps> = ({ prod
         </section>
 
         {product.projectClosureReport && <section className="project-closure-summary" aria-labelledby="project-closure-summary-title">
-          <div className="project-tracking-section-title"><FileCheck2 size={18}/><h3 id="project-closure-summary-title">Informe de cierre</h3>{product.projectClosureReport.isSynthetic && <em>DEMO</em>}</div>
+          <div className="project-tracking-section-title"><FileCheck2 size={18}/><h3 id="project-closure-summary-title">Informe de cierre</h3></div>
           <p className="project-closure-date">{PROJECT_STATUS_LABELS[product.projectClosureReport.finalStatus]} · {formattedDate(product.projectClosureReport.closedAt)}</p>
           <p>{product.projectClosureReport.summary}</p>
           {product.projectClosureReport.deliveredProducts.length > 0 && <div><strong>Productos entregados</strong><ul>{product.projectClosureReport.deliveredProducts.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></div>}
@@ -140,7 +138,6 @@ export const ProjectTrackingModal: React.FC<ProjectTrackingModalProps> = ({ prod
             <label>Productos o resultados alcanzados<textarea value={achievedProducts} onChange={event => setAchievedProducts(event.target.value)} rows={2} placeholder="Uno por línea, si aplica"/></label>
             <label>Dificultades o riesgos<textarea value={blockers} onChange={event => setBlockers(event.target.value)} rows={2} placeholder="Opcional"/></label>
             <label>Próximos pasos<textarea value={nextSteps} onChange={event => setNextSteps(event.target.value)} minLength={8} rows={2} required placeholder="Indique las tareas del siguiente periodo."/></label>
-            <p className="project-tracking-help">En esta demostración, el informe se guarda en este navegador para el responsable y la vista del Comité Científico. La sincronización entre equipos dependerá de la API institucional.</p>
             <button className="project-tracking-submit" type="submit"><CheckCircle2 size={17}/>Guardar informe de avance</button>
           </form> : <form className="project-tracking-form" onSubmit={handleClosureSubmit}>
             <div className="project-tracking-grid">

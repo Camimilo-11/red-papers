@@ -43,6 +43,7 @@ export default function App() {
 
   // Modales
   const [isRegisterProductOpen, setIsRegisterProductOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ScientificProduct | null>(null);
   const [registerType, setRegisterType] = useState<'publicacion'|'proyecto'>('publicacion');
   const [registerTypeLocked, setRegisterTypeLocked] = useState(false);
   const [notice, setNotice] = useState('');
@@ -54,7 +55,7 @@ export default function App() {
 
   // Each portal screen is an ordinary browser history entry.
   const navigation = {activeTab, showAccessScreen, isRegisterProductOpen,
-    isReviewerConsoleOpen, registerType, registerTypeLocked, catalogTeacherFilter, directorySelectedTeacherId};
+    editingProductId: editingProduct?.id ?? null, isReviewerConsoleOpen, registerType, registerTypeLocked, catalogTeacherFilter, directorySelectedTeacherId};
   const navigationKey = JSON.stringify(navigation);
   const lastNavigation = useRef<string | null>(null);
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function App() {
       setActiveTab(next.activeTab);
       setShowAccessScreen(next.showAccessScreen);
       setIsRegisterProductOpen(next.isRegisterProductOpen);
+      setEditingProduct(next.editingProductId ? storageService.getProducts().find(product => product.id === next.editingProductId) || null : null);
       setIsReviewerConsoleOpen(next.isReviewerConsoleOpen);
       setRegisterType(next.registerType);
       setRegisterTypeLocked(next.registerTypeLocked);
@@ -143,6 +145,7 @@ export default function App() {
     setNotice('');
     // Volver al acceso y cerrar cualquier vista privada de la sesión anterior.
     setIsRegisterProductOpen(false);
+    setEditingProduct(null);
     setIsReviewerConsoleOpen(false);
     setCatalogTeacherFilter('todos');
     setActiveTab('dashboard');
@@ -150,7 +153,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // Cambio rápido de usuario en demostración
+  // Cambio rápido del usuario activo
   const handleSwitchUser = (teacherId: string) => {
     const updated = authService.switchDemoUser(teacherId);
     if (updated) {
@@ -159,9 +162,11 @@ export default function App() {
   };
 
   // Creación de producto (HU03)
-  const handleProductCreated = (newProduct: ScientificProduct) => {
+  const handleProductSaved = (_savedProduct: ScientificProduct) => {
     setProducts(storageService.getProducts());
-    setNotice('Su registro se guardó correctamente. Puede consultarlo en Mis registros.');
+    setNotice(editingProduct
+      ? 'Las correcciones se enviaron al Comité Científico. El producto quedó pendiente de verificación.'
+      : 'Su registro se guardó correctamente. Puede consultarlo en Mis registros.');
   };
 
   // Actualización de estado desde el comité revisor (Sección 11)
@@ -197,7 +202,7 @@ export default function App() {
     storageService.resetToSeed();
     setProducts(storageService.getProducts());
     setTeachers(storageService.getTeachers());
-    alert('Datos de prueba de la ECMC restaurados a sus valores originales.');
+    alert('Se restauraron los datos iniciales de la ECMC.');
   };
 
   // Navegar al catálogo filtrado por un docente
@@ -251,6 +256,8 @@ export default function App() {
             );
             if (proceed) setShowAccessScreen(true);
           } else {
+            setEditingProduct(null);
+            setRegisterTypeLocked(false);
             setIsRegisterProductOpen(true);
           }
         }}
@@ -266,7 +273,7 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
             {/* Banner Institucional con CTA */}
-            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo') return; setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
 
             <FeaturedPublicationCarousel products={products}/>
             <MetricCards metrics={schoolMetrics}/>
@@ -293,11 +300,17 @@ export default function App() {
             teachers={teachers}
             currentUserId={currentUser ? currentUser.id : null}
             initialTeacherFilter={catalogTeacherFilter}
+            onEditProduct={product => {
+              setEditingProduct(product);
+              setRegisterType(product.type);
+              setRegisterTypeLocked(true);
+              setIsRegisterProductOpen(true);
+            }}
             onProjectUpdated={() => setProducts(storageService.getProducts())}
             onOpenRegister={() => {
               if(currentUser?.role==='reviewer_demo') return;
               if (!currentUser) setShowAccessScreen(true);
-              else { setRegisterTypeLocked(false); setIsRegisterProductOpen(true); }
+              else { setEditingProduct(null); setRegisterTypeLocked(false); setIsRegisterProductOpen(true); }
             }}
           />
         )}
@@ -328,13 +341,14 @@ export default function App() {
       {/* 4. Modales Globales */}
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}
       <RegisterProductModal
-        key={`${currentUser?.id}-${registerType}-${isRegisterProductOpen}`}
+        key={`${currentUser?.id}-${registerType}-${editingProduct?.id || 'new'}-${isRegisterProductOpen}`}
         initialType={registerType}
         lockType={registerTypeLocked}
         isOpen={isRegisterProductOpen && !!currentUser && currentUser.role!=='reviewer_demo'}
         currentUser={currentUser}
-        onClose={() => setIsRegisterProductOpen(false)}
-        onProductCreated={handleProductCreated}
+        initialProduct={editingProduct}
+        onClose={() => {setIsRegisterProductOpen(false);setEditingProduct(null);setRegisterTypeLocked(false);}}
+        onProductSaved={handleProductSaved}
       />
 
 

@@ -95,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({
             </ul>
           </div>
 
-          {/* Columna 3: Escuela y Restauración de Demostración */}
+          {/* Columna 3: Escuela y restauración de datos */}
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">
               Plataforma y Soporte
@@ -113,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({
                 className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-3 py-1.5 rounded-lg border border-neutral-700 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-[#EF4035]" />
-                Restaurar datos de prueba
+                Restaurar datos iniciales
               </button>
             </div>
           </div>

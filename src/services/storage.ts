@@ -81,6 +81,44 @@ function completeSyntheticProduct(product: ScientificProduct): ScientificProduct
     };
   }
 
+  if (updated.id === 'prod-009') {
+    const attachment = updated.articleAttachment;
+    updated = {
+      ...updated,
+      title: /ejemplo sint[eé]tico/i.test(updated.title) ? defaults.title : updated.title,
+      authors: updated.authors.some(author => /demostraci[oó]n/i.test(author)) ? defaults.authors : updated.authors,
+      abstract: /fictici|sint[eé]tic|demostraci[oó]n/i.test(updated.abstract) ? defaults.abstract : updated.abstract,
+      venue: updated.venue && /demostraci[oó]n/i.test(updated.venue) ? defaults.venue : updated.venue,
+      volumeIssue: updated.volumeIssue && /sint[eé]tic|dato de ejemplo/i.test(updated.volumeIssue) ? defaults.volumeIssue : updated.volumeIssue,
+      articleAttachment: attachment && /sint[eé]tic|demo/i.test(`${attachment.id} ${attachment.fileName}`) ? defaults.articleAttachment : attachment,
+    };
+  }
+
+  if (updated.id === 'prod-015') {
+    updated = {
+      ...updated,
+      title: /ejemplo sint[eé]tico/i.test(updated.title) ? defaults.title : updated.title,
+      projectCode: updated.projectCode && /demo/i.test(updated.projectCode) ? defaults.projectCode : updated.projectCode,
+      abstract: /sint[eé]tic|demostraci[oó]n/i.test(updated.abstract) ? defaults.abstract : updated.abstract,
+      expectedProducts: updated.expectedProducts?.some(item => /demostrativ/i.test(item)) ? defaults.expectedProducts : updated.expectedProducts,
+      projectProgressReports: updated.projectProgressReports?.map(report => /demostraci[oó]n|prueba/i.test(`${report.summary} ${report.completedActivities.join(' ')}`)
+        ? { ...report, summary: defaults.projectProgressReports?.[0]?.summary || report.summary, completedActivities: defaults.projectProgressReports?.[0]?.completedActivities || report.completedActivities }
+        : report),
+      fundingVenue: updated.fundingVenue && /demostrativ|sint[eé]tic/i.test(updated.fundingVenue) ? defaults.fundingVenue : updated.fundingVenue,
+    };
+  }
+
+  if (updated.id === 'prod-012' && updated.projectProgressReports?.some(report => /simulad[oa]s/i.test(report.blockers || ''))) {
+    updated = {
+      ...updated,
+      projectProgressReports: updated.projectProgressReports.map(report => {
+        if (!/simulad[oa]s/i.test(report.blockers || '')) return report;
+        const defaultReport = defaults.projectProgressReports?.find(item => item.id === report.id);
+        return defaultReport ? { ...report, blockers: defaultReport.blockers } : { ...report, blockers: undefined };
+      }),
+    };
+  }
+
   return updated;
 }
 
@@ -192,7 +230,12 @@ export const storageService = {
         this.saveNotifications(INITIAL_NOTIFICATIONS);
         return INITIAL_NOTIFICATIONS;
       }
-      return JSON.parse(data);
+      const notifications: UserNotification[] = JSON.parse(data);
+      const normalized = notifications.map(notification => (notification.productTitle || '').startsWith('Ejemplo sintético:')
+        ? { ...notification, productTitle: 'Análisis de datos para investigación académica' }
+        : notification);
+      if (JSON.stringify(normalized) !== JSON.stringify(notifications)) this.saveNotifications(normalized);
+      return normalized;
     } catch {
       return INITIAL_NOTIFICATIONS;
     }

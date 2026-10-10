@@ -161,6 +161,54 @@ export const productService = {
     };
   },
 
+  /** Permite al responsable corregir y volver a enviar un producto observado. */
+  updateObservedProduct(
+    productId: string,
+    productData: Omit<ScientificProduct, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'citations' | 'ownerId'>
+  ): { success: boolean; product?: ScientificProduct; error?: string; warning?: string } {
+    const actor = authService.getCurrentUser();
+    if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para corregir el producto.' };
+
+    const products = storageService.getProducts();
+    const index = products.findIndex(product => product.id === productId);
+    if (index < 0) return { success: false, error: 'No se encontró el producto.' };
+
+    const existing = products[index];
+    if (existing.ownerId !== actor.id) return { success: false, error: 'Solo el docente responsable puede editar este producto.' };
+    if (existing.status !== 'rechazado') return { success: false, error: 'Solo se pueden editar productos que estén en observación.' };
+
+    const duplicate = this.checkDuplicates(productData, productId);
+    if (duplicate.hasDuplicate) return { success: false, error: duplicate.message };
+
+    const now = new Date().toISOString();
+    const updated: ScientificProduct = {
+      ...existing,
+      ...productData,
+      id: existing.id,
+      ownerId: existing.ownerId,
+      school: existing.school,
+      citations: existing.citations,
+      articleAttachment: productData.articleAttachment || existing.articleAttachment,
+      status: 'cargado',
+      rejectionReason: undefined,
+      verifiedAt: undefined,
+      createdAt: existing.createdAt,
+      updatedAt: now,
+    };
+
+    products[index] = updated;
+    storageService.saveProducts(products);
+    this.createNotification({
+      userId: actor.id,
+      productId: updated.id,
+      productTitle: updated.title,
+      status: 'cargado',
+      message: `Se corrigió y volvió a enviar "${updated.title}" al Comité Científico para verificación.`,
+    });
+
+    return { success: true, product: updated, warning: duplicate.warning };
+  },
+
   addProjectProgressReport(
     productId: string,
     reportData: Omit<ProjectProgressReport, 'id' | 'reportedAt' | 'isSynthetic'>

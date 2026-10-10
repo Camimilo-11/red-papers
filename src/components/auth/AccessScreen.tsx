@@ -29,7 +29,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
     <label htmlFor="login-email">Correo institucional</label><input id="login-email" type="email" autoComplete="username" placeholder="nombre@yachaytech.edu.ec" required value={email} onChange={e=>setEmail(e.target.value)}/>
     <label htmlFor="login-password">Contraseña</label><div className="password-field"><input id="login-password" type={visible?'text':'password'} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={visible?'Ocultar contraseña':'Mostrar contraseña'} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={22}/>:<Eye size={22}/>}</button></div>
     <button type="button" className="forgot-link" onClick={()=>setForgot(!forgot)}>¿Olvidó su contraseña?</button>
-    {forgot&&<p role="status" className="login-note">Esta versión es de demostración y todavía no envía correos de recuperación. Use las credenciales de prueba proporcionadas para su perfil.</p>}
+    {forgot&&<p role="status" className="login-note">Para recuperar su acceso, contacte con el administrador de la plataforma.</p>}
     {error&&<p role="alert" className="login-error">{error}</p>}
     <button type="submit" className="primary-button login-submit">Iniciar sesión<ArrowRight size={20}/></button>
    </form>

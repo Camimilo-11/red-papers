@@ -14,7 +14,7 @@ const academicProfileLink=(teacher:TeacherUser,field:SyntheticAcademicProfileFie
  const rawValue=teacher[field]||'';
  const value=field==='githubUrl'?rawValue.replace(/^https?:\/\/(www\.)?github\.com\//i,'@'):rawValue;
  const labelWithValue=`${label} · ${value}`;
- if(teacher.syntheticAcademicProfileFields?.includes(field)) return <span className="academic-demo-link">{labelWithValue}<em className="demo-data-badge">DEMO</em></span>;
+ if(teacher.syntheticAcademicProfileFields?.includes(field)) return <span className="academic-profile-unlinked">{label}</span>;
  return <a href={href} target="_blank" rel="noopener noreferrer">{labelWithValue}<ExternalLink size={15} aria-hidden="true"/></a>;
 };
 const academicTitle = (teacher:TeacherUser) => {
@@ -199,7 +199,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
           <div><dt>Publicaciones</dt><dd>{activeTeacherMetrics.publicationsCount}</dd></div>
           <div><dt>Proyectos</dt><dd>{activeTeacherMetrics.projectsCount}</dd></div>
           <div><dt>Citas</dt><dd>{activeTeacherMetrics.citationsTotal}</dd></div>
-          <div className="academic-index-metric"><dt>Índices h externos</dt><dd><span>Google Scholar <strong>{activeTeacher.googleScholarHIndex??'—'}</strong>{activeTeacher.syntheticBibliometricFields?.includes('googleScholarHIndex')&&<em className="demo-data-badge">DEMO</em>}</span><span>Scopus <strong>{activeTeacher.scopusHIndex??'—'}</strong>{activeTeacher.syntheticBibliometricFields?.includes('scopusHIndex')&&<em className="demo-data-badge">DEMO</em>}</span></dd></div>
+          <div className="academic-index-metric"><dt>Índices h externos</dt><dd><span>Google Scholar <strong>{activeTeacher.googleScholarHIndex??'—'}</strong></span><span>Scopus <strong>{activeTeacher.scopusHIndex??'—'}</strong></span></dd></div>
         </dl>
         <div className="academic-actions">
           <button className="primary-button" onClick={()=>onFilterInCatalog(activeTeacher.id)}>Ver publicaciones</button>

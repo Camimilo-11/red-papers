@@ -20,10 +20,11 @@ import {
 interface ProductDetailModalProps {
   product: ScientificProduct | null;
   onClose: () => void;
+  onEdit?: () => void;
   showStatus?: boolean;
 }
 
-export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose, showStatus = false }) => {
+export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose, onEdit, showStatus = false }) => {
   const [citationStyle, setCitationStyle] = useState<CitationStyle>('APA 7');
   const [copiedCitation, setCopiedCitation] = useState(false);
   if (!product) return null;
@@ -168,7 +169,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
                 <strong>{product.citations}</strong>
                 <span>{product.citations === 1 ? 'cita indexada' : 'citas indexadas'}</span>
               </div>
-              <p>Registro bibliométrico (Demostración OpenAlex / Crossref)</p>
+              <p>Registro bibliométrico</p>
             </section>
             {product.type==='proyecto'&&<section className="product-detail-card product-detail-project-status" aria-labelledby="product-detail-project-status"><h3 id="product-detail-project-status">Estado y duración del proyecto</h3><dl><div><dt>Estado</dt><dd>{product.projectStatus?PROJECT_STATUS_LABELS[product.projectStatus]:'No registrado'}</dd></div>{product.projectDirector&&<div><dt>Dirección</dt><dd>{product.projectDirector}</dd></div>}<div><dt>Duración estimada</dt><dd>{product.projectDurationMonths?`${product.projectDurationMonths} meses`:'No registrada'}</dd></div><div><dt>Inicio</dt><dd>{product.projectStartDate||product.year}</dd></div>{product.projectEndDate&&<div><dt>Cierre previsto</dt><dd>{product.projectEndDate}</dd></div>}</dl>{product.expectedProducts&&product.expectedProducts.length>0&&<div className="product-detail-expected-products"><strong>Productos esperados</strong><ul>{product.expectedProducts.map((item,index)=><li key={`${item}-${index}`}>{item}</li>)}</ul></div>}</section>}
           </div>
@@ -176,6 +177,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
 
         <footer className="product-detail-footer">
           <p><span>ID Sistema</span><strong>{product.id}</strong></p>
+          {showStatus&&isRechazado&&onEdit&&<button type="button" onClick={onEdit} className="product-detail-edit-button">Corregir y reenviar</button>}
           <button onClick={onClose} className="product-detail-close-button">Cerrar ventana</button>
         </footer>
       </section>

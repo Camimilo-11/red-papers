@@ -1,14 +1,15 @@
 import React from 'react';
 import { ScientificProduct, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../../types';
-import { BookOpen, FolderOpen, ArrowRight, CheckCircle2, Clock, ExternalLink, AlertTriangle } from 'lucide-react';
+import { BookOpen, FolderOpen, ArrowRight, CheckCircle2, Clock, ExternalLink, AlertTriangle, PencilLine } from 'lucide-react';
 import { normalizeDoi } from '../../services/doiService';
 import { productDateLabel } from '../../services/productPresentation';
 
 export const ProductCard: React.FC<{
   product: ScientificProduct;
   onClick: () => void;
+  onEdit?: () => void;
   showStatus?: boolean;
-}> = ({ product, onClick, showStatus = false }) => {
+}> = ({ product, onClick, onEdit, showStatus = false }) => {
   const Icon = product.type === 'publicacion' ? BookOpen : FolderOpen;
   const Status = product.status === 'verificado'
     ? CheckCircle2
@@ -44,9 +45,12 @@ export const ProductCard: React.FC<{
         )}
         <span className="product-line">{product.researchLine}</span>
       </div>
-      <button className="product-open" onClick={onClick} aria-label={`Ver detalle: ${product.title}`}>
-        Ver detalle<ArrowRight size={19} />
-      </button>
+      <div className="product-row-actions">
+        {onEdit&&<button type="button" className="product-edit" onClick={onEdit}><PencilLine size={16} aria-hidden="true"/>Corregir y reenviar</button>}
+        <button type="button" className="product-open" onClick={onClick} aria-label={`Ver detalle: ${product.title}`}>
+          Ver detalle<ArrowRight size={19} />
+        </button>
+      </div>
     </article>
   );
 };

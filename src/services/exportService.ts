@@ -74,7 +74,6 @@ export const exportService = {
       `# Fecha de Generación: ${meta.generatedAt}`,
       `# Total Registros Exportados: ${meta.totalRecords}`,
       `# Filtros Aplicados: Tipo=${meta.filters.productType}; Línea=${meta.filters.researchLine}; Periodo=${meta.filters.periodYear}`,
-      `# Aviso: Datos del modo demostración institucional ECMC Yachay Tech`,
       '',
     ].join('\r\n');
 
@@ -268,7 +267,7 @@ export const exportService = {
 
         <div class="footer">
           <div>Universidad de Investigación de Tecnología Experimental Yachay Tech • San Miguel de Urcuquí, Imbabura, Ecuador</div>
-          <div>Reporte generado desde RED PAPERS ECMC • Modo Demostración</div>
+          <div>Reporte generado desde RED PAPERS ECMC</div>
         </div>
       </body>
       </html>
@@ -290,7 +289,7 @@ export const exportService = {
 
     const profileLink = (field: 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId', label: string, href: string, identifier: string) => {
       if (!identifier) return '';
-      if (teacher.syntheticAcademicProfileFields?.includes(field)) return `<span>${label} · DEMO · ${escapeHtml(identifier)}</span>`;
+      if (teacher.syntheticAcademicProfileFields?.includes(field)) return `<span>${label}</span>`;
       return `<a href="${escapeHtml(href)}">${label} · ${escapeHtml(identifier)}</a>`;
     };
     const links = [
@@ -306,10 +305,9 @@ export const exportService = {
     const researchAreasHtml = researchLines.length
       ? researchLines.map(line => `<p><strong>${escapeHtml(line)}</strong>${teacher.researchSublines?.[line]?.length ? `<br>${teacher.researchSublines[line]?.map(escapeHtml).join(' · ')}` : ''}</p>`).join('')
       : '<p>No registradas</p>';
-    const externalIndex = (field: 'googleScholarHIndex' | 'scopusHIndex', name: string, value?: number) => {
+    const externalIndex = (name: string, value?: number) => {
       const shownValue = value === undefined ? 'No disponible' : String(value);
-      const demo = teacher.syntheticBibliometricFields?.includes(field) ? ' · DEMO' : '';
-      return `<p><strong>Índice h ${name}:</strong> ${shownValue}${demo}</p>`;
+      return `<p><strong>Índice h ${name}:</strong> ${shownValue}</p>`;
     };
     const productsHtml = products.length
       ? products.map((product) => `<article class="product">
@@ -336,7 +334,7 @@ export const exportService = {
         <p>${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}</p></header>
       <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico de la Escuela de Ciencias Matemáticas y Computacionales.')}</p></section>
       <section><h2>Áreas de investigación</h2>${researchAreasHtml}</section>
-      <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p>${externalIndex('googleScholarHIndex', 'Google Scholar', teacher.googleScholarHIndex)}${externalIndex('scopusHIndex', 'Scopus', teacher.scopusHIndex)}</div></section>
+      <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p>${externalIndex('Google Scholar', teacher.googleScholarHIndex)}${externalIndex('Scopus', teacher.scopusHIndex)}</div></section>
       <section><h2>Identificadores y perfiles académicos</h2><p class="links">${links || 'No registrados'}</p></section>
       <section><h2>Producción académica verificada (${products.length})</h2>${productsHtml}</section>
       <div class="footer"><span>Universidad Yachay Tech · Escuela de Ciencias Matemáticas y Computacionales</span><span>Generado ${escapeHtml(generatedAt)}</span></div>

@@ -51,7 +51,7 @@ function TeacherRankingChart({teachers,products}:{teachers:TeacherUser[];product
     <text x="100" y="94" textAnchor="middle" className="donut-center-label">Top {top.length}</text>
     <text x="100" y="116" textAnchor="middle" className="donut-center-caption">profesores</text>
    </svg>
-   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:colors[index%colors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}{metric==='scholarHIndex'&&teacher.teacher.syntheticBibliometricFields?.includes('googleScholarHIndex')||metric==='scopusHIndex'&&teacher.teacher.syntheticBibliometricFields?.includes('scopusHIndex')?<small className="demo-data-badge">DEMO</small>:null}</strong></li>)}</ol>
+   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:colors[index%colors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}</strong></li>)}</ol>
   </div>:<div className="teacher-ranking-empty"><Quote size={22}/><p>No hay datos disponibles para comparar con esta métrica.</p></div>}
  </section>;
 }

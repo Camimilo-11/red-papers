@@ -26,11 +26,11 @@ import {
   Sparkles,
   BookOpen,
   FolderGit2,
+  PencilLine,
   ShieldCheck,
   FileCheck2,
 } from 'lucide-react';
 import {
-  createSyntheticArticleFile,
   removeArticleAttachment,
   saveArticleAttachment,
 } from '../../services/articleAttachmentService';
@@ -40,8 +40,9 @@ interface RegisterProductModalProps {
   lockType?: boolean;
   isOpen: boolean;
   currentUser: TeacherUser | null;
+  initialProduct?: ScientificProduct | null;
   onClose: () => void;
-  onProductCreated: (product: ScientificProduct) => void;
+  onProductSaved: (product: ScientificProduct) => void;
 }
 
 type RegisterTab = 'identifier' | 'pdf' | 'manual';
@@ -56,34 +57,34 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   lockType = false,
   isOpen,
   currentUser,
+  initialProduct = null,
   onClose,
-  onProductCreated,
+  onProductSaved,
 }) => {
   const [activeTab, setActiveTab] = useState<RegisterTab>('manual');
-  const [productType, setProductType] = useState<ProductType>(initialType);
+  const [productType, setProductType] = useState<ProductType>(initialProduct?.type||initialType);
   useEffect(()=>{if(productType==='proyecto' && activeTab==='identifier')setActiveTab('manual');},[productType,activeTab]);
 
   // Campos del formulario
-  const [title, setTitle] = useState('');
-  const [authorsText, setAuthorsText] = useState(currentUser?.name || '');
-  const [productDate, setProductDate] = useState('');
+  const [title, setTitle] = useState(initialProduct?.title||'');
+  const [authorsText, setAuthorsText] = useState(initialProduct?(initialProduct.type==='proyecto'&&initialProduct.projectParticipants?.length?initialProduct.projectParticipants:initialProduct.authors).join(', '):(currentUser?.name||''));
+  const [productDate, setProductDate] = useState(initialProduct?.publicationDate||initialProduct?.projectStartDate|| (initialProduct?`${initialProduct.year}-01-01`:''));
   const [researchLine, setResearchLine] = useState<OfficialResearchLine>(
-    'Computación científica'
+    initialProduct?.researchLine||'Computación científica'
   );
-  const [abstract, setAbstract] = useState('');
-  const [doi, setDoi] = useState('');
-  const [projectCode, setProjectCode] = useState('');
-  const [venue, setVenue] = useState('');
-  const [volumeIssue, setVolumeIssue] = useState('');
+  const [abstract, setAbstract] = useState(initialProduct?.abstract||'');
+  const [doi, setDoi] = useState(initialProduct?.doi||'');
+  const [projectCode, setProjectCode] = useState(initialProduct?.projectCode||'');
+  const [venue, setVenue] = useState(initialProduct?.venue||initialProduct?.fundingVenue||'');
+  const [volumeIssue, setVolumeIssue] = useState(initialProduct?.volumeIssue||'');
   const [articleFile, setArticleFile] = useState<File | null>(null);
-  const [articleFileIsSynthetic, setArticleFileIsSynthetic] = useState(false);
   const [articleFileError, setArticleFileError] = useState<string | null>(null);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [projectStatus, setProjectStatus] = useState<ProjectStatus>('activo');
-  const [projectDirector, setProjectDirector] = useState(currentUser?.name || '');
-  const [projectEndDate, setProjectEndDate] = useState('');
-  const [projectDurationMonths, setProjectDurationMonths] = useState('');
-  const [expectedProductsText, setExpectedProductsText] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(!!initialProduct?.privacyConsentAt);
+  const [projectStatus, setProjectStatus] = useState<ProjectStatus>(initialProduct?.projectStatus||'activo');
+  const [projectDirector, setProjectDirector] = useState(initialProduct?.projectDirector||currentUser?.name||'');
+  const [projectEndDate, setProjectEndDate] = useState(initialProduct?.projectEndDate||'');
+  const [projectDurationMonths, setProjectDurationMonths] = useState(initialProduct?.projectDurationMonths?String(initialProduct.projectDurationMonths):'');
+  const [expectedProductsText, setExpectedProductsText] = useState(initialProduct?.expectedProducts?.join('\n')||'');
 
   // Estados de carga e integración
   const [identifierInput, setIdentifierInput] = useState('');
@@ -283,27 +284,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     }
 
     setArticleFile(file);
-    setArticleFileIsSynthetic(false);
     input.value = '';
-  };
-
-  const loadSyntheticPublicationExample = () => {
-    setProductType('publicacion');
-    setActiveTab('manual');
-    setTitle('Ejemplo sintético: análisis de datos para investigación académica');
-    setAuthorsText('Investigadora de demostración, Investigador de demostración');
-    setProductDate('2025-05-15');
-    setResearchLine('Ciencia de datos');
-    setAbstract('Registro ficticio para probar el formulario. No representa una publicación ni resultados reales.');
-    setDoi('');
-    setVenue('Revista Académica de Demostración ECMC');
-    setVolumeIssue('Vol. 1, Núm. 1, pp. 1-8 (dato sintético)');
-    setArticleFile(createSyntheticArticleFile());
-    setArticleFileIsSynthetic(true);
-    setArticleFileError(null);
-    setPrivacyAccepted(false);
-    setErrorMessage(null);
-    setStep(2);
   };
 
   // Manejador del guardado final (HU03, HU07, HU08)
@@ -316,7 +297,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       if(step===2&&!authorsText.trim()){setErrorMessage('Escriba al menos un autor.');return;}
       if(step===2&&!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
       if(step===2&&productType==='publicacion'&&!abstract.trim()){setErrorMessage('Escriba el resumen de la publicación.');return;}
-      if(step===2&&productType==='publicacion'&&!articleFile){setErrorMessage('Adjunte el artículo en PDF para continuar.');return;}
+      if(step===2&&productType==='publicacion'&&!articleFile&&!initialProduct?.articleAttachment){setErrorMessage('Adjunte el artículo en PDF para continuar.');return;}
       if(step===2&&productType==='publicacion'&&!privacyAccepted){setErrorMessage('Confirme la política de privacidad del artículo.');return;}
       if(step===2&&productType==='proyecto'){
         if(!projectDurationMonths||Number(projectDurationMonths)<1){setErrorMessage('Indique la duración estimada del proyecto en meses.');return;}
@@ -341,7 +322,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       return;
     }
     if(!productDate){setErrorMessage(productType==='publicacion'?'Indique la fecha de publicación.':'Indique la fecha de inicio del proyecto.');return;}
-    if (productType === 'publicacion' && !articleFile) {
+    if (productType === 'publicacion' && !articleFile && !initialProduct?.articleAttachment) {
       setStep(2);
       setErrorMessage('Adjunte el artículo en PDF para continuar.');
       return;
@@ -363,7 +344,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     let articleAttachment: ProductAttachment | undefined;
     if (productType === 'publicacion' && articleFile) {
       try {
-        articleAttachment = await saveArticleAttachment(articleFile, articleFileIsSynthetic);
+        articleAttachment = await saveArticleAttachment(articleFile);
       } catch (error) {
         setStep(2);
         setErrorMessage(error instanceof Error ? error.message : 'No se pudo guardar el artículo adjunto.');
@@ -386,8 +367,8 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       doi: productType === 'publicacion' ? doi.trim() || undefined : undefined,
       venue: productType === 'publicacion' ? venue.trim() || undefined : undefined,
       volumeIssue: productType === 'publicacion' ? volumeIssue.trim() || undefined : undefined,
-      articleAttachment,
-      privacyConsentAt: productType === 'publicacion' ? new Date().toISOString() : undefined,
+      articleAttachment: productType === 'publicacion' ? articleAttachment||initialProduct?.articleAttachment : undefined,
+      privacyConsentAt: productType === 'publicacion' ? initialProduct?.privacyConsentAt||new Date().toISOString() : undefined,
       projectCode: productType === 'proyecto' ? projectCode.trim() || undefined : undefined,
       fundingVenue: productType === 'proyecto' ? venue.trim() || undefined : undefined,
       projectStatus: productType === 'proyecto' ? projectStatus : undefined,
@@ -397,18 +378,25 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       expectedProducts: productType === 'proyecto' ? expectedProductsText.split(/[;\n]+/).map(item=>item.trim()).filter(Boolean) : undefined,
     };
 
-    const creationResult = productService.createProduct(productPayload, ownerId);
+    const saveResult = initialProduct
+      ? productService.updateObservedProduct(initialProduct.id, productPayload)
+      : productService.createProduct(productPayload, ownerId);
 
-    if (!creationResult.success) {
+    if (!saveResult.success) {
       if (articleAttachment && !articleAttachment.isSynthetic) {
         void removeArticleAttachment(articleAttachment.id).catch(() => undefined);
       }
-      setErrorMessage(creationResult.error || 'No se pudo crear el producto.');
+      setErrorMessage(saveResult.error || (initialProduct?'No se pudieron guardar las correcciones.':'No se pudo crear el producto.'));
       return;
     }
 
-    if (creationResult.product) {
-      onProductCreated(creationResult.product);
+    if (saveResult.warning) setDuplicateWarning(saveResult.warning);
+    if (saveResult.product) {
+      const previousAttachment = initialProduct?.articleAttachment;
+      if (previousAttachment && articleAttachment && previousAttachment.id !== articleAttachment.id && !previousAttachment.isSynthetic) {
+        void removeArticleAttachment(previousAttachment.id).catch(() => undefined);
+      }
+      onProductSaved(saveResult.product);
       onClose();
     }
   };
@@ -420,14 +408,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-red-50 text-[#EF4035]">
-              <Plus className="w-5 h-5 stroke-[3]" />
+              {initialProduct?<PencilLine className="w-5 h-5"/>:<Plus className="w-5 h-5 stroke-[3]"/>}
             </div>
             <div>
               <h2 id="register-heading" className="text-base font-bold text-neutral-900">
-                {productType === 'publicacion' ? 'Registrar publicación' : 'Registrar proyecto'}
+                {initialProduct?'Corregir producto observado':productType === 'publicacion' ? 'Registrar publicación' : 'Registrar proyecto'}
               </h2>
               <p className="text-xs text-neutral-500">
-                Complete los datos y verifique la información antes de guardar.
+                {initialProduct?'Revise las observaciones y vuelva a enviar el producto al Comité Científico.':'Complete los datos y verifique la información antes de guardar.'}
               </p>
             </div>
           </div>
@@ -440,8 +428,9 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           </button>
         </div>
 
-        <ol className="registration-steps" aria-label="Pasos del registro">{['Datos básicos','Autores y detalles','Confirmar y guardar'].map((name,index)=><li key={name} aria-current={step===index+1?'step':undefined} className={step===index+1?'current':step>index+1?'complete':''}><span>{index+1}</span>{name}</li>)}</ol>
-        {step===1 && <>
+        <ol className="registration-steps" aria-label="Pasos del registro">{(initialProduct?['Datos básicos','Autores y detalles','Confirmar y reenviar']:['Datos básicos','Autores y detalles','Confirmar y guardar']).map((name,index)=><li key={name} aria-current={step===index+1?'step':undefined} className={step===index+1?'current':step>index+1?'complete':''}><span>{index+1}</span>{name}</li>)}</ol>
+        {initialProduct?.rejectionReason&&<div className="mx-6 mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true"/><span><strong>Observación del Comité Científico:</strong> {initialProduct.rejectionReason}</span></div>}
+        {!initialProduct&&step===1 && <>
         {/* Pestañas de Vía de Ingreso */}
         <div className="bg-white border-b border-neutral-200 px-6 pt-3 flex items-center gap-2 overflow-x-auto">
           {productType==='publicacion' && <button
@@ -484,14 +473,8 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         </>}
         {/* Contenido según pestaña */}
         <div ref={contentRef} className="registration-content p-6 overflow-y-auto space-y-5">
-          {step === 1 && productType === 'publicacion' && (
-            <button type="button" onClick={loadSyntheticPublicationExample} className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[#c5342b]/40 bg-[#fff8f5] px-3 py-2 text-left text-xs font-semibold text-[#8f251e] hover:bg-[#fff1eb]">
-              <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span><strong>Probar con ejemplo sintético</strong><span className="mt-0.5 block font-normal text-neutral-600">Incluye datos y un PDF ficticios, marcados como demostración.</span></span>
-            </button>
-          )}
           {/* Pestaña 1: Asistente DOI / ORCID */}
-          {step===1 && productType==='publicacion' && activeTab === 'identifier' && (
+          {!initialProduct&&step===1 && productType==='publicacion' && activeTab === 'identifier' && (
             <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
@@ -780,7 +763,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     type="text"
                     value={volumeIssue}
                     onChange={(e) => setVolumeIssue(e.target.value)}
-                    placeholder="Ej. Vol. 12, Núm. 2, pp. 35-48 (dato de ejemplo)"
+                    placeholder="Ej. Vol. 12, Núm. 2, pp. 35-48"
                     className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
                   />
                 </div>
@@ -828,9 +811,9 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <label htmlFor="publication-article-input" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold text-neutral-700 hover:border-[#b83229] hover:text-[#8f251e]">
                     <Upload className="h-4 w-4" aria-hidden="true" />
-                    {articleFile ? 'Cambiar archivo' : 'Seleccionar artículo PDF'}
+                    {articleFile ? 'Cambiar archivo' : initialProduct?.articleAttachment ? 'Reemplazar artículo PDF' : 'Seleccionar artículo PDF'}
                   </label>
-                  {articleFile && <span className="min-w-0 text-[11px] text-neutral-700"><strong className="break-all">{articleFile.name}</strong>{articleFile.size > 0 && ` · ${(articleFile.size / (1024 * 1024)).toFixed(2)} MB`}{articleFileIsSynthetic && <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-800">DEMO</span>}</span>}
+                  {(articleFile || initialProduct?.articleAttachment) && <span className="min-w-0 text-[11px] text-neutral-700"><strong className="break-all">{articleFile?.name || initialProduct?.articleAttachment?.fileName}</strong>{articleFile && articleFile.size > 0 && ` · ${(articleFile.size / (1024 * 1024)).toFixed(2)} MB`}</span>}
                 </div>
                 {articleFileError && <p role="alert" className="text-[11px] font-medium text-red-700">{articleFileError}</p>}
                 <div className="flex items-start gap-2 rounded-lg border border-neutral-200 bg-white p-3">
@@ -840,7 +823,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     <span><strong>Política de privacidad *</strong><br />Confirmo que tengo autorización para compartir este archivo con el Comité Científico. Se utilizará únicamente para verificar la información y no se mostrará en el catálogo público.</span>
                   </label>
                 </div>
-                <p className="text-[10px] text-neutral-500">Demostración: el archivo queda guardado en este navegador y dirección web. Para compartirlo entre equipos se requiere conectarlo al almacenamiento institucional.</p>
+                <p className="text-[10px] text-neutral-500">El archivo se utiliza únicamente para la verificación y no se muestra en el catálogo público.</p>
               </section>
             )}
 
@@ -860,12 +843,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             </div>
 
             </>}
-            {step===3 && <section className="review-summary"><h3>Verifique la información del registro</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd>{productType==='publicacion'&&<><dt>Artículo</dt><dd>{articleFile?.name||'No adjunto'}</dd><dt>Privacidad</dt><dd>{privacyAccepted?'Autorización confirmada para revisión privada':'Pendiente de confirmación'}</dd><dt>Identificador</dt><dd>{doi?'Registrado; se mostrará al verificarse':'Sin DOI registrado'}</dd><dt>Medio / revista</dt><dd>{venue||'No indicado'}</dd><dt>Volumen / número</dt><dd>{volumeIssue||'No indicado'}</dd></>}<dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
+            {step===3 && <section className="review-summary"><h3>{initialProduct?'Revise las correcciones antes de reenviar':'Verifique la información del registro'}</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd>{productType==='publicacion'&&<><dt>Artículo</dt><dd>{articleFile?.name||initialProduct?.articleAttachment?.fileName||'No adjunto'}</dd><dt>Privacidad</dt><dd>{privacyAccepted?'Autorización confirmada para revisión privada':'Pendiente de confirmación'}</dd><dt>Identificador</dt><dd>{doi?'Registrado; se mostrará al verificarse':'Sin DOI registrado'}</dd><dt>Medio / revista</dt><dd>{venue||'No indicado'}</dd><dt>Volumen / número</dt><dd>{volumeIssue||'No indicado'}</dd></>}<dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
             {/* Aviso sobre estado inicial "cargado" (Sección 8) */}
             <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-[11px] text-neutral-600 flex items-start gap-2">
               <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
               <span>
-                Al guardar, su trabajo quedará <strong>cargado para revisión</strong>. Recibirá las novedades en Avisos.
+                {initialProduct
+                  ? <>Al reenviar, el producto quedará <strong>pendiente de verificación</strong> y el Comité Científico recibirá la versión corregida.</>
+                  : <>Al guardar, su trabajo quedará <strong>cargado para revisión</strong>. Recibirá las novedades en Avisos.</>}
               </span>
             </div>
 
@@ -882,7 +867,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 type="submit"
                 className="px-5 py-2 rounded-lg bg-[#EF4035] hover:bg-[#D02B20] text-white font-bold transition-colors shadow-sm"
               >
-                {step<3?'Continuar':'Confirmar y guardar'}
+                {step<3?'Continuar':initialProduct?'Confirmar y reenviar':'Confirmar y guardar'}
               </button>
             </div>
           </form>

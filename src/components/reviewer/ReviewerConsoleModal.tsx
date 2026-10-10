@@ -259,7 +259,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                   <summary>Informes de seguimiento ({selectedProduct.projectProgressReports?.length || 0}){selectedProduct.projectClosureReport ? ' · incluye cierre' : ''}</summary>
                   <div className="review-project-history-body">
                     {[...(selectedProduct.projectProgressReports || [])].sort((a, b) => b.periodEnd.localeCompare(a.periodEnd)).map(report => <article key={report.id}>
-                      <div className="review-project-history-heading"><strong>Avance: {report.progressPercent}%</strong><span>{new Date(`${report.periodStart}T12:00:00`).toLocaleDateString('es-EC')} – {new Date(`${report.periodEnd}T12:00:00`).toLocaleDateString('es-EC')}{report.isSynthetic && <em>DEMO</em>}</span></div>
+                      <div className="review-project-history-heading"><strong>Avance: {report.progressPercent}%</strong><span>{new Date(`${report.periodStart}T12:00:00`).toLocaleDateString('es-EC')} – {new Date(`${report.periodEnd}T12:00:00`).toLocaleDateString('es-EC')}</span></div>
                       <p>{report.summary}</p>
                       <p><strong>Actividades:</strong> {report.completedActivities.join(' · ')}</p>
                       {report.achievedProducts.length > 0 && <p><strong>Resultados:</strong> {report.achievedProducts.join(' · ')}</p>}
@@ -267,7 +267,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                       <p><strong>Próximos pasos:</strong> {report.nextSteps}</p>
                     </article>)}
                     {selectedProduct.projectClosureReport && <article className="review-project-closure">
-                      <div className="review-project-history-heading"><strong>Informe de cierre · {PROJECT_STATUS_LABELS[selectedProduct.projectClosureReport.finalStatus]}</strong><span>{new Date(`${selectedProduct.projectClosureReport.closedAt}T12:00:00`).toLocaleDateString('es-EC')}{selectedProduct.projectClosureReport.isSynthetic && <em>DEMO</em>}</span></div>
+                      <div className="review-project-history-heading"><strong>Informe de cierre · {PROJECT_STATUS_LABELS[selectedProduct.projectClosureReport.finalStatus]}</strong><span>{new Date(`${selectedProduct.projectClosureReport.closedAt}T12:00:00`).toLocaleDateString('es-EC')}</span></div>
                       <p>{selectedProduct.projectClosureReport.summary}</p>
                       {selectedProduct.projectClosureReport.deliveredProducts.length > 0 && <p><strong>Productos entregados:</strong> {selectedProduct.projectClosureReport.deliveredProducts.join(' · ')}</p>}
                       {selectedProduct.projectClosureReport.pendingItems.length > 0 && <p><strong>Pendientes:</strong> {selectedProduct.projectClosureReport.pendingItems.join(' · ')}</p>}
@@ -318,7 +318,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                         <FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#b83229]" aria-hidden="true" />
                         <div className="min-w-0 text-xs">
                           <strong className="block text-neutral-800">Artículo adjunto · revisión privada</strong>
-                          <span className="mt-1 block break-all text-neutral-600">{selectedProduct.articleAttachment.fileName}{selectedProduct.articleAttachment.isSynthetic && <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-800">DEMO</span>}</span>
+                          <span className="mt-1 block break-all text-neutral-600">{selectedProduct.articleAttachment.fileName}</span>
                           {selectedProduct.privacyConsentAt && <span className="mt-1 block text-[10px] text-neutral-500">Aceptó la política de privacidad antes del envío.</span>}
                         </div>
                       </div>
