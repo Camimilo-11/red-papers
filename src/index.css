@@ -442,10 +442,10 @@ html, body {
 .academic-directory-layout { display:grid; grid-template-columns:minmax(210px, .8fr) minmax(0,2fr); gap:44px; align-items:start; }
 .academic-people { display:flex; flex-direction:column; gap:8px; }
 .academic-people button { flex:0 0 auto; height:auto; min-width:0; white-space:normal; overflow-wrap:anywhere; display:block; text-align:left; padding:18px 16px; border-left:3px solid transparent; border-radius:0 6px 6px 0; }
-.academic-people button:hover { background:#f2eee9; }
-.academic-people button.selected { background:#f9eae5; border-left-color:#bd3026; }
+.academic-people button:hover { background:color-mix(in srgb,var(--school-accent,var(--accent)) 7%,white); }
+.academic-people button.selected { background:color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white); border-left-color:var(--accent); }
 .academic-people button span { display:block; font-size:17px; font-weight:500; line-height:1.45; }
-.academic-people button.selected span { color:color-mix(in srgb,var(--accent) 86%,black); }
+.academic-people button.selected span { color:var(--accent); }
 .academic-people small { display:block; color:var(--muted); font-size:14px; line-height:1.5; margin-top:6px; }
 .academic-profile { min-width:0; }
 .academic-profile-heading { display:flex; align-items:center; gap:24px; }
@@ -470,7 +470,7 @@ html, body {
 .academic-contact { display:flex; flex-direction:column; gap:12px; margin:24px 0; font-size:15px; color:#625b54; }
 .academic-contact a { display:flex; align-items:center; gap:9px; overflow-wrap:anywhere; width:fit-content; max-width:100%; }
 .academic-contact svg { flex-shrink:0; }
-.academic-contact a:hover { color:#ad2f25; text-decoration:underline; }
+.academic-contact a:hover { color:var(--accent); text-decoration:underline; }
 .academic-contact .academic-profile-unlinked { display:flex; align-items:center; gap:6px; color:#625b54; }
 .academic-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:20px; padding:25px 0; border-top:1px solid #e0dad3; border-bottom:1px solid #e0dad3; margin:28px 0 24px; }
 .academic-metrics div { display:flex; flex-direction:column-reverse; gap:5px; }
@@ -503,7 +503,7 @@ html, body {
 .academic-products h4 { font-size:19px; font-weight:500; margin-bottom:12px; }
 .academic-products h4 span { color:var(--muted); font-weight:400; }
 .academic-product { display:block; width:100%; text-align:left; padding:20px 0; border-bottom:1px solid #e4ded7; }
-.academic-product:hover .academic-product-title { color:#ad2f25; text-decoration:underline; }
+.academic-product:hover .academic-product-title { color:var(--accent); text-decoration:underline; }
 .academic-product-meta { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; color:var(--muted); font-size:13px; }
 .academic-status { font-size:13px; }.academic-status.status-verificado{color:#167450;}.academic-status.status-rechazado{color:#ad2f25;}
 .academic-product-title { display:block; font-size:17px; font-weight:500; line-height:1.55; margin-top:8px; }
@@ -637,9 +637,10 @@ html, body {
   }
 
   .academic-people button:last-of-type { border-bottom: 0; }
-  .academic-people button:hover { background: #fbf8f4; }
-  .academic-people button.selected { background: #fff8f4; box-shadow: inset 3px 0 #bd3026; }
+  .academic-people button:hover { background: color-mix(in srgb,var(--school-accent,var(--accent)) 7%,white); }
+  .academic-people button.selected { background: color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white); box-shadow: inset 3px 0 var(--accent); }
   .academic-people button span { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .academic-people button:hover span { color:var(--accent); }
   .academic-people button small { max-width: 42%; margin: 0; color: #776d65; font-size: 11px; line-height: 1.35; text-align: right; }
   .academic-person-open-icon { flex: 0 0 auto; color: color-mix(in srgb,var(--accent) 86%,black); }
 
@@ -795,7 +796,7 @@ html, body {
 .product-detail-citation-styles button.selected{border-color:var(--accent);background:var(--accent);color:#fff;}
 .product-detail-citation-text{margin:10px 0;padding:13px 15px;border:1px solid #e4ddd5;border-radius:9px;background:#fbfaf8;color:#393430;font-size:13px;line-height:1.65;overflow-wrap:anywhere;}
 .product-detail-copy-citation{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid var(--accent);border-radius:7px;background:#fff;color:color-mix(in srgb,var(--accent) 82%,black);font-size:13px;font-weight:700;}
-.product-detail-copy-citation:hover{background:#fff4f1;}
+.product-detail-copy-citation:hover{background:color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white);}
 .product-detail-project-status dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
 .product-detail-project-status dl>div{min-width:0;}
 .product-detail-project-status dt{color:#746c65;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
@@ -1791,7 +1792,7 @@ body {
 .school-accent-checkbox { accent-color: var(--accent); }
 /* Keep school-specific accents consistent in every portal view. */
 .portal-app .welcome-seal:not([data-school="ECMC"]) { background: transparent; border-radius: 0; }
-.portal-app .academic-people button.selected { background: color-mix(in srgb, var(--accent) 7%, white); box-shadow: inset 3px 0 var(--accent); }
+.portal-app .academic-people button.selected { background: color-mix(in srgb, var(--school-accent,var(--accent)) 10%, white); border-left-color:var(--accent); box-shadow: inset 3px 0 var(--accent); }
 .portal-app .academic-people button.selected span,
 .portal-app .academic-profile-heading .academic-degree,
 .portal-app .academic-person-open-icon,
@@ -1812,3 +1813,10 @@ body {
 .portal-app .product-detail-close-button:hover { background:color-mix(in srgb,var(--accent) 86%,black); }
 .portal-app .product-detail-edit-button { border-color:color-mix(in srgb,var(--accent) 38%,white); background:color-mix(in srgb,var(--accent) 5%,white); }
 .portal-app .product-detail-edit-button:hover { background:color-mix(in srgb,var(--accent) 9%,white); border-color:var(--accent); }
+.portal-app .school-accent-icon { color:var(--accent); background:color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white); }
+.portal-app .teacher-name-action:hover,
+.portal-app .teacher-name-action:hover .teacher-name-title,
+.portal-app .teacher-products-action:hover { color:var(--accent); }
+.portal-app .teacher-orcid-link { color:var(--accent); background:color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white); border-color:color-mix(in srgb,var(--school-accent,var(--accent)) 34%,white); }
+.portal-app .teacher-orcid-link:hover { color:var(--accent); background:color-mix(in srgb,var(--school-accent,var(--accent)) 17%,white); border-color:var(--accent); }
+.portal-app .product-detail-copy-citation:hover { background:color-mix(in srgb,var(--school-accent,var(--accent)) 10%,white); }

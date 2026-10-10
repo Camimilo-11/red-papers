@@ -35,7 +35,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
       {/* Encabezado y buscador */}
       <div className="p-6 border-b border-neutral-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-red-50 text-[#EF4035]">
+          <div className="school-accent-icon p-1.5 rounded-lg">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -56,7 +56,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
             value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}}
             onChange={(e) => setSearchDraft(e.target.value)}
             placeholder="Buscar profesor..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-neutral-200 text-xs focus:outline-hidden focus:ring-1 focus:ring-[#EF4035] bg-neutral-50 focus:bg-white"
+            className="school-accent-focus w-full pl-9 pr-3 py-1.5 rounded-lg border border-neutral-200 text-xs bg-neutral-50 focus:bg-white"
           />
         </div>
       </div>
@@ -92,9 +92,9 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                   <td className="py-4 px-6">
                     <button
                       onClick={() => onSelectTeacher(tm.teacher.id)}
-                      className="text-left group-hover:text-[#EF4035] transition-colors"
+                      className="teacher-name-action text-left transition-colors"
                     >
-                      <div className="font-bold text-neutral-900 group-hover:text-[#EF4035]">
+                      <div className="teacher-name-title font-bold text-neutral-900">
                         {tm.teacher.name}
                       </div>
                       <div className="text-[11px] text-neutral-500">
@@ -110,7 +110,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                         href={`https://orcid.org/${tm.teacher.orcid}`}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 hover:underline bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60"
+                        className="teacher-orcid-link inline-flex items-center gap-1 px-2 py-0.5 rounded border"
                       >
                         <span>{tm.teacher.orcid}</span>
                         <ExternalLink className="w-3 h-3 shrink-0" />
@@ -145,7 +145,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                   <td className="py-4 px-6 text-right">
                     <button
                       onClick={() => onViewTeacherProducts(tm.teacher.id)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-[#EF4035] transition-colors"
+                      className="teacher-products-action inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors"
                     >
                       <span>Ver Productos</span>
                       <ChevronRight className="w-4 h-4" />
