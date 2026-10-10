@@ -58,7 +58,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
  const [academicDegree,setAcademicDegree]=useState<AcademicDegreeValue>(currentUser.academicDegree||'');
  const [academicField,setAcademicField]=useState(currentUser.academicField||'');
  const [profileImage,setProfileImage]=useState(currentUser.profileImage);
- const [researchLine,setResearchLine]=useState<OfficialResearchLine|''>(currentUser.researchLine||'');
+ const [researchLines,setResearchLines]=useState<OfficialResearchLine[]>(currentUser.researchLines|| (currentUser.researchLine?[currentUser.researchLine]:[]));
  const [orcid,setOrcid]=useState(currentUser.orcid||'');
  const [githubUrl,setGithubUrl]=useState(currentUser.githubUrl||'');
  const [googleScholarId,setGoogleScholarId]=useState(currentUser.googleScholarId||'');
@@ -80,7 +80,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
  const saveProfile=(event:FormEvent)=>{
   event.preventDefault();setProfileMessage('');setProfileError('');
   if(!academicDegree){setProfileError('Seleccione su nivel de formación académica.');return;}
-  const result=authService.updateProfile({name,rank,academicDegree,academicField,researchLine:researchLine||undefined,orcid,githubUrl,googleScholarId,bio,profileImage});
+  const result=authService.updateProfile({name,rank,academicDegree,academicField,researchLines,orcid,githubUrl,googleScholarId,bio,profileImage});
   if(!result.success||!result.user){setProfileError(result.error||'No se pudo actualizar el perfil.');return;}
   onUpdated(result.user);setProfileMessage('La información del perfil se actualizó.');
  };
@@ -108,7 +108,7 @@ export function ProfileSettingsView({currentUser,onUpdated}:Props) {
     <label className="profile-settings-field"><span>Escalafón docente</span><input required maxLength={100} value={rank} onChange={e=>setRank(e.target.value)} placeholder="Profesor/a Principal, Auxiliar, Agregado…"/></label>
     <label className="profile-settings-field"><span>Grado académico</span><select required value={academicDegree} onChange={e=>setAcademicDegree(e.target.value as AcademicDegreeValue)}><option value="">Seleccione su formación</option>{degreeOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select><small>Se mostrará separado de su nombre en el perfil público.</small></label>
     <label className="profile-settings-field"><span>{academicDegree==='Other'?'Especifique su título':'Área o especialidad del título'}</span><input maxLength={100} value={academicField} onChange={e=>setAcademicField(e.target.value)} placeholder="Ej. Ciencias de la Computación"/><small>Opcional, salvo que seleccione «Otro título».</small></label>
-    <label className="profile-settings-field"><span>Línea principal de investigación</span><select value={researchLine} onChange={e=>setResearchLine(e.target.value as OfficialResearchLine|'')}><option value="">Sin seleccionar</option>{OFFICIAL_RESEARCH_LINES.map(line=><option key={line} value={line}>{line}</option>)}</select><small>Se mostrará en su perfil público.</small></label>
+    <fieldset className="profile-settings-field-wide profile-research-lines-field"><legend>Líneas de investigación</legend><small>Seleccione todas las líneas que correspondan; aparecerán en su perfil público.</small><div className="profile-research-line-options">{OFFICIAL_RESEARCH_LINES.map(line=><label className="profile-research-line-option" key={line}><input type="checkbox" checked={researchLines.includes(line)} onChange={event=>setResearchLines(selected=>event.target.checked?[...selected,line]:selected.filter(item=>item!==line))}/><span>{line}</span></label>)}</div><small>{researchLines.length===0?'Aún no ha seleccionado líneas.':`${researchLines.length} ${researchLines.length===1?'línea seleccionada':'líneas seleccionadas'}.`}</small></fieldset>
     <label className="profile-settings-field"><span>Correo institucional</span><input value={currentUser.email} readOnly aria-describedby="profile-email-note"/><small id="profile-email-note">Para corregir el correo, solicite el cambio al administrador.</small></label>
     <label className="profile-settings-field"><span>ORCID iD</span><input placeholder="0000-0002-1825-0097" autoComplete="off" value={orcid} onChange={e=>setOrcid(e.target.value)}/><small>Acepte su iD o el enlace de ORCID.</small></label>
     <label className="profile-settings-field"><span>GitHub</span><input placeholder="usuario o github.com/usuario" autoComplete="url" value={githubUrl} onChange={e=>setGithubUrl(e.target.value)}/><small>Enlace a su perfil público.</small></label>

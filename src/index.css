@@ -245,6 +245,14 @@ button:disabled { cursor:wait; }
 .profile-settings-field input[readonly] { background:#f4f1ed; color:#625d58; }
 .profile-settings-field small { color:var(--muted); font-size:12px; line-height:1.4; }
 .profile-settings-field-wide { grid-column:1/-1; }
+.profile-research-lines-field { min-width:0; grid-column:1/-1; margin:0; padding:0; border:0; }
+.profile-research-lines-field legend { margin-bottom:7px; font-size:15px; font-weight:650; }
+.profile-research-lines-field>small { color:var(--muted); font-size:12px; line-height:1.4; }
+.profile-research-line-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:12px 0 8px; }
+.profile-research-line-option { display:flex; align-items:flex-start; gap:10px; min-width:0; padding:11px 12px; border:1px solid #ded8d1; border-radius:6px; background:#fff; cursor:pointer; }
+.profile-research-line-option:has(input:checked) { border-color:#bd3027; background:#fff7f3; }
+.profile-research-line-option input { flex:0 0 17px; width:17px; height:17px; min-height:17px; margin:1px 0 0; padding:0; accent-color:#bd3027; }
+.profile-research-line-option span { color:var(--ink); font-size:13px; line-height:1.4; }
 .profile-settings-photo-field { display:flex; flex-direction:column; gap:9px; min-width:0; }
 .profile-settings-photo-field>span { font-size:15px; font-weight:650; }
 .profile-settings-photo-editor { display:flex; align-items:center; gap:18px; padding:16px; border:1px solid #e5dfd8; border-radius:7px; background:#faf8f5; }
@@ -269,7 +277,7 @@ button:disabled { cursor:wait; }
 .profile-links-note svg { color:var(--accent); flex-shrink:0; }
 @media(max-width:1100px){.reviewer-workspace{grid-template-columns:1fr;}.reviewer-list{max-height:300px;}.reviewer-detail{padding:22px;}}
 @media(max-width:760px){.reviewer-heading h1{font-size:34px;}.reviewer-demo{align-items:flex-start;}.reviewer-detail{padding:18px;}}
-@media(max-width:760px){.profile-settings-card{padding:20px 16px;}.profile-settings-card-heading{display:block;}.profile-settings-card-heading>p{margin-top:12px;}.profile-settings-grid,.password-settings-grid{grid-template-columns:1fr;gap:16px;}.profile-settings-field-wide{grid-column:auto;}.profile-settings-actions .primary-button{width:100%;}.profile-settings-identity{padding:15px;}}
+@media(max-width:760px){.profile-settings-card{padding:20px 16px;}.profile-settings-card-heading{display:block;}.profile-settings-card-heading>p{margin-top:12px;}.profile-settings-grid,.password-settings-grid{grid-template-columns:1fr;gap:16px;}.profile-settings-field-wide,.profile-research-lines-field{grid-column:auto;}.profile-research-line-options{grid-template-columns:1fr;}.profile-settings-actions .primary-button{width:100%;}.profile-settings-identity{padding:15px;}}
 
 /* Balanced sign-in: compact form and a restrained institutional panel. */
 .access-page { min-height:100dvh; display:grid; place-items:center; padding:24px; background:#f6f3ef; }

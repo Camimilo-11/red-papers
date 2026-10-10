@@ -63,7 +63,8 @@ export interface TeacherUser {
   academicDegree?: AcademicDegree;
   academicField?: string;
   profileImage?: string; // Imagen optimizada en formato data URL
-  researchLine?: OfficialResearchLine;
+  researchLines?: OfficialResearchLine[];
+  researchLine?: OfficialResearchLine; // Compatibilidad con perfiles guardados antes de la selección múltiple
   orcid?: string; // Formato 0000-000X-XXXX-XXXX
   githubUrl?: string;
   googleScholarId?: string;

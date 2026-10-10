@@ -1,5 +1,6 @@
-import { AcademicDegree, ScientificProduct, TeacherUser, UserNotification } from '../types';
+import { AcademicDegree, OfficialResearchLine, ScientificProduct, TeacherUser, UserNotification } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
+import { OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
 const STORAGE_KEYS = {
   PRODUCTS: 'red_papers_products_v1',
@@ -41,11 +42,13 @@ function normalizeTeacher(teacher: TeacherUser): TeacherUser {
   const credential = credentialIndex >= 0 ? rankParts[credentialIndex] : undefined;
   const academicDegree = teacher.academicDegree || academicDegreeFrom(credential) || academicDegreeFrom(namePrefix);
   const academicField = teacher.academicField || academicFieldFrom(credential);
+  const savedResearchLines = Array.isArray(teacher.researchLines) ? teacher.researchLines : teacher.researchLine ? [teacher.researchLine] : [];
+  const researchLines = [...new Set(savedResearchLines)].filter((line): line is OfficialResearchLine => OFFICIAL_RESEARCH_LINES.includes(line));
   const rank = credential
     ? rankParts.filter((_, index) => index !== credentialIndex).join(' / ').trim() || 'Profesor'
     : teacher.rank || 'Profesor';
 
-  return { ...teacher, name: cleanName, rank, academicDegree, academicField };
+  return { ...teacher, name: cleanName, rank, academicDegree, academicField, researchLines: researchLines.length ? researchLines : undefined, researchLine: researchLines[0] };
 }
 
 export const storageService = {

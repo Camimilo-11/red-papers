@@ -25,7 +25,7 @@ export interface TeacherProfileUpdate {
   rank: string;
   academicDegree: AcademicDegree;
   academicField?: string;
-  researchLine?: OfficialResearchLine;
+  researchLines?: OfficialResearchLine[];
   orcid?: string;
   githubUrl?: string;
   googleScholarId?: string;
@@ -235,6 +235,7 @@ export const authService = {
     const name=data.name.trim().replace(/^(?:(?:m\.?\s*sc|ph\.?\s*d|dr|dra|ing|mag)\.?)\s+/i,'').trim();
     const rank=data.rank.trim();
     const academicField=data.academicField?.trim();
+    const researchLines=[...new Set(data.researchLines||[])];
     const orcid=normalizeOrcid(data.orcid);
     const githubUrl=normalizeGithub(data.githubUrl);
     const googleScholarId=normalizeScholarId(data.googleScholarId);
@@ -244,13 +245,13 @@ export const authService = {
     if(data.academicDegree==='Other'&&!academicField) return {success:false,error:'Especifique su título académico.'};
     if((academicField?.length||0)>100) return {success:false,error:'El área de especialidad debe tener 100 caracteres o menos.'};
     if(data.profileImage&&(!/^data:image\/jpeg;base64,[a-z\d+/]+=*$/i.test(data.profileImage)||data.profileImage.length>1_500_000)) return {success:false,error:'La imagen de perfil no tiene un formato válido o es demasiado grande.'};
-    if(data.researchLine && !OFFICIAL_RESEARCH_LINES.includes(data.researchLine)) return {success:false,error:'Seleccione una línea de investigación válida.'};
+    if(researchLines.some(line=>!OFFICIAL_RESEARCH_LINES.includes(line))) return {success:false,error:'Seleccione líneas de investigación válidas.'};
     if(data.orcid?.trim() && !orcid) return {success:false,error:'El ORCID no tiene un formato válido.'};
     if(orcid && !isValidOrcid(orcid)) return {success:false,error:'El ORCID debe tener el formato 0000-0002-1825-0097.'};
     if(data.githubUrl?.trim() && !githubUrl) return {success:false,error:'Ingrese un usuario o enlace válido de GitHub.'};
     if(data.googleScholarId?.trim() && !googleScholarId) return {success:false,error:'Ingrese un ID o enlace válido de Google Scholar.'};
     if((data.bio?.trim().length || 0)>500) return {success:false,error:'La biografía debe tener 500 caracteres o menos.'};
-    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,profileImage:data.profileImage||undefined,researchLine:data.researchLine,orcid,githubUrl,googleScholarId,bio:data.bio?.trim()||undefined};
+    const updated:TeacherUser={...current,name,rank,academicDegree:data.academicDegree,academicField:academicField||undefined,profileImage:data.profileImage||undefined,researchLines,researchLine:researchLines[0],orcid,githubUrl,googleScholarId,bio:data.bio?.trim()||undefined};
     const teachers=storageService.getTeachers();
     const index=teachers.findIndex(t=>t.id===current.id);
     if(index>=0) teachers[index]=updated; else teachers.push(updated);

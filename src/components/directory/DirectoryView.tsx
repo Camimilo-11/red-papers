@@ -73,7 +73,9 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     return p.authors.some((a) => a.toLowerCase().includes(activeTeacher.name.toLowerCase()));
   });
   const teacherResearchLines = activeTeacher
-    ? activeTeacher.researchLine
+    ? activeTeacher.researchLines?.length
+      ? activeTeacher.researchLines
+      : activeTeacher.researchLine
       ? [activeTeacher.researchLine]
       : [...new Set(teacherProducts.map(product=>product.researchLine))]
     : [];
