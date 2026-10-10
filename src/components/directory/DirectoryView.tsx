@@ -125,6 +125,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
       <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" placeholder="Nombre o especialidad · Enter" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/></div>
     </header>
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
+    {activeTeacher&&<label className="academic-mobile-picker" htmlFor="academic-mobile-teacher">
+      <span>Consultar perfil de</span>
+      <select id="academic-mobile-teacher" value={activeTeacher.id} onChange={event=>setActiveTeacherId(event.target.value)}>
+        {!filteredTeachers.some(teacher=>teacher.id===activeTeacher.id)&&<option value={activeTeacher.id}>{activeTeacher.name}</option>}
+        {filteredTeachers.map(teacher=><option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
+      </select>
+    </label>}
     <div className="academic-directory-layout">
       <nav className="academic-people" aria-label="Seleccionar docente">
         {filteredTeachers.map(t=><button key={t.id} className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>setActiveTeacherId(t.id)}><span>{t.name}</span><small>{t.rank}</small></button>)}
