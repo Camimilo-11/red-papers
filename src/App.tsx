@@ -3,7 +3,7 @@ import { ProfileSettingsView } from './components/profile/ProfileSettingsView';
 import { canReview, canDevelop } from './constants/demoAccounts';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storageService } from './services/storage';
-import { authService, RegisterFormData } from './services/authService';
+import { authService } from './services/authService';
 import { productService } from './services/productService';
 import { metricsService } from './services/metricsService';
 import { TeacherUser, ScientificProduct, UserNotification, ProductStatus } from './types';
@@ -14,7 +14,6 @@ import { Footer } from './components/layout/Footer';
 
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
-import { RegisterModal } from './components/auth/RegisterModal';
 import { InstitutionalBanner } from './components/dashboard/InstitutionalBanner';
 import { FeaturedPublicationCarousel } from './components/dashboard/FeaturedPublicationCarousel';
 import { MetricCards } from './components/dashboard/MetricCards';
@@ -43,7 +42,6 @@ export default function App() {
   });
 
   // Modales
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isRegisterProductOpen, setIsRegisterProductOpen] = useState(false);
   const [registerType, setRegisterType] = useState<'publicacion'|'proyecto'>('publicacion');
   const [registerTypeLocked, setRegisterTypeLocked] = useState(false);
@@ -55,7 +53,7 @@ export default function App() {
   const [directorySelectedTeacherId, setDirectorySelectedTeacherId] = useState<string>('doc-001');
 
   // Each portal screen is an ordinary browser history entry.
-  const navigation = {activeTab, showAccessScreen, isRegisterModalOpen, isRegisterProductOpen,
+  const navigation = {activeTab, showAccessScreen, isRegisterProductOpen,
     isReviewerConsoleOpen, registerType, registerTypeLocked, catalogTeacherFilter, directorySelectedTeacherId};
   const navigationKey = JSON.stringify(navigation);
   const lastNavigation = useRef<string | null>(null);
@@ -81,7 +79,6 @@ export default function App() {
       lastNavigation.current = JSON.stringify(next);
       setActiveTab(next.activeTab);
       setShowAccessScreen(next.showAccessScreen);
-      setIsRegisterModalOpen(next.isRegisterModalOpen);
       setIsRegisterProductOpen(next.isRegisterProductOpen);
       setIsReviewerConsoleOpen(next.isReviewerConsoleOpen);
       setRegisterType(next.registerType);
@@ -145,7 +142,6 @@ export default function App() {
     setCurrentUser(null);
     setNotice('');
     // Volver al acceso y cerrar cualquier vista privada de la sesión anterior.
-    setIsRegisterModalOpen(false);
     setIsRegisterProductOpen(false);
     setIsReviewerConsoleOpen(false);
     setCatalogTeacherFilter('todos');
@@ -160,18 +156,6 @@ export default function App() {
     if (updated) {
       setCurrentUser(updated);
     }
-  };
-
-  // Registro de nuevo docente (HU01)
-  const handleRegisterTeacher = (data: RegisterFormData) => {
-    const result = authService.register(data);
-    if (result.success && result.user) {
-      setTeachers(storageService.getTeachers());
-      setCurrentUser(result.user);
-      setShowAccessScreen(false);
-      return { success: true, user: result.user };
-    }
-    return { success: false, errors: result.errors };
   };
 
   // Creación de producto (HU03)
@@ -235,19 +219,6 @@ export default function App() {
         <AccessScreen
           onLogin={handleLogin}
           onExploreAsGuest={handleExploreAsGuest}
-          onOpenRegister={() => setIsRegisterModalOpen(true)}
-          demoTeachers={teachers}
-          onQuickDemoLogin={(teacherId) => {
-            handleSwitchUser(teacherId);
-            setShowAccessScreen(false);
-            setActiveTab('dashboard');
-          }}
-        />
-
-        <RegisterModal
-          isOpen={isRegisterModalOpen}
-          onClose={() => setIsRegisterModalOpen(false)}
-          onRegister={handleRegisterTeacher}
         />
       </>
     );
@@ -354,13 +325,6 @@ export default function App() {
       <footer className="portal-footer"><span>RED PAPERS · ECMC</span><span>Universidad Yachay Tech</span></footer>
 
       {/* 4. Modales Globales */}
-      {/* Modal de Registro de Usuario Docente (HU01) */}
-      <RegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
-        onRegister={handleRegisterTeacher}
-      />
-
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}
       <RegisterProductModal
         key={`${currentUser?.id}-${registerType}-${isRegisterProductOpen}`}

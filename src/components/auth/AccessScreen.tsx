@@ -1,10 +1,8 @@
 import React, {useState,useRef,useEffect} from 'react';
 import {EcmcLogo} from '../../assets/EcmcLogo';
-import {TeacherUser} from '../../types';
 import {ArrowRight,Eye,EyeOff,X} from 'lucide-react';
 interface AccessScreenProps {
  onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void;
- onOpenRegister:()=>void; demoTeachers:TeacherUser[];onQuickDemoLogin:(id:string)=>void;
 }
 export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [visible,setVisible]=useState(false);const [error,setError]=useState('');const [forgot,setForgot]=useState(false);
@@ -14,7 +12,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  return <div className="welcome-access">
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><EcmcLogo size={48} variant="white"/><span>RED PAPERS<small>UNIVERSIDAD YACHAY TECH</small></span></div>
-   <nav aria-label="Acceso a la plataforma"><button onClick={()=>{setError('');setLoginOpen(true);}}>Iniciar sesión</button><button className="welcome-create" onClick={()=>{p.onOpenRegister();}}>Crear cuenta</button></nav>
+   <nav aria-label="Acceso a la plataforma"><button onClick={()=>{setError('');setLoginOpen(true);}}>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
    <p className="welcome-access-kicker">EL CONOCIMIENTO NOS CONECTA</p>
@@ -35,8 +33,6 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
     {error&&<p role="alert" className="login-error">{error}</p>}
     <button type="submit" className="primary-button login-submit">Iniciar sesión<ArrowRight size={20}/></button>
    </form>
-   <p className="signup-link">¿Es su primera visita? <button onClick={()=>{setLoginOpen(false);p.onOpenRegister();}}>Crear cuenta docente</button></p>
-
    </div>
   </dialog>
  </div>;
