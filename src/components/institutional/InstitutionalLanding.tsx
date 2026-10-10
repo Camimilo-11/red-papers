@@ -99,7 +99,7 @@ function getInitialPhase(): IntroPhase {
 const emblemPositions = [
   { left: '57%', top: '52%', size: 94, rotation: '-17deg', parallax: 0.035 },
   { left: '62%', top: '34%', size: 74, rotation: '12deg', parallax: 0.055 },
-  { left: '52%', top: '3%', size: 88, rotation: '-9deg', parallax: 0.03 },
+  { left: '77%', top: '42%', size: 88, rotation: '-9deg', parallax: 0.03 },
   { left: '83%', top: '16%', size: 102, rotation: '15deg', parallax: 0.05 },
   { left: '76%', top: '72%', size: 82, rotation: '11deg', parallax: 0.045 },
   { left: '67%', top: '69%', size: 76, rotation: '-13deg', parallax: 0.06 },

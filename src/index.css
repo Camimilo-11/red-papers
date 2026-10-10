@@ -2210,6 +2210,7 @@ body {
   .institutional-landing-hero-emblem.is-visible { opacity: .24; }
   .institutional-landing-hero-emblem[data-school="ECIAA"] { left: 80% !important; top: 35% !important; }
   .institutional-landing-hero-emblem[data-school="ECBI"] { left: 78% !important; top: 22% !important; }
+  .institutional-landing-hero-emblem[data-school="ECFN"] { left: 78% !important; top: 49% !important; }
   .institutional-landing-hero-emblem[data-school="ECMC"] { left: 78% !important; top: 76% !important; }
   .institutional-landing-hero-emblem-image { width: min(64px, var(--emblem-size)) !important; height: min(64px, var(--emblem-size)) !important; }
   .institutional-landing-hero-emblem-ecmc { width: min(64px, var(--emblem-size)) !important; height: auto !important; }
