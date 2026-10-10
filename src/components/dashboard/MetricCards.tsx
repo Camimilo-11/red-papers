@@ -15,7 +15,6 @@ export const MetricCards: React.FC<{ metrics: SchoolMetrics }> = ({ metrics }) =
         <div>
           <h2>La escuela en cifras</h2>
         </div>
-        <span>Datos de demostración</span>
       </div>
       <dl className="metrics-strip">
         {summary.map(({ value, label }) => (
