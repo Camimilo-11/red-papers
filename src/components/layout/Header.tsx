@@ -49,7 +49,6 @@ export const Header: React.FC<HeaderProps> = (p) => {
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
    <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="SIMAPC, ir al inicio"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
-   <div className="sidebar-section-label">TU ESPACIO DE INVESTIGACIÓN</div>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
    <div className="sidebar-bottom">
     {canDevelop(p.currentUser) && <details className="secondary-tools"><summary>Otras herramientas</summary><button onClick={()=>navigate('traceability')}><GitBranch size={19}/>Trazabilidad del proyecto</button><button aria-current={p.activeTab==='reviewer'?'page':undefined} onClick={()=>{setMobileOpen(false);setNotificationsOpen(false);p.onOpenReviewerConsole();}}><ShieldCheck size={19}/>Comité Científico</button>

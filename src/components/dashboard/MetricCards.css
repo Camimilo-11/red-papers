@@ -1,0 +1,218 @@
+.school-summary.school-summary-overview {
+  min-width: 0;
+  margin: 0 0 26px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--school-accent) 20%, #e5e1dc);
+  border-radius: 20px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--school-accent) 8%, white), #fff 75%);
+  box-shadow: 0 8px 24px rgba(37, 35, 33, .04);
+}
+
+.school-summary-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.school-summary-heading-copy {
+  min-width: 0;
+}
+
+.school-summary-code {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  line-height: 1.3;
+}
+
+.school-summary-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, serif;
+  font-size: clamp(28px, 2.5vw, 36px);
+  font-weight: 400;
+  letter-spacing: -.7px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.school-summary-emblem {
+  display: grid;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--school-accent) 18%, #e5e1dc);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.school-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.school-metric {
+  min-width: 0;
+  padding: 16px 18px 18px;
+  border: 1px solid color-mix(in srgb, var(--school-accent) 14%, #e5e1dc);
+  border-top: 3px solid var(--school-accent);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.school-metric[data-metric="citations"] {
+  background: color-mix(in srgb, var(--school-accent) 6%, white);
+}
+
+.school-metric dt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.school-metric dt > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.school-metric-icon {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--school-accent) 10%, white);
+  color: var(--accent);
+}
+
+.school-metric dd {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: clamp(38px, 3.8vw, 52px);
+  font-weight: 750;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -.04em;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-actions .action-heading {
+  margin: 0 0 12px;
+  font-size: 19px !important;
+}
+
+.dashboard-actions .home-actions button {
+  min-height: 146px;
+  padding: 18px 20px;
+}
+
+.dashboard-actions .action-icon {
+  margin-bottom: 10px;
+}
+
+.dashboard-actions .home-actions strong {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+@media (max-width: 1024px) {
+  .school-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .dashboard-actions .home-actions button {
+    min-height: 100px;
+    padding: 20px 20px 20px 70px;
+  }
+
+  .dashboard-actions .action-icon {
+    top: 24px;
+    left: 22px;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .school-summary.school-summary-overview {
+    margin-bottom: 22px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .school-summary-heading {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .school-summary-heading h1 {
+    font-size: clamp(25px, 6.6vw, 29px);
+    letter-spacing: -.5px;
+  }
+
+  .school-summary-code {
+    font-size: 10px;
+  }
+
+  .school-summary-emblem {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .school-summary-emblem .school-icon-crop {
+    transform: scale(.8);
+  }
+
+  .school-metrics-grid {
+    gap: 10px;
+  }
+
+  .school-metric {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .school-metric dt {
+    align-items: flex-start;
+    gap: 6px;
+    min-height: 33px;
+    font-size: 12px;
+  }
+
+  .school-metric-icon {
+    flex-basis: 26px;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+  }
+
+  .school-metric-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .school-metric dd {
+    margin-top: 8px;
+    font-size: 38px;
+  }
+}

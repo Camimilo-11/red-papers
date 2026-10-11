@@ -327,11 +327,12 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
-            {/* Banner Institucional con CTA */}
-            <InstitutionalBanner school={selectedSchool} showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            <MetricCards metrics={schoolMetrics} school={selectedSchool}/>
+
+            {/* Acciones disponibles para el perfil actual. */}
+            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
 
             <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
-            <MetricCards metrics={schoolMetrics}/>
 
             {/* Tablero: evolución semestral, ranking y líneas de investigación */}
             <ResearchDashboard teachers={schoolTeachers} products={schoolProducts} temporalData={temporalData} school={selectedSchool} />
