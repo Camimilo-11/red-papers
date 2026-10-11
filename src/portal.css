@@ -789,9 +789,16 @@ html, body {
 @keyframes welcome-solid-turn{from{transform:rotateY(25deg);}to{transform:rotateY(385deg);}}
 @media(max-width:1270px){.welcome-access-header{flex-wrap:wrap;}.welcome-access-header nav{margin-left:auto;}.welcome-access-main{grid-template-columns:minmax(0,1fr);row-gap:12px;align-content:center;}.welcome-access-content{width:min(650px,100%);}.welcome-art{grid-column:1;grid-row:2;justify-self:center;width:min(340px,100%);height:374px;margin:-30px auto -105px;opacity:.12;transform:scale(.72);transform-origin:center top;}}
 @media(max-width:600px){.welcome-access-main{padding:24px 0;row-gap:8px;}.welcome-access-main h1{font-size:clamp(38px,10vw,48px);}.welcome-access-description{margin-top:16px;}.welcome-public{margin-top:22px;padding:16px 18px;}.welcome-access-metrics{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:12px;margin-top:22px;}.welcome-access-metrics>div:nth-child(3){border-left:0;padding-left:0;}.welcome-access-metrics>div:nth-child(n+3){padding-top:10px;border-top:1px solid #ded7ce;}.welcome-access-metrics dt{font-size:12px;}.welcome-access-metrics dd{font-size:32px;}.welcome-art{width:min(340px,100%);height:374px;margin:-34px auto -150px;opacity:.10;transform:scale(.56);}}
+@media(max-width:760px){.welcome-access-header nav .welcome-school-switch,.welcome-access-header nav .welcome-login-trigger{min-height:44px;}}
+@media(max-width:600px){.welcome-access-main{display:block;align-content:start;padding:24px 0 18px;}.welcome-access-content{position:relative;z-index:1;}.welcome-art{position:absolute;right:-56px;bottom:-16px;grid-column:auto;grid-row:auto;width:220px;height:220px;margin:0;opacity:.07;transform:scale(.8);transform-origin:center;}}
 @media(min-width:601px) and (max-width:760px){.welcome-access{padding-top:24px;padding-bottom:20px;}.welcome-access-main{padding:22px 0;}}
 @media(min-width:601px) and (max-height:760px){.welcome-access{padding-top:22px;padding-bottom:20px;}.welcome-access-main{padding:24px 0;}.welcome-access-main h1{font-size:48px;}.welcome-access-description{margin-top:16px;}.welcome-public{margin-top:22px;padding:18px 24px;}}
 @media(prefers-reduced-motion:reduce){.welcome-emblem-solid{animation:none;transform:rotateY(25deg);}}
+
+.portal-view-loading{display:flex;min-height:180px;align-items:center;justify-content:center;gap:12px;padding:24px;color:#625c56;text-align:center;}
+.portal-view-loading>span{width:16px;height:16px;flex:0 0 16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:portal-loading-spin .8s linear infinite;}
+@keyframes portal-loading-spin{to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){.portal-view-loading>span{animation:none;border-right-color:currentColor;}}
 
 /* Separación compacta cuando el visitante no tiene acciones rápidas. */
 .home-welcome.home-welcome-public{margin-bottom:0;}

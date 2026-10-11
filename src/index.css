@@ -532,3 +532,17 @@ button:disabled { cursor:wait; }
 .school-accent-text { color: var(--accent) !important; }
 .school-accent-hover:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
 .school-accent-checkbox { accent-color: var(--accent); }
+
+.portal-loading {
+  display: grid;
+  min-height: 100svh;
+  place-content: center;
+  justify-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: #f7f4ef;
+  color: #292522;
+  font-size: 16px;
+  text-align: center;
+}
+.portal-loading img { display: block; width: min(112px, 34vw); height: auto; }

@@ -1,10 +1,14 @@
 import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { SCHOOLS, type SchoolConfig } from './constants/schools';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
+import { YachayLogo } from './components/institutional/SchoolLogo';
 import { ensureFloatingSchoolLogosDecoded } from './assets/schoolLogos';
 
 const PortalApp = lazy(() => import('./PortalApp'));
 const SESSION_USER_KEY = 'red_papers_current_user_v1';
+const APP_HISTORY_KEY = 'redPapersShell';
+
+type AppHistoryEntry = { screen: 'schools' } | { screen: 'school'; schoolCode: string };
 
 function currentSchoolFromSavedSession(): SchoolConfig | null {
   try {
@@ -17,7 +21,50 @@ function currentSchoolFromSavedSession(): SchoolConfig | null {
 
 export default function App() {
   const [selectedSchool, setSelectedSchool] = useState<SchoolConfig | null>(currentSchoolFromSavedSession);
-  const returnToSchools = useCallback(() => setSelectedSchool(null), []);
+  const selectSchool = useCallback((school: SchoolConfig) => {
+    const state = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
+    const currentEntry = state[APP_HISTORY_KEY] as AppHistoryEntry | undefined;
+    if (currentEntry?.screen !== 'schools') {
+      window.history.replaceState({ ...state, [APP_HISTORY_KEY]: { screen: 'schools' } satisfies AppHistoryEntry }, '');
+    }
+
+    const nextState = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
+    window.history.pushState({ ...nextState, [APP_HISTORY_KEY]: { screen: 'school', schoolCode: school.code } satisfies AppHistoryEntry }, '');
+    setSelectedSchool(school);
+  }, []);
+
+  const returnToSchools = useCallback(() => {
+    const state = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
+    window.history.pushState({ ...state, [APP_HISTORY_KEY]: { screen: 'schools' } satisfies AppHistoryEntry }, '');
+    setSelectedSchool(null);
+  }, []);
+
+  useEffect(() => {
+    const state = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
+    if (state[APP_HISTORY_KEY]) return;
+
+    const entry: AppHistoryEntry = selectedSchool
+      ? { screen: 'school', schoolCode: selectedSchool.code }
+      : { screen: 'schools' };
+    window.history.replaceState({ ...state, [APP_HISTORY_KEY]: entry }, '');
+  }, []);
+
+  useEffect(() => {
+    const onShellPopState = (event: PopStateEvent) => {
+      const entry = event.state?.[APP_HISTORY_KEY] as AppHistoryEntry | undefined;
+      if (!entry) return;
+      if (entry.screen === 'schools') {
+        setSelectedSchool(null);
+        return;
+      }
+
+      const school = SCHOOLS.find((candidate) => candidate.code === entry.schoolCode);
+      if (school) setSelectedSchool(school);
+    };
+
+    window.addEventListener('popstate', onShellPopState);
+    return () => window.removeEventListener('popstate', onShellPopState);
+  }, []);
 
   useEffect(() => {
     const shell = document.getElementById('simapc-startup');
@@ -51,11 +98,11 @@ export default function App() {
   }, [selectedSchool]);
 
   if (!selectedSchool) {
-    return <InstitutionalLanding onSelect={setSelectedSchool} />;
+    return <InstitutionalLanding onSelect={selectSchool} />;
   }
 
   return (
-    <Suspense fallback={<main className="portal-loading" aria-live="polite">Abriendo el espacio de la escuela…</main>}>
+    <Suspense fallback={<main className="portal-loading" role="status" aria-live="polite"><YachayLogo width={112} /><span>Abriendo el espacio de {selectedSchool.shortName}…</span></main>}>
       <PortalApp initialSchool={selectedSchool} onChangeSchool={returnToSchools} />
     </Suspense>
   );

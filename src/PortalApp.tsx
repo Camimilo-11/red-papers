@@ -1,10 +1,6 @@
 import './portal.css';
-import { RoleManagementView } from './components/roles/RoleManagementView';
-import { ProfileSettingsView } from './components/profile/ProfileSettingsView';
-import { StudentProfileSettingsView } from './components/profile/StudentProfileSettingsView';
-import { StudentCollaborationsView } from './components/profile/StudentCollaborationsView';
 import { canReview, canDevelop } from './constants/demoAccounts';
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useMemo, useRef } from 'react';
 import { storageService } from './services/storage';
 import { authService } from './services/authService';
 import { productService } from './services/productService';
@@ -12,22 +8,31 @@ import { metricsService } from './services/metricsService';
 import { TeacherUser, ScientificProduct, UserNotification, ProductStatus } from './types';
 
 // Componentes de Layout
-import { Header, ActiveTab } from './components/layout/Header';
+import { Header, type ActiveTab } from './components/layout/Header';
 
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
-import { InstitutionalBanner } from './components/dashboard/InstitutionalBanner';
-import { FeaturedPublicationCarousel } from './components/dashboard/FeaturedPublicationCarousel';
-import { MetricCards } from './components/dashboard/MetricCards';
-import { ResearchDashboard } from './components/dashboard/ResearchDashboard';
-import { TeacherMetricsTable } from './components/dashboard/TeacherMetricsTable';
-import { CatalogView } from './components/catalog/CatalogView';
-import { DirectoryView } from './components/directory/DirectoryView';
-import { TraceabilityView } from './components/traceability/TraceabilityView';
-import { RegisterProductModal } from './components/register/RegisterProductModal';
-import { ReviewerConsoleModal } from './components/reviewer/ReviewerConsoleModal';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
 import { getSchoolByCode, type SchoolConfig } from './constants/schools';
+
+const RoleManagementView = lazy(() => import('./components/roles/RoleManagementView').then((module) => ({ default: module.RoleManagementView })));
+const ProfileSettingsView = lazy(() => import('./components/profile/ProfileSettingsView').then((module) => ({ default: module.ProfileSettingsView })));
+const StudentProfileSettingsView = lazy(() => import('./components/profile/StudentProfileSettingsView').then((module) => ({ default: module.StudentProfileSettingsView })));
+const StudentCollaborationsView = lazy(() => import('./components/profile/StudentCollaborationsView').then((module) => ({ default: module.StudentCollaborationsView })));
+const InstitutionalBanner = lazy(() => import('./components/dashboard/InstitutionalBanner').then((module) => ({ default: module.InstitutionalBanner })));
+const FeaturedPublicationCarousel = lazy(() => import('./components/dashboard/FeaturedPublicationCarousel').then((module) => ({ default: module.FeaturedPublicationCarousel })));
+const MetricCards = lazy(() => import('./components/dashboard/MetricCards').then((module) => ({ default: module.MetricCards })));
+const ResearchDashboard = lazy(() => import('./components/dashboard/ResearchDashboard').then((module) => ({ default: module.ResearchDashboard })));
+const TeacherMetricsTable = lazy(() => import('./components/dashboard/TeacherMetricsTable').then((module) => ({ default: module.TeacherMetricsTable })));
+const CatalogView = lazy(() => import('./components/catalog/CatalogView').then((module) => ({ default: module.CatalogView })));
+const DirectoryView = lazy(() => import('./components/directory/DirectoryView').then((module) => ({ default: module.DirectoryView })));
+const TraceabilityView = lazy(() => import('./components/traceability/TraceabilityView').then((module) => ({ default: module.TraceabilityView })));
+const RegisterProductModal = lazy(() => import('./components/register/RegisterProductModal').then((module) => ({ default: module.RegisterProductModal })));
+const ReviewerConsoleModal = lazy(() => import('./components/reviewer/ReviewerConsoleModal').then((module) => ({ default: module.ReviewerConsoleModal })));
+
+function PortalViewLoading() {
+  return <div className="portal-view-loading" role="status" aria-live="polite"><span aria-hidden="true" />Cargando el contenido de la escuela…</div>;
+}
 
 export default function App({ initialSchool, onChangeSchool }: { initialSchool: SchoolConfig; onChangeSchool: () => void }) {
   // Estado de autenticación y sesión
@@ -298,6 +303,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       {/* 2. Contenedor de Contenido Principal */}
       <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''}`}>
         {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>{currentUser?.role==='student'?'Ver mis colaboraciones':'Ver mis registros'}</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
+        <Suspense fallback={<PortalViewLoading />}>
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
@@ -370,6 +376,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         {activeTab==='roles' && canDevelop(currentUser) && <RoleManagementView currentUser={currentUser!} onChanged={()=>setCurrentUser(authService.getCurrentUser())}/> }
         {activeTab==='settings' && currentUser?.role==='teacher' && <ProfileSettingsView currentUser={currentUser} onUpdated={user=>{setCurrentUser(user);setTeachers(storageService.getTeachers());}}/>}
         {activeTab==='settings' && currentUser?.role==='student' && <StudentProfileSettingsView currentUser={currentUser} onUpdated={setCurrentUser}/>}
+        </Suspense>
       </main>
 
       {/* 3. Pie de Página Institucional */}
@@ -377,16 +384,18 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
 
       {/* 4. Modales Globales */}
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}
-      <RegisterProductModal
-        key={`${currentUser?.id}-${registerType}-${editingProduct?.id || 'new'}-${isRegisterProductOpen}`}
-        initialType={registerType}
-        lockType={registerTypeLocked}
-        isOpen={isRegisterProductOpen && !!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')}
-        currentUser={currentUser}
-        initialProduct={editingProduct}
-        onClose={() => {setIsRegisterProductOpen(false);setEditingProduct(null);setRegisterTypeLocked(false);}}
-        onProductSaved={handleProductSaved}
-      />
+      {isRegisterProductOpen && !!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer') && <Suspense fallback={<PortalViewLoading />}>
+        <RegisterProductModal
+          key={`${currentUser?.id}-${registerType}-${editingProduct?.id || 'new'}-${isRegisterProductOpen}`}
+          initialType={registerType}
+          lockType={registerTypeLocked}
+          isOpen
+          currentUser={currentUser}
+          initialProduct={editingProduct}
+          onClose={() => {setIsRegisterProductOpen(false);setEditingProduct(null);setRegisterTypeLocked(false);}}
+          onProductSaved={handleProductSaved}
+        />
+      </Suspense>}
 
 
     </div>

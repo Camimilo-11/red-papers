@@ -10,12 +10,22 @@ interface AccessScreenProps {
 export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [visible,setVisible]=useState(false);const [error,setError]=useState('');const [forgot,setForgot]=useState(false);
  const [loginOpen,setLoginOpen]=useState(false);
+ const [compactArt,setCompactArt]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(max-width: 760px)').matches);
  const dialog=useRef<HTMLDialogElement>(null);
  useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
+ useEffect(()=>{
+  const query=window.matchMedia('(max-width: 760px)');
+  const update=()=>setCompactArt(query.matches);
+  update();
+  query.addEventListener?.('change',update);
+  return()=>query.removeEventListener?.('change',update);
+ },[]);
+ const artLayers=compactArt?13:49;
+ const artLayerSpacing=compactArt?4:1;
  return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><YachayLogo width={130}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
-   <nav aria-label="Acceso a la plataforma"><button className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
+   <nav aria-label="Acceso a la plataforma"><button type="button" className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button type="button" className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
    <div className="welcome-access-content">
@@ -35,9 +45,10 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
    </div>
    <div className="welcome-art" aria-hidden="true" data-school={p.school.code}>
    <div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">
-    {Array.from({length:49},(_,layer)=>{
-     const isFace=layer===0||layer===48;
-     return <div key={layer} className={`welcome-emblem-layer ${isFace?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-24}px)`}}>
+    {Array.from({length:artLayers},(_,layer)=>{
+     const isFace=layer===0||layer===artLayers-1;
+     const depth=(layer-(artLayers-1)/2)*artLayerSpacing;
+     return <div key={layer} className={`welcome-emblem-layer ${isFace?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${depth}px)`}}>
       <LoginSchoolEmblem school={p.school} size={340}/>
      </div>;
     })}
