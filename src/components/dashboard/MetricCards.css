@@ -20,16 +20,6 @@
   min-width: 0;
 }
 
-.school-summary-code {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--accent);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: .16em;
-  line-height: 1.2;
-}
-
 .school-summary-heading h1 {
   margin: 0;
   color: var(--ink);
@@ -146,10 +136,6 @@
   .school-summary-heading h1 {
     font-size: clamp(25px, 6.6vw, 29px);
     letter-spacing: -.5px;
-  }
-
-  .school-summary-code {
-    font-size: 14px;
   }
 
   .school-summary-emblem {
