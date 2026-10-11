@@ -169,7 +169,7 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
     const measure = () => {
       const rootRect = root.getBoundingClientRect();
       sourceX.set(rootRect.left + overlay.offsetLeft + anchor.offsetLeft);
-      sourceY.set(rootRect.top + window.scrollY + overlay.offsetTop + anchor.offsetTop);
+      sourceY.set(rootRect.top + root.scrollTop + overlay.offsetTop + anchor.offsetTop);
       sourceSize.set(anchor.offsetWidth || position.size);
     };
     const observer = new ResizeObserver(measure);
@@ -205,8 +205,11 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
 
 // Start the one scroll observer after the first paint, so its initial geometry
 // read does not force layout inside the intro's first animation frame.
-function LandingScrollDriver({ value }: { value: MotionValue<number> }) {
-  const { scrollY } = useScroll();
+function LandingScrollDriver({ value, container }: {
+  value: MotionValue<number>;
+  container: React.RefObject<HTMLElement | null>;
+}) {
+  const { scrollY } = useScroll({ container });
   useMotionValueEvent(scrollY, 'change', (latest) => value.set(latest));
   useEffect(() => { value.set(scrollY.get()); }, [scrollY, value]);
   return null;
@@ -220,7 +223,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   );
   const [logosReady, setLogosReady] = useState(false);
   const reducedMotion = useReducedMotion();
-  const scrollY = useMotionValue(window.scrollY);
+  const scrollY = useMotionValue(0);
   const handoff = useMascotHandoff();
   const [scrollReady, setScrollReady] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
@@ -355,7 +358,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         completeIntro();
       }}
     >
-      {scrollReady && <LandingScrollDriver value={scrollY} />}
+      {scrollReady && <LandingScrollDriver value={scrollY} container={rootRef} />}
       <header className="institutional-landing-header" aria-label="Universidad Yachay Tech">
         <span className="institutional-landing-header-space" aria-hidden="true" />
         <img
@@ -410,7 +413,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         ))}
       </div>
 
-      <ResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} />
+      <ResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} scrollContainer={rootRef} />
 
       <footer ref={footerRef} className="institutional-landing-footer" data-revealed="false" aria-label="Enlaces institucionales">
         <div className="institutional-landing-footer-ribbon" aria-hidden="true">

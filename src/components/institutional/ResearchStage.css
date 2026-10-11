@@ -1,18 +1,11 @@
-/* Seven native snap stops and one persistent sticky school scene. */
+/* One page scroller owns the seven native school snap stops and sticky scene. */
 .research-stage-scrollport {
   position: relative;
   width: 100%;
-  height: 100svh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-padding: 0;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  height: auto;
+  overflow: visible;
   background: #fff;
 }
-.research-stage-scrollport::-webkit-scrollbar { display: none; }
 .research-stage-track { position: relative; width: 100%; height: 700svh; min-height: 700svh; }
 .research-stage {
   position: sticky;
@@ -258,7 +251,7 @@
   background: var(--school-accent);
   transform-origin: left center;
 }
-.research-stage-scrollport:focus-visible { outline: 3px solid #17191c; outline-offset: -3px; }
+.research-stage-scrollport:focus-visible .research-stage { outline: 3px solid #17191c; outline-offset: -3px; }
 
 @media (max-width: 1000px) and (min-width: 761px) {
   .research-stage-navigation { width: calc(100vw - 24px); }
@@ -340,12 +333,11 @@
   .research-stage-mascot-flash { top: 136px; width: min(48vw, 210px); left: calc((100% - min(48vw, 210px)) / 2); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .research-stage-scrollport { scroll-behavior: auto; }
+  .institutional-landing { scroll-behavior: auto; }
   .research-stage-school-screen,
   .research-stage-school-fill { transition: none !important; }
 }
 @supports not (height: 100svh) {
-  .research-stage-scrollport,
   .research-stage-track,
   .research-stage-school-spacer,
   .research-stage { height: 100vh; }

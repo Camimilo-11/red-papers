@@ -97,15 +97,15 @@ function SchoolNavigationItem({ school, schoolIndex, active, reduced, onSelect }
   </li>;
 }
 
-export function ResearchStage({ onSelect, scrollY, handoff }: {
+export function ResearchStage({ onSelect, scrollY, handoff, scrollContainer }: {
   onSelect: (school: SchoolConfig) => void;
   scrollY: MotionValue<number>;
   handoff: MascotHandoff;
+  scrollContainer: React.RefObject<HTMLElement | null>;
 }) {
   const reduced = !!useReducedMotion();
   const [assetsReady, setAssetsReady] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const scrollport = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const rail = useRef<HTMLElement>(null);
@@ -162,16 +162,18 @@ export function ResearchStage({ onSelect, scrollY, handoff }: {
   });
 
   useEffect(() => {
-    const root = scrollport.current;
+    const root = scrollContainer.current;
     const stage = scene.current;
     const mascot = mascotMeasure.current;
-    if (!root || !stage || !mascot) return;
+    const stageTrack = track.current;
+    if (!root || !stage || !mascot || !stageTrack) return;
 
     const measure = () => {
       const stageRect = stage.getBoundingClientRect();
       const stageHeight = stage.clientHeight || window.innerHeight;
-      const stageDocumentTop = root.getBoundingClientRect().top + window.scrollY;
-      handoffTriggerY.current = stageDocumentTop - stageHeight * .7;
+      const rootRect = root.getBoundingClientRect();
+      const stageScrollTop = stageTrack.getBoundingClientRect().top - rootRect.top + root.scrollTop;
+      handoffTriggerY.current = stageScrollTop - stageHeight * .7;
       handoff.targetX.set(stageRect.left + mascot.offsetLeft + mascot.clientWidth / 2);
       handoff.targetY.set(stageRect.top + mascot.offsetTop + mascot.clientHeight / 2);
       setHandoffDirection(scrollY.get() >= handoffTriggerY.current ? 1 : 0);
@@ -179,6 +181,7 @@ export function ResearchStage({ onSelect, scrollY, handoff }: {
     const observer = new ResizeObserver(measure);
     observer.observe(root);
     observer.observe(stage);
+    observer.observe(stageTrack);
     observer.observe(mascot);
     window.addEventListener('resize', measure);
     measure();
@@ -186,7 +189,7 @@ export function ResearchStage({ onSelect, scrollY, handoff }: {
       observer.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [handoff.targetX, handoff.targetY, scrollY, setHandoffDirection]);
+  }, [handoff.targetX, handoff.targetY, scrollContainer, scrollY, setHandoffDirection]);
 
   const settleIndex = useCallback((index: number) => {
     setActiveIndex(index);
@@ -194,26 +197,50 @@ export function ResearchStage({ onSelect, scrollY, handoff }: {
   }, [scrollY, setHandoffDirection]);
 
   useEffect(() => {
-    const root = scrollport.current;
+    const root = scrollContainer.current;
     if (!root) return;
     const settle = () => {
-      const height = Math.max(root.clientHeight, 1);
-      const index = clamp(Math.round(root.scrollTop / height), 0, SCHOOLS.length - 1);
+      const spacers = track.current?.querySelectorAll<HTMLElement>('.research-stage-school-spacer');
+      if (!spacers?.length) return;
+      const rootTop = root.getBoundingClientRect().top;
+      let nearestIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      spacers.forEach((spacer, index) => {
+        const distance = Math.abs(spacer.getBoundingClientRect().top - rootTop);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      });
+      const index = clamp(nearestIndex, 0, SCHOOLS.length - 1);
       settleIndex(index);
     };
+    let fallbackTimer = 0;
+    const settleAfterScroll = () => {
+      window.clearTimeout(fallbackTimer);
+      fallbackTimer = window.setTimeout(settle, 160);
+    };
     root.addEventListener('scrollend', settle);
+    root.addEventListener('scroll', settleAfterScroll, { passive: true });
     return () => {
       root.removeEventListener('scrollend', settle);
+      root.removeEventListener('scroll', settleAfterScroll);
+      window.clearTimeout(fallbackTimer);
     };
-  }, [settleIndex]);
+  }, [scrollContainer, settleIndex]);
 
   const selectSchool = useCallback((index: number) => {
     const target = clamp(index, 0, SCHOOLS.length - 1);
-    const root = scrollport.current;
-    if (root) root.scrollTo({ top: target * root.clientHeight, behavior: 'instant' });
+    const root = scrollContainer.current;
+    const spacer = track.current?.querySelector<HTMLElement>('.research-stage-school-spacer[data-school-index="' + target + '"]');
+    if (root && spacer) {
+      const rootRect = root.getBoundingClientRect();
+      const scrollTop = spacer.getBoundingClientRect().top - rootRect.top + root.scrollTop;
+      root.scrollTo({ top: scrollTop, behavior: 'instant' });
+    }
     setActiveIndex(target);
     if (target === 0 && scrollY.get() >= handoffTriggerY.current) setHandoffDirection(1);
-  }, [scrollY, setHandoffDirection]);
+  }, [scrollContainer, scrollY, setHandoffDirection]);
 
   useEffect(() => {
     const nav = rail.current;
@@ -249,7 +276,6 @@ export function ResearchStage({ onSelect, scrollY, handoff }: {
 
   return <div
     className="research-stage-scrollport"
-    ref={scrollport}
     id="escuelas"
     role="region"
     aria-label="Recorrido por las siete escuelas"
