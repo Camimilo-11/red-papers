@@ -286,10 +286,16 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
     if (!hero || !overlay) return;
     const measure = () => {
       // Static layout geometry only: scrolling updates motion values, not styles.
-      overlay.style.top = `${hero.offsetTop}px`;
+      const link = hero.querySelector<HTMLElement>('.institutional-landing-hero-link');
+      const copy = link?.closest<HTMLElement>('.institutional-landing-hero-copy');
+      const mobileWelcome = window.matchMedia('(max-width: 600px)').matches;
+      const overlayTop = mobileWelcome && link && copy
+        ? hero.offsetTop + copy.offsetTop + link.offsetTop + link.offsetHeight + 48
+        : hero.offsetTop;
+      overlay.style.top = `${overlayTop}px`;
       overlay.style.left = `${hero.offsetLeft}px`;
       overlay.style.width = `${hero.offsetWidth}px`;
-      overlay.style.height = `${hero.offsetHeight}px`;
+      overlay.style.height = `${Math.max(0, hero.offsetTop + hero.offsetHeight - overlayTop)}px`;
     };
     const observer = new ResizeObserver(measure);
     observer.observe(hero);

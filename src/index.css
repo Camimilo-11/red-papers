@@ -198,7 +198,7 @@ button:disabled { cursor:wait; }
   font-family: Impact, 'Arial Narrow', sans-serif;
   font-size: clamp(64px, 8vw, 120px);
   font-weight: 900;
-  letter-spacing: -.035em;
+  letter-spacing: -.01em;
   line-height: .9;
   text-transform: uppercase;
 }

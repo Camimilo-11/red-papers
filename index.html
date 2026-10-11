@@ -43,14 +43,14 @@
       html[data-simapc-startup="welcome"] #simapc-startup-hero { opacity:1; }
       #simapc-startup-copy { position:relative; z-index:1; width:min(790px,62vw); }
       #simapc-startup-eyebrow { margin:0 0 18px; color:#24618e; font-size:13px; font-weight:800; letter-spacing:.2em; line-height:1.4; }
-      #simapc-startup-title { margin:0; font-family:Impact,"Arial Narrow",sans-serif; font-size:clamp(64px,8vw,120px); font-weight:900; letter-spacing:-.035em; line-height:.9; text-transform:uppercase; }
+      #simapc-startup-title { margin:0; font-family:Impact,"Arial Narrow",sans-serif; font-size:clamp(64px,8vw,120px); font-weight:900; letter-spacing:-.01em; line-height:.9; text-transform:uppercase; }
       #simapc-startup-title span { display:block; }
       #simapc-startup-title span:last-child { color:#24618e; }
       #simapc-startup-subtitle { max-width:720px; margin:28px 0 0; color:#4a5056; font-size:clamp(20px,2.1vw,30px); line-height:1.55; }
       #simapc-startup-link { display:inline-flex; align-items:center; gap:18px; margin-top:34px; min-height:48px; color:#174e78; font-size:17px; font-weight:750; text-decoration:none; }
       #simapc-startup-link span { font-size:23px; }
-      #simapc-startup-logos { position:absolute; inset:86px 0 0; overflow:hidden; pointer-events:none; }
-      #simapc-startup-logos img { position:absolute; display:block; width:clamp(120px,14vw,200px); height:auto; aspect-ratio:1; object-fit:contain; opacity:0; transform:translate(-50%,-50%); }
+      #simapc-startup-logos { position:absolute; z-index:0; inset:0; overflow:hidden; pointer-events:none; }
+      #simapc-startup-logos img { position:absolute; display:block; width:clamp(120px,14vw,200px); height:auto; aspect-ratio:1; object-fit:contain; opacity:0; transform:translate(-50%,-50%); mix-blend-mode:multiply; }
       html[data-simapc-startup="welcome"] #simapc-startup-logos img { opacity:.32; animation:simapc-startup-float 6.5s cubic-bezier(.22,1,.36,1) infinite; }
       #simapc-startup-logos img:nth-child(1) { left:68%; top:18%; }
       #simapc-startup-logos img:nth-child(2) { left:85%; top:20%; animation-delay:-1s; }
@@ -75,22 +75,24 @@
       @media (max-width:1024px) {
         #simapc-startup-header { height:64px; }
         #simapc-startup-header img { width:150px; max-height:48px; }
-        #simapc-startup-hero { inset:64px 0 0; align-items:flex-start; padding:26px max(20px,env(safe-area-inset-left)); }
+        #simapc-startup-hero { inset:64px 0 0; align-items:stretch; flex-direction:column; justify-content:flex-start; padding:26px max(20px,env(safe-area-inset-left)) 12px; }
+        #simapc-startup-copy { flex:0 0 auto; }
         #simapc-startup-copy { width:100%; }
         #simapc-startup-eyebrow { font-size:11px; letter-spacing:.12em; margin-bottom:18px; }
-        #simapc-startup-title { font-size:clamp(40px,10.8vw,76px); line-height:.98; }
+        #simapc-startup-title { font-size:clamp(40px,10.8vw,76px); letter-spacing:-.01em; line-height:.98; }
         #simapc-startup-subtitle { margin:22px 0 16px; font-size:16px; line-height:1.45; }
         #simapc-startup-link { margin-top:4px; font-size:16px; }
-        #simapc-startup-logos { inset:64px 0 0; }
-        #simapc-startup-logos img { width:74px; opacity:0; }
+        #simapc-startup-logos { position:relative; inset:auto; display:grid; width:calc(100% + 40px); flex:1 1 auto; min-height:0; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(0,1fr)); place-items:start center; margin:48px -20px 0; overflow:hidden; }
+        #simapc-startup-logos img { position:relative; width:74px; height:74px; opacity:0; transform:none; }
+        #simapc-startup-logos img:nth-child(n) { left:auto; top:auto; }
+        #simapc-startup-logos img:nth-child(1) { grid-column:1; grid-row:1; }
+        #simapc-startup-logos img:nth-child(2) { grid-column:2; grid-row:1; }
+        #simapc-startup-logos img:nth-child(3) { grid-column:1; grid-row:2; }
+        #simapc-startup-logos img:nth-child(4) { grid-column:2; grid-row:2; }
+        #simapc-startup-logos img:nth-child(5) { grid-column:1; grid-row:3; }
+        #simapc-startup-logos img:nth-child(6) { grid-column:2; grid-row:3; }
+        #simapc-startup-logos img:nth-child(7) { grid-column:1 / -1; grid-row:4; }
         html[data-simapc-startup="welcome"] #simapc-startup-logos img { opacity:.68; }
-        #simapc-startup-logos img:nth-child(1) { left:15%; top:62%; }
-        #simapc-startup-logos img:nth-child(2) { left:39%; top:60%; }
-        #simapc-startup-logos img:nth-child(3) { left:63%; top:62%; }
-        #simapc-startup-logos img:nth-child(4) { left:84%; top:70%; }
-        #simapc-startup-logos img:nth-child(5) { left:20%; top:83%; }
-        #simapc-startup-logos img:nth-child(6) { left:47%; top:81%; }
-        #simapc-startup-logos img:nth-child(7) { left:73%; top:87%; }
       html[data-simapc-startup="welcome"] #simapc-startup-curtain { transform:translateY(-100%); }
       }
       @media (max-width:380px) {
@@ -131,15 +133,16 @@
           <p id="simapc-startup-subtitle">La producción científica y la comunidad investigadora de Yachay Tech, en un solo lugar.</p>
           <a id="simapc-startup-link" href="#escuelas">Explora nuestras escuelas <span aria-hidden="true">↓</span></a>
         </div>
+        <div id="simapc-startup-logos" aria-hidden="true">
+          <img src="%BASE_URL%logos/ecaa.webp" width="224" height="224" alt="" />
+          <img src="%BASE_URL%logos/ecbi.webp" width="184" height="184" alt="" />
+          <img src="%BASE_URL%logos/ecfn.webp" width="220" height="220" alt="" />
+          <img src="%BASE_URL%logos/ectea.webp" width="204" height="204" alt="" />
+          <img src="%BASE_URL%logos/ecmc.webp" width="204" height="204" alt="" />
+          <img src="%BASE_URL%logos/ecqi.webp" width="190" height="190" alt="" />
+          <img src="%BASE_URL%logos/ytlc.webp" width="176" height="176" alt="" />
+        </div>
       </section>
-      <div id="simapc-startup-logos" aria-hidden="true">
-        <img src="%BASE_URL%logos/ecaa.webp" width="224" height="224" alt="" />
-        <img src="%BASE_URL%logos/ecbi.webp" width="184" height="184" alt="" />
-        <img src="%BASE_URL%logos/ecfn.webp" width="220" height="220" alt="" />
-        <img src="%BASE_URL%logos/ectea.webp" width="204" height="204" alt="" />
-        <img src="%BASE_URL%logos/ecmc.webp" width="204" height="204" alt="" />
-        <img src="%BASE_URL%logos/ecqi.webp" width="190" height="190" alt="" />
-        <img src="%BASE_URL%logos/ytlc.webp" width="176" height="176" alt="" />
       </div>
       <div id="simapc-startup-curtain" aria-hidden="true"><span>UNIVERSIDAD</span><span>YACHAY TECH</span><small>SIMAPC</small></div>
     </div>
