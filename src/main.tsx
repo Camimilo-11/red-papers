@@ -1,9 +1,9 @@
-import {createRoot} from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import { ensureSchoolLogosDecoded } from './assets/schoolLogos';
+import { ensureFloatingSchoolLogosDecoded } from './assets/schoolLogos';
 import './index.css';
 
-// Begin every institutional image download/decode during the intro, not per school.
-void ensureSchoolLogosDecoded();
+// The seven logos alone gate the welcome; the two leading mascots download concurrently.
+void ensureFloatingSchoolLogosDecoded();
 
 createRoot(document.getElementById('root')!).render(<App />);

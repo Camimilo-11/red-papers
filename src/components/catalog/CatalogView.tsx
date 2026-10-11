@@ -142,7 +142,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="catalog-view space-y-6">
       {/* 1. Encabezado del Catálogo (Captura 08) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
@@ -402,7 +402,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       </div>
 
       {/* 4. Contador de Resultados y Ordenamiento (Captura 08) */}
-      <div className="flex items-center justify-between text-xs text-neutral-600 px-1">
+      <div className="catalog-results-toolbar flex items-center justify-between text-xs text-neutral-600 px-1">
         <div>
           Mostrando <strong className="text-neutral-900 tabular-nums">{filteredProducts.length}</strong>{' '}
           productos científicos

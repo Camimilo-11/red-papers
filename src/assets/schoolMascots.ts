@@ -2,15 +2,15 @@ import type { SchoolConfig } from '../constants/schools';
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
-export const BASE_MASCOT = publicAsset('mascot/base.webp');
+// Optimized derivatives live separately; originals in /public/mascot remain unchanged.
+export const BASE_MASCOT = publicAsset('mascot-optimized/base.webp');
 
-/** Original transparent mascot assets, shared by preload and the school scenes. */
 export const SCHOOL_MASCOTS: Record<SchoolConfig['code'], string> = {
-  ECIAA: publicAsset('mascot/ecaa.webp'),
-  ECBI: publicAsset('mascot/ecbi.webp'),
-  ECFN: publicAsset('mascot/ecfn.webp'),
-  ECTEA: publicAsset('mascot/ectea.webp'),
-  ECMC: publicAsset('mascot/ecmc.webp'),
-  ECQI: publicAsset('mascot/ecqi.webp'),
-  YTLC: publicAsset('mascot/ytlc.webp'),
+  ECIAA: publicAsset('mascot-optimized/ecaa.webp'),
+  ECBI: publicAsset('mascot-optimized/ecbi.webp'),
+  ECFN: publicAsset('mascot-optimized/ecfn.webp'),
+  ECTEA: publicAsset('mascot-optimized/ectea.webp'),
+  ECMC: publicAsset('mascot-optimized/ecmc.webp'),
+  ECQI: publicAsset('mascot-optimized/ecqi.webp'),
+  YTLC: publicAsset('mascot-optimized/ytlc.webp'),
 };

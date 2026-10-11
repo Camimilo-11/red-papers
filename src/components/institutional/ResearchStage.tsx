@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'motion/react';
+import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
-import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
+import { ensureSchoolLogosDecoded, ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolMascots, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { BASE_MASCOT, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
 import type { MascotHandoff } from './mascotHandoff';
 import { RESEARCH_LINE_MOTIFS, useBackdropMotionVisibility } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
+import { TouchResearchStage } from './TouchResearchStage';
+import { useMotionPreference } from './useMotionPreference';
 
 export const STAGE_RESEARCH_LINES = SCHOOLS.reduce((lines, school) => {
   lines[school.code] = RESEARCH_STAGE_SLIDES[school.code].map((slide) => slide.line);
@@ -98,8 +100,8 @@ function slideOpacity(value: number, index: number) {
   return enter * exit;
 }
 
-function Mascot({ src }: { src: string }) {
-  return <><span className="research-stage-mascot-shadow" /><img src={src} width={1024} height={1024} alt="" draggable={false} /></>;
+function Mascot({ src, ready = true }: { src: string; ready?: boolean }) {
+  return <><span className="research-stage-mascot-shadow" />{ready && <img src={src} width={768} height={768} alt="" draggable={false} />}</>;
 }
 
 function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlend, registerHost, onSelectSchool }: {
@@ -129,7 +131,27 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
   const motifY = useTransform(drift, [0, 1], [0, -6]);
   const scale = useTransform(drift, [0, 1], [1, 1.05]);
   const rotate = useTransform(drift, [0, 1], [0, 4]);
-  const mascotOpacity = useTransform(handoff.progress, [.86, 1], [0, 1]);
+  const [mascotDecoded, setMascotDecoded] = useState(() => isSchoolMascotDecoded(school.code));
+  const mascotFade = useMotionValue(isSchoolMascotDecoded(school.code) ? 1 : 0);
+  const mascotRequested = useRef(mascotDecoded);
+  const mascotLoadAnimation = useRef<ReturnType<typeof animate> | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    const requestMascot = () => {
+      if (mascotRequested.current) return;
+      mascotRequested.current = true;
+      void ensureSchoolMascotDecoded(school.code).then((ready) => {
+        if (!mounted || !ready) return;
+        setMascotDecoded(true);
+        mascotLoadAnimation.current = animate(mascotFade, 1, { duration: .35, ease });
+      });
+    };
+    if (opacity.get() > .01) requestMascot();
+    const unsubscribe = opacity.on('change', (value) => { if (value > .01) requestMascot(); });
+    return () => { mounted = false; unsubscribe(); mascotLoadAnimation.current?.stop(); };
+  }, [mascotFade, opacity, school.code]);
+  const handoffOpacity = useTransform(handoff.progress, [.86, 1], [0, 1]);
+  const mascotOpacity = useTransform(() => mascotFade.get() * handoffOpacity.get());
   // Cancel the slide's entrance offset so every outfit occupies exactly one box.
   const mascotY = useTransform(y, (value) => -value);
   const words = plane.title.split(' ');
@@ -143,7 +165,7 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
         </motion.div>
       </div>
     </div>
-    <motion.div className="research-stage-mascot-slot" style={{ opacity: mascotOpacity, y: mascotY }} aria-hidden="true"><Mascot src={SCHOOL_MASCOTS[school.code]} /></motion.div>
+    <motion.div className="research-stage-mascot-slot" style={{ opacity: mascotOpacity, y: mascotY }} aria-hidden="true"><Mascot src={SCHOOL_MASCOTS[school.code]} ready={mascotDecoded} /></motion.div>
     <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
       <div className="research-stage-title-row"><span className="research-stage-title-emblem" aria-hidden="true"><Emblem school={school} /></span>
       <p className="research-stage-school-acronym">{displaySchoolCode(school)}</p>
@@ -275,6 +297,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
     if (currentIndex.current === index) return;
     currentIndex.current = index;
     activeSlide.current = { school: STAGE_PLANES[index].school, index };
+    scheduleNearbySchoolMascots(activeSlide.current.school.code);
     if (scene.current) {
       scene.current.dataset.school = activeSlide.current.school.code;
       scene.current.style.setProperty('--school-accent', activeSlide.current.school.accent);
@@ -419,13 +442,21 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
 }
 
 export function ResearchStage({ onSelect, scrollY, handoff }: { onSelect: (school: SchoolConfig) => void; scrollY: MotionValue<number>; handoff: MascotHandoff }) {
-  const reduced = useReducedMotion();
+  const reduced = useMotionPreference();
+  const [touchLayout, setTouchLayout] = useState(() => window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches);
   const [logosReady, setLogosReady] = useState(false);
   useEffect(() => {
-    let mounted = true;
-    void Promise.all([ensureSchoolLogosDecoded(), reduced ? Promise.resolve() : prepareMotifs()]).then(([ready]) => { if (mounted) setLogosReady(ready); });
-    return () => { mounted = false; };
+    const query = window.matchMedia('(pointer: coarse), (max-width: 1024px)');
+    const update = () => setTouchLayout(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
   }, []);
+  useEffect(() => {
+    let mounted = true;
+    void Promise.all([ensureSchoolLogosDecoded(), reduced || touchLayout ? Promise.resolve() : prepareMotifs()]).then(([ready]) => { if (mounted) setLogosReady(ready); });
+    return () => { mounted = false; };
+  }, [reduced, touchLayout]);
   if (reduced) return <div id="escuelas" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}><SelectionGrid onSelect={onSelect} reduced /></div>;
+  if (touchLayout) return <TouchResearchStage onSelect={onSelect} logosReady={logosReady} handoff={handoff} scrollY={scrollY} />;
   return <AnimatedStage onSelect={onSelect} logosReady={logosReady} scrollY={scrollY} handoff={handoff} />;
 }

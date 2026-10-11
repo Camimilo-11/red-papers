@@ -1,0 +1,110 @@
+html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 0; scroll-behavior: auto; }
+.touch-school-track { position: relative; height: 700svh; }
+.touch-school-snap { position: absolute; left: 0; width: 100%; height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; pointer-events: none; }
+.touch-school-stage { position: sticky; top: 0; height: 100svh; overflow: clip; isolation: isolate; background: color-mix(in srgb, var(--school-accent) 8%, white); touch-action: pan-x pinch-zoom; }
+.touch-school-graph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .45; pointer-events: none; contain: layout paint style; shape-rendering: optimizeSpeed; transform: translateY(8svh); mask-image: linear-gradient(135deg, transparent 12%, rgb(0 0 0 / .22) 40%, #000 68%); }
+.touch-school-navigation { position: absolute; z-index: 5; top: calc(var(--landing-header-height) + 6px); inset-inline: 0; overflow-x: auto; scrollbar-width: none; touch-action: pan-x pinch-zoom; overscroll-behavior-x: contain; }
+.touch-school-navigation::-webkit-scrollbar { display: none; }
+.touch-school-navigation ol { display: flex; width: max-content; min-width: 100%; padding: 0 max(16px, env(safe-area-inset-left)); margin: 0; gap: 8px; list-style: none; }
+.touch-school-navigation ol::before, .touch-school-navigation ol::after { content: ''; flex: 0 0 max(0px, calc(50vw - 68px)); }
+.touch-school-navigation li { flex: 0 0 auto; }
+.touch-school-navigation button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 104px; height: 52px; border: 1px solid #e0e3e5; border-radius: 999px; background: white; color: #262a2e; font: 800 13px var(--font-sans); cursor: pointer; touch-action: pan-x pinch-zoom; }
+.touch-school-navigation button[aria-current] { border-color: var(--school-accent); color: var(--school-ink); }
+.touch-school-navigation img { object-fit: contain; background: white; }
+.touch-school-slide, .touch-school-handoff-layout { position: absolute; z-index: 1; inset: calc(var(--landing-header-height) + 76px) max(20px, env(safe-area-inset-right)) calc(84px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 210px minmax(0, 1fr); gap: 8px; min-width: 0; }
+.touch-school-copy { position: relative; z-index: 2; min-width: 0; }
+.touch-school-slide { will-change: transform, opacity; }
+.touch-school-identity { display: flex; align-items: center; gap: 12px; height: 44px; margin-bottom: 10px; }
+.touch-school-identity img { width: 44px; height: 44px; object-fit: contain; background: white; border-radius: 4px; }
+.touch-school-identity p { margin: 0; color: var(--school-ink); font: 800 14px var(--font-sans); letter-spacing: .15em; }
+.touch-school-copy h2 { margin: 0; color: #17191c; font: 800 28px/1.14 var(--font-sans); letter-spacing: .015em; text-transform: uppercase; overflow-wrap: break-word; text-wrap: balance; }
+.touch-school-copy .is-accent { color: var(--school-ink); }
+.touch-school-mascot { position: relative; z-index: 1; grid-row: 2; min-height: 0; min-width: 0; width: 100%; max-width: 100%; height: 100%; justify-self: center; container-type: size; }
+.touch-school-mascot .research-stage-mascot-shadow { left: 50%; bottom: calc((100cqh - min(100cqw, 100cqh)) / 2 + min(100cqw, 100cqh) * .03); width: calc(min(100cqw, 100cqh) * .6); height: calc(min(100cqw, 100cqh) * .08); transform: translateX(-50%); }
+.touch-school-mascot > img, .touch-school-base > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.touch-school-cta { position: absolute; z-index: 3; top: calc(100% + 12px); left: -4px; width: calc(100% + 8px); min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border: 1px solid var(--school-ink); border-radius: 6px; background: var(--school-ink); color: white; font: 800 16px/1.3 var(--font-sans); cursor: pointer; }
+.touch-school-cta span { font-size: 22px; }
+.touch-school-handoff-layout { z-index: 3; pointer-events: none; }
+.touch-school-base, .touch-school-flash { position: absolute; inset: 0; }
+.touch-school-flash { background: radial-gradient(circle at center, white, rgb(255 255 255 / .9) 15%, transparent 58%); }
+.touch-school-stage button:focus-visible { outline: 3px solid #17191c; outline-offset: 3px; }
+
+@media (pointer: coarse), (max-width: 1024px) {
+  .institutional-landing { --landing-header-height: calc(64px + env(safe-area-inset-top)); }
+  .institutional-landing-header { padding-top: env(safe-area-inset-top); transform: translateZ(0); }
+  .institutional-landing-brand-logo { margin-top: calc(env(safe-area-inset-top) / 2); max-height: 48px; width: 150px; }
+  .institutional-landing-hero { height: calc(100svh - var(--landing-header-height)); min-height: 0; align-items: flex-start; padding: 26px max(20px, env(safe-area-inset-left)); scroll-snap-align: start; scroll-margin-top: var(--landing-header-height); touch-action: pan-x pinch-zoom; }
+  .institutional-landing-hero-copy { width: 100%; max-width: none; }
+  .institutional-landing-eyebrow { font-size: 11px; letter-spacing: .12em; margin-bottom: 18px; }
+  .institutional-landing-title { font-size: clamp(40px, 10.8vw, 76px); line-height: .98; }
+  .institutional-landing-subtitle { font-size: 16px; line-height: 1.45; margin: 22px 0 16px; max-width: 34em; }
+  .institutional-landing-hero-link { display: inline-flex; min-height: 48px; align-items: center; font-size: 16px; }
+  .institutional-landing-hero-link { margin-top: 4px; }
+  .institutional-landing > .mascot-handoff-logos { z-index: 4; mix-blend-mode: normal; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem { --emblem-size: 74px !important; width: var(--emblem-size) !important; height: var(--emblem-size) !important; opacity: 0; mix-blend-mode: normal; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem.is-visible { opacity: .94; }
+  .mascot-handoff-logos .institutional-landing-emblem-image { width: 100% !important; height: 100% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(1) { left: 15% !important; top: 62% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(2) { left: 39% !important; top: 60% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(3) { left: 64% !important; top: 62% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(4) { left: 85% !important; top: 70% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(5) { left: 20% !important; top: 83% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(6) { left: 47% !important; top: 81% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(7) { left: 72% !important; top: 87% !important; }
+  .institutional-landing-footer { scroll-snap-align: start; padding-bottom: env(safe-area-inset-bottom); }
+  .research-stage-school-card h3 { font-size: 28px; }
+  .research-stage-school-card > button { min-height: 48px; }
+}
+@media (max-width: 380px) {
+  .touch-school-slide, .touch-school-handoff-layout { grid-template-rows: 212px minmax(0, 1fr); inset-inline: 16px; }
+  .touch-school-copy h2 { font-size: 28px; letter-spacing: 0; }
+  .touch-school-cta { left: 0; width: 100%; }
+}
+@media (min-width: 600px) and (min-height: 600px) {
+  .touch-school-slide, .touch-school-handoff-layout { inset-inline: 40px; grid-template-rows: 270px minmax(0, 1fr); }
+  .touch-school-copy h2 { font-size: 40px; max-width: 700px; }
+  .institutional-landing-hero-copy { width: 64%; }
+  .institutional-landing-hero .institutional-landing-title { font-size: 7.3vw; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem { --emblem-size: 110px !important; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .institutional-landing { --landing-header-height: calc(48px + env(safe-area-inset-top)); }
+  .institutional-landing-brand-logo { max-height: 36px; width: 115px; }
+  .touch-school-navigation { top: calc(var(--landing-header-height) + 4px); }
+  .touch-school-navigation button { height: 46px; }
+  .touch-school-slide, .touch-school-handoff-layout { inset: calc(var(--landing-header-height) + 64px) max(24px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 22px; }
+  .touch-school-copy { grid-column: 1; padding-bottom: 70px; }
+  .touch-school-identity { height: 32px; margin-bottom: 8px; }
+  .touch-school-identity img { width: 32px; height: 32px; }
+  .touch-school-copy h2 { font-size: 28px; }
+  .touch-school-mascot { grid-row: 1; grid-column: 2; }
+  .touch-school-cta { top: auto; bottom: 0; left: 0; width: calc((100% - 22px) * .6); min-height: 52px; }
+  .touch-school-graph { transform: none; mask-image: linear-gradient(to left, #000 0%, #000 42%, rgb(0 0 0 / .22) 80%); }
+  .institutional-landing-hero { padding-top: 18px; }
+  .institutional-landing-hero-copy { width: 54%; }
+  .institutional-landing-title { font-size: 46px; }
+  .institutional-landing-eyebrow { margin-bottom: 12px; }
+  .institutional-landing-subtitle { margin: 14px 0 8px; font-size: 15px; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem { --emblem-size: 68px !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(1) { left: 64% !important; top: 18% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(2) { left: 78% !important; top: 16% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(3) { left: 91% !important; top: 26% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(4) { left: 70% !important; top: 49% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(5) { left: 88% !important; top: 59% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(6) { left: 63% !important; top: 79% !important; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(7) { left: 78% !important; top: 82% !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .institutional-landing-hero { touch-action: pan-y pinch-zoom; }
+}
+
+@media (pointer: coarse), (max-width: 1024px) {
+  .portal-app input, .portal-app select, .portal-app textarea { font-size: 16px; min-height: 44px; max-width: 100%; }
+  .catalog-view, .catalog-view > *, .catalog-view .product-row-body { min-width: 0; }
+  .catalog-results-toolbar { flex-wrap: wrap; gap: 12px; }
+  .catalog-results-toolbar > div { max-width: 100%; flex-wrap: wrap; }
+  .catalog-view select { min-width: 0; text-overflow: ellipsis; }
+  .catalog-view .catalog-type-filter-button { min-height: 44px; }
+  .portal-topbar { padding-top: env(safe-area-inset-top); }
+  .portal-main { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+}

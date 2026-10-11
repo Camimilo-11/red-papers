@@ -1,11 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
-import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
-import { ResearchStage } from './ResearchStage';
+import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ensurePrioritySchoolMascotsDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { useMascotHandoff } from './mascotHandoff';
 import type { MascotHandoff } from './mascotHandoff';
 import './MascotHandoff.css';
+import { useMotionPreference } from './useMotionPreference';
+
+const LazyResearchStage = lazy(() => import('./ResearchStage').then(({ ResearchStage }) => ({ default: ResearchStage })));
+
+function SchoolStageFallback({ onSelect, touchLayout }: { onSelect: (school: SchoolConfig) => void; touchLayout: boolean }) {
+  const trackHeight = touchLayout ? '700svh' : 'calc(100svh - var(--landing-header-height) + 910svh)';
+  return <div id="escuelas" className="institutional-school-stage-fallback" style={{ height: trackHeight }} aria-label="Escuelas disponibles">
+    {SCHOOLS.map((school) => <section key={school.code} className="institutional-school-stage-fallback-card" style={{ '--school-accent': school.accent } as React.CSSProperties}>
+      <img src={SCHOOL_LOGOS[school.code]} width={72} height={72} alt="" />
+      <p>{school.code === 'ECIAA' ? 'ECAA' : school.code}</p>
+      <h2>{school.name}</h2>
+      <button type="button" onClick={() => onSelect(school)}>Ver investigaciones y proyectos <span aria-hidden="true">→</span></button>
+    </section>)}
+  </div>;
+}
 
 const INTRO_TIMING_MS = {
   intro: 1500,
@@ -82,6 +96,12 @@ function markIntroStarted() {
 }
 
 function getInitialPhase(): IntroPhase {
+  const startup = window as Window & { __SIMAPC_STARTUP_END_AT?: number };
+  if (typeof startup.__SIMAPC_STARTUP_END_AT === 'number') {
+    markIntroStarted();
+    return 'done';
+  }
+
   try {
     if (window.sessionStorage.getItem(INTRO_STORAGE_KEY) === 'started') return 'done';
   } catch {
@@ -219,10 +239,17 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
     SCHOOLS.map(() => phase === 'done' || phase === 'reduced'),
   );
   const [logosReady, setLogosReady] = useState(false);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useMotionPreference();
   const scrollY = useMotionValue(window.scrollY);
   const handoff = useMascotHandoff();
   const [scrollReady, setScrollReady] = useState(false);
+  const [touchLayout, setTouchLayout] = useState(() => window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches);
+  useEffect(() => {
+    const query = window.matchMedia('(pointer: coarse), (max-width: 1024px)');
+    const change = () => setTouchLayout(query.matches);
+    query.addEventListener('change', change);
+    return () => query.removeEventListener('change', change);
+  }, []);
   const rootRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const emblemsRef = useRef<HTMLDivElement>(null);
@@ -240,11 +267,20 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
   useEffect(() => {
     let mounted = true;
-    void ensureSchoolLogosDecoded().then((ready) => { if (mounted) setLogosReady(ready); });
+    void ensureFloatingSchoolLogosDecoded().then((ready) => {
+      if (mounted) {
+        setLogosReady(ready);
+        void ensurePrioritySchoolMascotsDecoded();
+      }
+    });
     return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
+    if (phase === 'done' && logosReady) enableNearbySchoolMascotPrefetch();
+  }, [phase, logosReady]);
+
+  useLayoutEffect(() => {
     const hero = heroRef.current;
     const overlay = emblemsRef.current;
     if (!hero || !overlay) return;
@@ -298,7 +334,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
     setVisibleEmblems(SCHOOLS.map(() => true));
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (phase === 'reduced') {
       const finishTimer = window.setTimeout(() => setPhase('done'), INTRO_TIMING_MS.reducedFade);
       return () => window.clearTimeout(finishTimer);
@@ -307,6 +343,8 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
     introActiveRef.current = true;
     const timers: number[] = [];
+    // Start with the first painted frame, not during a potentially slow initial commit.
+    const firstFrame = requestAnimationFrame(() => {
     timers.push(window.setTimeout(() => setPhase('logo'), INTRO_TIMING_MS.words));
     timers.push(window.setTimeout(() => setPhase('transition'), INTRO_TIMING_MS.intro));
     timers.push(window.setTimeout(() => setContentVisible(true), INTRO_TIMING_MS.contentStart));
@@ -320,6 +358,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         setVisibleEmblems((current) => current.map((visible, itemIndex) => itemIndex === index || visible));
       }, INTRO_TIMING_MS.emblemsStart + index * INTRO_TIMING_MS.emblemStagger));
     });
+    });
 
     introTimersRef.current = timers;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -327,6 +366,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
     };
     window.addEventListener('keydown', onKeyDown);
     return () => {
+      cancelAnimationFrame(firstFrame);
       timers.forEach(window.clearTimeout);
       introTimersRef.current = [];
       window.removeEventListener('keydown', onKeyDown);
@@ -355,7 +395,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         completeIntro();
       }}
     >
-      {scrollReady && <LandingScrollDriver value={scrollY} />}
+      {scrollReady && !touchLayout && <LandingScrollDriver value={scrollY} />}
       <header className="institutional-landing-header" aria-label="Universidad Yachay Tech">
         <span className="institutional-landing-header-space" aria-hidden="true" />
         <img
@@ -404,13 +444,17 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
         </div>
       </section>
 
-      <div ref={emblemsRef} className="institutional-landing-hero-emblems mascot-handoff-logos" aria-hidden="true" data-in-view="false">
+      <div ref={emblemsRef} className="institutional-landing-hero-emblems mascot-handoff-logos" aria-hidden="true" data-in-view="false" data-assets-ready={logosReady}>
         {SCHOOLS.map((school, index) => (
           <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} handoff={handoff} />
         ))}
       </div>
 
-      <ResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} />
+      {phase === 'done' ? (
+        <Suspense fallback={<SchoolStageFallback onSelect={onSelect} touchLayout={touchLayout} />}>
+          <LazyResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} />
+        </Suspense>
+      ) : <SchoolStageFallback onSelect={onSelect} touchLayout={touchLayout} />}
 
       <footer ref={footerRef} className="institutional-landing-footer" data-revealed="false" aria-label="Enlaces institucionales">
         <div className="institutional-landing-footer-ribbon" aria-hidden="true">
