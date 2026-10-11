@@ -263,7 +263,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   };
 
   if (!selectedSchool) {
-    return <InstitutionalLanding onSelect={handleSchoolSelect} />;
+    return <InstitutionalLanding onSelect={handleSchoolSelect} replayIntroOnEntry />;
   }
 
   // Si se encuentra en la pantalla de acceso del boceto 03

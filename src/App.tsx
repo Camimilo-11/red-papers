@@ -25,6 +25,7 @@ function currentSchoolFromSavedSession(): SchoolConfig | null {
 export default function App() {
   const [selectedSchool, setSelectedSchool] = useState<SchoolConfig | null>(currentSchoolFromSavedSession);
   const mobileSchoolSelectionPending = useRef(false);
+  const returningToSchools = useRef(false);
   const selectSchool = useCallback((school: SchoolConfig) => {
     const mobile = window.matchMedia('(max-width: 760px)').matches;
     if (mobile && mobileSchoolSelectionPending.current) return;
@@ -49,6 +50,7 @@ export default function App() {
   const returnToSchools = useCallback(() => {
     const state = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
     window.history.pushState({ ...state, [APP_HISTORY_KEY]: { screen: 'schools' } satisfies AppHistoryEntry }, '');
+    returningToSchools.current = true;
     setSelectedSchool(null);
   }, []);
 
@@ -67,6 +69,7 @@ export default function App() {
       const entry = event.state?.[APP_HISTORY_KEY] as AppHistoryEntry | undefined;
       if (!entry) return;
       if (entry.screen === 'schools') {
+        returningToSchools.current = true;
         setSelectedSchool(null);
         return;
       }
@@ -111,7 +114,7 @@ export default function App() {
   }, [selectedSchool]);
 
   if (!selectedSchool) {
-    return <InstitutionalLanding onSelect={selectSchool} />;
+    return <InstitutionalLanding onSelect={selectSchool} replayIntroOnEntry={returningToSchools.current} />;
   }
 
   return (

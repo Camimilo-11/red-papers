@@ -102,20 +102,24 @@ function markIntroStarted() {
   }
 }
 
-function getInitialPhase(): IntroPhase {
-  const startup = window as Window & { __SIMAPC_STARTUP_END_AT?: number };
-  if (typeof startup.__SIMAPC_STARTUP_END_AT === 'number') {
-    markIntroStarted();
-    return 'done';
-  }
+function getInitialPhase(replayIntro: boolean): IntroPhase {
+  // The startup shell handles the first page load. Returning from the portal
+  // explicitly replays the intro even when that visit is already remembered.
+  if (!replayIntro) {
+    const startup = window as Window & { __SIMAPC_STARTUP_END_AT?: number };
+    if (typeof startup.__SIMAPC_STARTUP_END_AT === 'number') {
+      markIntroStarted();
+      return 'done';
+    }
 
-  try {
-    if (window.sessionStorage.getItem(INTRO_STORAGE_KEY) === 'started') return 'done';
-  } catch {
+    try {
+      if (window.sessionStorage.getItem(INTRO_STORAGE_KEY) === 'started') return 'done';
+    } catch {
+      if (introStartedInMemory) return 'done';
+    }
+
     if (introStartedInMemory) return 'done';
   }
-
-  if (introStartedInMemory) return 'done';
   let reducedMotion = false;
   try {
     reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -322,15 +326,20 @@ function LandingScrollDriver({ value }: { value: MotionValue<number> }) {
   return null;
 }
 
-export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolConfig) => void }) {
-  const [phase, setPhase] = useState<IntroPhase>(getInitialPhase);
+export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
+  onSelect: (school: SchoolConfig) => void;
+  replayIntroOnEntry?: boolean;
+}) {
+  const replayIntro = useRef(replayIntroOnEntry).current;
+  const [phase, setPhase] = useState<IntroPhase>(() => getInitialPhase(replayIntro));
+  const introVisible = phase === 'intro' || phase === 'logo' || phase === 'transition';
   const [contentVisible, setContentVisible] = useState(phase === 'done' || phase === 'reduced');
   const [visibleEmblems, setVisibleEmblems] = useState<boolean[]>(() =>
     SCHOOLS.map(() => phase === 'done' || phase === 'reduced'),
   );
   const [logosReady, setLogosReady] = useState(false);
   const reducedMotion = useMotionPreference();
-  const scrollY = useMotionValue(window.scrollY);
+  const scrollY = useMotionValue(replayIntro ? 0 : window.scrollY);
   const handoff = useMascotHandoff();
   const [scrollReady, setScrollReady] = useState(false);
   const [touchLayout, setTouchLayout] = useState(() => window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches);
@@ -354,6 +363,47 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const footerRef = useRef<HTMLElement>(null);
   const introTimersRef = useRef<number[]>([]);
   const introActiveRef = useRef(phase === 'intro');
+
+  useLayoutEffect(() => {
+    if (!replayIntro) return;
+    // A new welcome scene has progress zero. Do not restore the portal's scroll
+    // position into it, which would start the mascot handoff behind the logos.
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    const resetScroll = () => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      scrollY.set(0);
+    };
+    handoff.progress.set(0);
+    resetScroll();
+    // History traversal can restore its scroll after React's layout effects.
+    const frame = requestAnimationFrame(resetScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.history.scrollRestoration = previousRestoration;
+    };
+  }, [handoff.progress, replayIntro, scrollY]);
+
+  useLayoutEffect(() => {
+    if (!replayIntro || !introVisible) return;
+    // Keep gestures and browser scroll restoration from moving the welcome
+    // scene underneath the return intro. Normal scrolling resumes at its end.
+    const root = rootRef.current;
+    const blockGesture = (event: Event) => event.preventDefault();
+    const holdScroll = () => {
+      if (window.scrollY !== 0) window.scrollTo({ top: 0, behavior: 'instant' });
+      scrollY.set(0);
+    };
+    root?.addEventListener('wheel', blockGesture, { passive: false, capture: true });
+    root?.addEventListener('touchmove', blockGesture, { passive: false, capture: true });
+    window.addEventListener('scroll', holdScroll, { passive: true });
+    holdScroll();
+    return () => {
+      root?.removeEventListener('wheel', blockGesture, true);
+      root?.removeEventListener('touchmove', blockGesture, true);
+      window.removeEventListener('scroll', holdScroll);
+    };
+  }, [introVisible, replayIntro, scrollY]);
 
   useEffect(() => {
     let secondFrame = 0;
@@ -514,7 +564,6 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const introVisible = phase === 'intro' || phase === 'logo' || phase === 'transition';
   const pageClasses = [
     'institutional-landing',
     `is-${phase}`,
@@ -581,6 +630,11 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
             La producción científica y la comunidad investigadora de Yachay Tech, en un solo lugar.
           </p>
           <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(4)} href="#escuelas" onClick={(event) => {
+            if (replayIntro && introVisible) {
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
             if (!mobileTransition) return;
             event.preventDefault();
             event.stopPropagation();
