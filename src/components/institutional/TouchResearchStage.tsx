@@ -160,8 +160,12 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY }: {
     const pointerDown = (event: PointerEvent) => {
       if (event.pointerType !== 'touch') return;
       const target = event.target as HTMLElement;
-      const { start, height } = geometry.current;
-      const inTour = !!target.closest('.touch-school-stage') && window.scrollY >= start - 1 && window.scrollY <= start + 6 * height + 1;
+      const stage = target.closest<HTMLElement>('.touch-school-stage');
+      const stageBounds = stage?.getBoundingClientRect();
+      // At the final snap, mobile browser chrome can make scrollY differ slightly
+      // from the stage's measured 100svh height. Use the actual hit stage instead
+      // of excluding the last school with a calculated scroll limit.
+      const inTour = !!stageBounds && stageBounds.top < window.innerHeight && stageBounds.bottom > 0;
       down = { x: event.clientX, y: event.clientY, inTour, inHero: !!target.closest('.institutional-landing-hero') };
     };
     const pointerUp = (event: PointerEvent) => {

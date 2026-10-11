@@ -14,7 +14,7 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
 .touch-school-slide, .touch-school-handoff-layout { position: absolute; z-index: 1; inset: calc(var(--landing-header-height) + 76px) max(20px, env(safe-area-inset-right)) calc(84px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 210px minmax(0, 1fr); gap: 8px; min-width: 0; }
 .touch-school-copy { position: relative; z-index: 2; min-width: 0; }
 .touch-school-slide { will-change: transform, opacity; }
-.touch-school-identity { display: flex; align-items: center; gap: 12px; height: 44px; margin-bottom: 10px; }
+.touch-school-identity { --touch-school-logo-size: 44px; display: flex; align-items: center; gap: 12px; height: 44px; margin-bottom: 10px; }
 .touch-school-identity img { width: 44px; height: 44px; object-fit: contain; background: white; border-radius: 4px; }
 .touch-school-identity p { margin: 0; color: var(--school-ink); font: 800 14px var(--font-sans); letter-spacing: .15em; }
 .touch-school-copy h2 { margin: 0; color: #17191c; font: 800 28px/1.14 var(--font-sans); letter-spacing: .015em; text-transform: uppercase; overflow-wrap: break-word; text-wrap: balance; }
@@ -57,6 +57,7 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
 }
 @media (max-width: 380px) {
   .touch-school-slide, .touch-school-handoff-layout { grid-template-rows: 212px minmax(0, 1fr); inset-inline: 16px; }
+  .touch-school-identity { --touch-school-logo-size: 32px; }
   .touch-school-copy h2 { font-size: 28px; letter-spacing: 0; }
   .touch-school-cta { left: 0; width: 100%; }
 }
@@ -86,7 +87,7 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
   .touch-school-navigation button { height: 46px; }
   .touch-school-slide, .touch-school-handoff-layout { inset: calc(var(--landing-header-height) + 64px) max(24px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 22px; }
   .touch-school-copy { grid-column: 1; padding-bottom: 70px; }
-  .touch-school-identity { height: 32px; margin-bottom: 8px; }
+  .touch-school-identity { --touch-school-logo-size: 32px; height: 32px; margin-bottom: 8px; }
   .touch-school-identity img { width: 32px; height: 32px; }
   .touch-school-copy h2 { font-size: 28px; }
   .touch-school-mascot { grid-row: 1; grid-column: 2; }
@@ -147,6 +148,7 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
     border-radius: 999px;
     font-size: 10px;
     touch-action: manipulation;
+    isolation: isolate;
   }
   .touch-school-navigation button[aria-current] {
     border-color: var(--school-accent);
@@ -163,7 +165,12 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
     background: var(--school-accent);
     content: '';
   }
-  .touch-school-navigation img { width: 28px; height: 28px; flex: 0 0 28px; }
+  .touch-school-navigation img { width: 28px; height: 28px; flex: 0 0 28px; background: transparent; mix-blend-mode: multiply; }
+  .touch-school-identity { position: relative; isolation: isolate; }
+  .touch-school-identity::before { position: absolute; z-index: 0; inset: 0 auto 0 0; width: var(--touch-school-logo-size, 44px); border-radius: 4px; background: color-mix(in srgb, var(--school-accent) 8%, white); content: ''; }
+  .touch-school-identity img,
+  .touch-school-identity p { position: relative; z-index: 1; }
+  .touch-school-identity img { background: transparent; mix-blend-mode: multiply; }
   .touch-school-slide,
   .touch-school-handoff-layout {
     inset: calc(var(--landing-header-height) + 12px) max(16px, env(safe-area-inset-right)) calc(178px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
