@@ -8,6 +8,8 @@
 }
 .research-stage-track { position: relative; width: 100%; height: 700svh; min-height: 700svh; }
 .research-stage {
+  --research-stage-mascot-size: min(33vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 48px));
+  --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(12px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
   position: sticky;
   z-index: 2;
   top: 0;
@@ -57,10 +59,13 @@
 .research-stage-copy-stack {
   position: absolute;
   z-index: 4;
-  top: 24%;
-  bottom: 15%;
+  top: calc(var(--landing-header-height) + 61px + 24px);
+  bottom: 24px;
   left: max(34px, calc((100vw - 1320px) / 2));
   width: min(760px, 59%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   pointer-events: none;
 }
 .research-stage-copy-stack::before {
@@ -140,9 +145,9 @@
 .research-stage-mascot-slot {
   position: absolute;
   z-index: 3;
-  top: 16%;
+  top: var(--research-stage-mascot-top);
   left: 64%;
-  width: min(33vw, 450px);
+  width: var(--research-stage-mascot-size);
   aspect-ratio: 1;
   pointer-events: none;
 }
@@ -168,9 +173,9 @@
 .research-stage-mascot-measure {
   position: absolute;
   z-index: 0;
-  top: 16%;
+  top: var(--research-stage-mascot-top);
   left: 64%;
-  width: min(33vw, 450px);
+  width: var(--research-stage-mascot-size);
   aspect-ratio: 1;
   visibility: hidden;
   pointer-events: none;
@@ -178,9 +183,9 @@
 .research-stage-mascot-flash {
   position: absolute;
   z-index: 4;
-  top: 16%;
+  top: var(--research-stage-mascot-top);
   left: 64%;
-  width: min(33vw, 450px);
+  width: var(--research-stage-mascot-size);
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle at center, #fff 0%, rgb(255 255 255 / 88%) 15%, rgb(255 255 255 / 0%) 58%);
@@ -254,6 +259,10 @@
 .research-stage-scrollport:focus-visible .research-stage { outline: 3px solid #17191c; outline-offset: -3px; }
 
 @media (max-width: 1000px) and (min-width: 761px) {
+  .research-stage {
+    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 48px));
+    --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(12px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
+  }
   .research-stage-navigation { width: calc(100vw - 24px); }
   .research-stage-navigation ol { gap: 5px; }
   .research-stage-school-button { gap: 4px; padding-right: 5px; padding-left: 5px; }
@@ -261,7 +270,18 @@
   .research-stage-copy-stack { width: 67%; }
   .research-stage-mascot-slot,
   .research-stage-mascot-measure,
-  .research-stage-mascot-flash { left: 66%; width: 32vw; }
+  .research-stage-mascot-flash { left: 66%; }
+}
+
+@media (min-width: 761px) and (max-height: 700px) {
+  .research-stage {
+    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 40px));
+    --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(10px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
+  }
+  .research-stage-copy-stack { top: calc(var(--landing-header-height) + 61px + 14px); bottom: 18px; }
+  .research-stage-title-row h2 { font-size: clamp(34px, 6.2svh, 46px); }
+  .research-stage-bottom { margin-top: 20px; }
+  .research-stage-bottom button { min-height: 50px; font-size: 18px; }
 }
 @media (max-width: 760px) {
   .research-stage-copy-stack {
