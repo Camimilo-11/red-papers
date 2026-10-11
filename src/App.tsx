@@ -98,9 +98,9 @@ export default function App() {
     if (selectedSchool) {
       hide();
     } else {
-      void ensureFloatingSchoolLogosDecoded().then((ready) => {
+      const startup = window as Window & { __SIMAPC_STARTUP_END_AT?: number; __SIMAPC_STARTUP_PAINTED?: Promise<void> };
+      void Promise.all([ensureFloatingSchoolLogosDecoded(), startup.__SIMAPC_STARTUP_PAINTED]).then(([ready]) => {
         if (!ready || cancelled) return;
-        const startup = window as Window & { __SIMAPC_STARTUP_END_AT?: number };
         const delay = Math.max(0, (startup.__SIMAPC_STARTUP_END_AT ?? performance.now()) - performance.now());
         hideTimer = window.setTimeout(hide, delay);
       });
