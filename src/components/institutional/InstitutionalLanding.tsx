@@ -144,12 +144,13 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
 
 const handoffEase = cubicBezier(.22, 1, .36, 1);
 
-function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, handoff }: {
+function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, touchLayout, handoff }: {
   school: SchoolConfig;
   index: number;
   visible: boolean;
   scrollY: MotionValue<number>;
   reducedMotion: boolean;
+  touchLayout: boolean;
   handoff: MascotHandoff;
 }) {
   const position = emblemPositions[index];
@@ -157,9 +158,12 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
   const sourceX = useMotionValue(0);
   const sourceY = useMotionValue(0);
   const sourceSize = useMotionValue<number>(position.size);
-  const travel = useTransform(handoff.progress, [.02, .84 + index * .012], [0, 1], { ease: handoffEase });
+  // Let the logos drift toward the mascot, then fade while they are still apart.
+  // The constellation takes over the focal point instead of a stack of logo tiles.
+  const travelAmount = touchLayout ? .28 : .38;
+  const travel = useTransform(handoff.progress, [.02, .76], [0, travelAmount], { ease: handoffEase });
   const angle = parseFloat(position.rotation) * Math.PI / 180;
-  const travelAt = (progress: number) => handoffEase(Math.min(1, Math.max(0, (progress - .02) / (.82 + index * .012))));
+  const travelAt = (progress: number) => travelAmount * handoffEase(Math.min(1, Math.max(0, (progress - .02) / .74)));
   // Subscribe after arrival is resolved, avoiding a stale travel value on reverse scroll.
   const positionInputs = [handoff.progress, handoff.targetX, handoff.targetY, sourceX, sourceY];
   // The enclosing reveal keeps its original rotation; compensate its coordinates
@@ -179,7 +183,11 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
   });
   const scale = useTransform(() => reducedMotion ? 1 : 1 + (40 / sourceSize.get() - 1) * travel.get());
   const rotate = useTransform(() => reducedMotion ? 0 : -parseFloat(position.rotation) * travel.get());
-  const opacity = useTransform(handoff.progress, [0, .82, .96, 1], [1, 1, 0, 0]);
+  const opacity = useTransform(
+    handoff.progress,
+    touchLayout ? [0, .08, .25, .4] : [0, .58, .72, .8],
+    [1, 1, .35, 0],
+  );
 
   useEffect(() => {
     const anchor = anchorRef.current;
@@ -452,7 +460,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
 
       <div ref={emblemsRef} className="institutional-landing-hero-emblems mascot-handoff-logos" aria-hidden="true" data-in-view="false" data-assets-ready={logosReady}>
         {SCHOOLS.map((school, index) => (
-          <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} handoff={handoff} />
+          <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} touchLayout={touchLayout} handoff={handoff} />
         ))}
       </div>
 

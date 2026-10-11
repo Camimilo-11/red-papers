@@ -9,6 +9,7 @@ import { RESEARCH_LINE_MOTIFS, useBackdropMotionVisibility } from '../dashboard/
 import './ResearchStage.css';
 import { TouchResearchStage } from './TouchResearchStage';
 import { useMotionPreference } from './useMotionPreference';
+import { ConstellationSparkles } from './ConstellationSparkles';
 
 export const STAGE_RESEARCH_LINES = SCHOOLS.reduce((lines, school) => {
   lines[school.code] = RESEARCH_STAGE_SLIDES[school.code].map((slide) => slide.line);
@@ -327,7 +328,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
   };
   useMotionValueEvent(arrival, 'change', (value) => {
     handoff.progress.set(value);
-    // A brief pulse at the merge point, also when retracing the journey upward.
+    // A brief constellation pulse replaces the white flash at the mascot handoff.
     if ((previousArrival.current < .88) !== (value < .88)) {
       flashAnimation.current.forEach((control) => control.stop());
       flashScale.set(.6);
@@ -432,7 +433,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
         {STAGE_PLANES.map((plane, index) => <StageSlide key={`${plane.school.code}-${index}`} index={index} timeline={timeline} live={live} handoff={handoff} jumpFrom={jumpFrom} jumpTo={jumpTo} jumpBlend={jumpBlend} registerHost={registerHost} onSelectSchool={onSelect} />)}
         <motion.div className="research-stage-preview research-stage-motif-camera" style={{ opacity: previewOpacity }} aria-hidden="true"><div ref={previewHost} className="research-stage-motif-ambient" /></motion.div>
         <motion.div className="research-stage-mascot-slot research-stage-base-mascot" style={{ opacity: baseOpacity, scale: baseScale }} aria-hidden="true"><Mascot src={BASE_MASCOT} /></motion.div>
-        <motion.div className="research-stage-mascot-slot research-stage-mascot-flash" style={{ opacity: flashOpacity, scale: flashScale }} aria-hidden="true" />
+        <motion.div className="research-stage-mascot-slot research-stage-mascot-flash" style={{ opacity: flashOpacity, scale: flashScale }} aria-hidden="true"><ConstellationSparkles /></motion.div>
       </motion.div>}
       {logosReady && <motion.span className="research-stage-scroll-hint" style={{ opacity: hintOpacity, x: '-50%', y: hintY }}>Desliza <span aria-hidden="true">↓</span></motion.span>}
       {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}

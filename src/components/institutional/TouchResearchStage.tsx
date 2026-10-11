@@ -7,6 +7,7 @@ import { ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolM
 import { BASE_MASCOT, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
 import { SchoolGraphBackdrop } from '../SchoolGraphBackdrop';
 import type { MascotHandoff } from './mascotHandoff';
+import { ConstellationSparkles } from './ConstellationSparkles';
 
 const EASE = [.22, 1, .36, 1] as const;
 const label = 'Ver investigaciones y proyectos';
@@ -89,7 +90,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY }: {
       entered.current = true;
       entry.current?.stop();
       entry.current = animate(handoff.progress, [0, .72, .84, 1], { duration: .9, times: [0, .55, .7, 1], ease: EASE });
-      animate(flash, [0, 1, 0], { duration: .3, delay: .54, ease: EASE });
+      animate(flash, [0, 1, 0], { duration: .34, delay: .32, ease: EASE });
     } else if (next > 0 || handoff.progress.get() === 0) {
       entered.current = true;
       entry.current?.stop();
@@ -216,7 +217,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY }: {
         {SCHOOLS.map((school, index) => <TouchSlide key={`${school.code}-0`} school={school} active={index === activeIndex} handoff={handoff} onSelect={onSelect} />)}
         <div className="touch-school-handoff-layout" aria-hidden="true"><div /><div className="touch-school-mascot" ref={measurement}>
           <motion.div className="touch-school-base" style={{ opacity: baseOpacity, scale: baseScale }}><img src={BASE_MASCOT} width={768} height={768} alt="" /></motion.div>
-          <motion.span className="touch-school-flash" style={{ opacity: flash }} />
+          <motion.span className="touch-school-flash" style={{ opacity: flash }}><ConstellationSparkles /></motion.span>
         </div></div>
       </>}
     </div>
