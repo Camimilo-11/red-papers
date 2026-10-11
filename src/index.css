@@ -1784,16 +1784,9 @@ body {
   --landing-total-ms: 2300ms;
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100svh;
   min-height: 100vh;
   min-height: 100svh;
-  overflow-y: auto;
   overflow-x: clip;
-  overscroll-behavior-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-padding: 0;
-  scrollbar-width: thin;
   background: #fff;
   color: #17191c;
   isolation: isolate;
@@ -1804,10 +1797,9 @@ body {
 .institutional-landing *::after { box-sizing: border-box; }
 
 .institutional-landing-header {
-  position: absolute;
+  position: sticky;
   z-index: 10;
   top: 0;
-  left: 0;
   height: var(--landing-header-height);
   width: 100%;
   background: var(--yt-blue, #24618e);
@@ -1816,7 +1808,7 @@ body {
 .institutional-landing-header-space { display: block; height: 100%; }
 
 .institutional-landing-brand-logo {
-  position: absolute;
+  position: fixed;
   z-index: 32;
   top: 0;
   left: 50%;
@@ -1939,7 +1931,6 @@ body {
   overflow: clip;
   opacity: 0;
   transition: opacity 350ms var(--landing-ease);
-  scroll-snap-align: start;
 }
 
 .institutional-landing-hero[data-assets-ready="true"] { opacity: 1; }
@@ -2172,7 +2163,6 @@ body {
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 350ms var(--landing-ease), transform 350ms var(--landing-ease);
-  scroll-snap-align: start;
 }
 
 .institutional-landing-footer[data-revealed="true"] { opacity: 1; transform: translateY(0); }
