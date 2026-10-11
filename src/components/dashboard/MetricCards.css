@@ -128,6 +128,10 @@
     border-radius: 16px;
   }
 
+  .school-summary.school-summary-overview .school-summary-emblem {
+    display: none;
+  }
+
   .school-summary-heading {
     gap: 10px;
     margin-bottom: 8px;
