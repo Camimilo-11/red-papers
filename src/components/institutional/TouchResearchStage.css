@@ -106,6 +106,74 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
   .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(6) { left: 63% !important; top: 79% !important; }
   .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(7) { left: 78% !important; top: 82% !important; }
 }
+/* On phone-sized screens, keep every school reachable in a fixed thumb zone. */
+@media (max-width: 760px) {
+  .touch-school-navigation {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 8;
+    overflow: visible;
+    padding: 6px max(10px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    border-top: 1px solid rgb(38 42 46 / 12%);
+    background: rgb(255 255 255 / 94%);
+    touch-action: manipulation;
+  }
+  .touch-school-navigation ol {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 4px 0;
+    padding: 0;
+  }
+  .touch-school-navigation ol::before,
+  .touch-school-navigation ol::after { content: none; }
+  .touch-school-navigation li { min-width: 0; }
+  .touch-school-navigation li:nth-child(-n + 4) { grid-column: span 2; }
+  .touch-school-navigation li:nth-child(5) { grid-column: 2 / span 2; }
+  .touch-school-navigation li:nth-child(6) { grid-column: 4 / span 2; }
+  .touch-school-navigation li:nth-child(7) { grid-column: 6 / span 2; }
+  .touch-school-navigation button {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    height: 44px;
+    gap: 4px;
+    overflow: hidden;
+    padding: 4px 2px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    touch-action: manipulation;
+  }
+  .touch-school-navigation button[aria-current] {
+    border-color: var(--school-accent);
+    background: color-mix(in srgb, var(--school-accent) 10%, white);
+    color: var(--school-ink);
+  }
+  .touch-school-navigation button[aria-current]::after {
+    position: absolute;
+    right: 12%;
+    bottom: 2px;
+    left: 12%;
+    height: 3px;
+    border-radius: 4px;
+    background: var(--school-accent);
+    content: '';
+  }
+  .touch-school-navigation img { width: 28px; height: 28px; flex: 0 0 28px; }
+  .touch-school-slide,
+  .touch-school-handoff-layout {
+    inset: calc(var(--landing-header-height) + 12px) max(16px, env(safe-area-inset-right)) calc(178px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    grid-template-rows: minmax(168px, auto) minmax(0, 1fr);
+    gap: 4px;
+  }
+  .touch-school-copy h2 { font-size: clamp(26px, 7.2vw, 28px); line-height: 1.12; }
+  .touch-school-stage button:focus-visible { outline-color: #17191c; outline-offset: 2px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .institutional-landing-hero { touch-action: pan-y pinch-zoom; }
 }
