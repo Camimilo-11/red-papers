@@ -8,8 +8,9 @@
 }
 .research-stage-track { position: relative; width: 100%; height: 700svh; min-height: 700svh; }
 .research-stage {
-  --research-stage-mascot-size: min(33vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 48px));
-  --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(12px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
+  --research-stage-bars-height: calc(var(--landing-header-height) + 61px);
+  --research-stage-mascot-size: min(33vw, 450px, calc(100svh - var(--research-stage-bars-height) - 24px));
+  --research-stage-mascot-top: calc(var(--research-stage-bars-height) + max(12px, calc((100svh - var(--research-stage-bars-height) - var(--research-stage-mascot-size)) / 2)));
   position: sticky;
   z-index: 2;
   top: 0;
@@ -18,7 +19,7 @@
   margin-bottom: -100svh;
   overflow: hidden;
   isolation: isolate;
-  background: #fff;
+  background: color-mix(in srgb, var(--school-accent) 8%, #fff);
   color: #17191c;
 }
 .research-stage-pastel {
@@ -26,7 +27,7 @@
   z-index: 0;
   inset: 0;
   background: var(--school-accent);
-  opacity: .075;
+  opacity: .035;
   pointer-events: none;
 }
 .research-stage-graph-backdrop {
@@ -56,6 +57,23 @@
   overflow: hidden;
   pointer-events: none;
 }
+.research-stage-brand-bar {
+  position: absolute;
+  z-index: 10;
+  inset: 0 0 auto;
+  height: var(--landing-header-height);
+  display: grid;
+  place-items: center;
+  background: var(--yt-blue, #24618e);
+}
+.research-stage-brand-logo {
+  display: block;
+  width: min(180px, 52vw);
+  height: auto;
+  max-height: 62px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 .research-stage-copy-stack {
   position: absolute;
   z-index: 4;
@@ -69,12 +87,7 @@
   pointer-events: none;
 }
 .research-stage-copy-stack::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: -26px -72px -22px -20px;
-  background: linear-gradient(90deg, #fff 0%, rgb(255 255 255 / 97%) 55%, rgb(255 255 255 / 0%) 100%);
-  pointer-events: none;
+  content: none;
 }
 .research-stage-title-row {
   display: grid;
@@ -260,8 +273,8 @@
 
 @media (max-width: 1000px) and (min-width: 761px) {
   .research-stage {
-    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 48px));
-    --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(12px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
+    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--research-stage-bars-height) - 24px));
+    --research-stage-mascot-top: calc(var(--research-stage-bars-height) + max(12px, calc((100svh - var(--research-stage-bars-height) - var(--research-stage-mascot-size)) / 2)));
   }
   .research-stage-navigation { width: calc(100vw - 24px); }
   .research-stage-navigation ol { gap: 5px; }
@@ -275,8 +288,8 @@
 
 @media (min-width: 761px) and (max-height: 700px) {
   .research-stage {
-    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--landing-header-height) - 54px - 40px));
-    --research-stage-mascot-top: calc(var(--landing-header-height) + 61px + max(10px, calc((100svh - var(--landing-header-height) - 61px - var(--research-stage-mascot-size)) / 2)));
+    --research-stage-mascot-size: min(32vw, 450px, calc(100svh - var(--research-stage-bars-height) - 24px));
+    --research-stage-mascot-top: calc(var(--research-stage-bars-height) + max(12px, calc((100svh - var(--research-stage-bars-height) - var(--research-stage-mascot-size)) / 2)));
   }
   .research-stage-copy-stack { top: calc(var(--landing-header-height) + 61px + 14px); bottom: 18px; }
   .research-stage-title-row h2 { font-size: clamp(34px, 6.2svh, 46px); }
@@ -284,16 +297,17 @@
   .research-stage-bottom button { min-height: 50px; font-size: 18px; }
 }
 @media (max-width: 760px) {
+  .research-stage {
+    --research-stage-bars-height: calc(var(--landing-header-height) + 59px);
+    --research-stage-mascot-size: min(66vw, 280px, calc(100svh - var(--research-stage-bars-height) - 24px));
+    --research-stage-mascot-top: calc(var(--research-stage-bars-height) + 5px);
+  }
   .research-stage-copy-stack {
     top: max(410px, 51%);
     right: 20px;
     bottom: 112px;
     left: 20px;
     width: auto;
-  }
-  .research-stage-copy-stack::before {
-    inset: -16px -20px -18px;
-    background: linear-gradient(180deg, rgb(255 255 255 / 97%), rgb(255 255 255 / 92%) 82%, rgb(255 255 255 / 0%));
   }
   .research-stage-title-row {
     grid-template-columns: 54px minmax(0, 1fr);
@@ -306,9 +320,9 @@
   .research-stage-mascot-slot,
   .research-stage-mascot-measure,
   .research-stage-mascot-flash {
-    top: 150px;
-    left: calc((100% - min(66vw, 280px)) / 2);
-    width: min(66vw, 280px);
+    top: var(--research-stage-mascot-top);
+    left: calc((100% - var(--research-stage-mascot-size)) / 2);
+    width: var(--research-stage-mascot-size);
   }
   .research-stage-graph-backdrop {
     opacity: .45;
@@ -347,10 +361,13 @@
   .research-stage-bottom button { width: 100%; min-height: 56px; gap: 14px; padding: 10px 18px; font-size: 18px; }
 }
 @media (max-width: 760px) and (max-height: 700px) {
+  .research-stage {
+    --research-stage-mascot-size: min(48vw, 210px, calc(100svh - var(--research-stage-bars-height) - 24px));
+  }
   .research-stage-copy-stack { top: 350px; bottom: 98px; }
   .research-stage-mascot-slot,
   .research-stage-mascot-measure,
-  .research-stage-mascot-flash { top: 136px; width: min(48vw, 210px); left: calc((100% - min(48vw, 210px)) / 2); }
+  .research-stage-mascot-flash { top: var(--research-stage-mascot-top); width: var(--research-stage-mascot-size); left: calc((100% - var(--research-stage-mascot-size)) / 2); }
 }
 @media (prefers-reduced-motion: reduce) {
   .institutional-landing { scroll-behavior: auto; }

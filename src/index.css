@@ -1804,19 +1804,19 @@ body {
 .institutional-landing *::after { box-sizing: border-box; }
 
 .institutional-landing-header {
-  position: sticky;
+  position: absolute;
   z-index: 10;
   top: 0;
+  left: 0;
   height: var(--landing-header-height);
   width: 100%;
   background: var(--yt-blue, #24618e);
-  scroll-snap-align: start;
 }
 
 .institutional-landing-header-space { display: block; height: 100%; }
 
 .institutional-landing-brand-logo {
-  position: fixed;
+  position: absolute;
   z-index: 32;
   top: 0;
   left: 50%;

@@ -287,6 +287,16 @@ export function ResearchStage({ onSelect, scrollY, handoff, scrollContainer }: {
       <div className="research-stage" ref={scene} style={schoolStyle(activeSchool)}>
         <div className="research-stage-pastel" aria-hidden="true" />
         {assetsReady && <SchoolGraphBackdrop school={graphSchoolCode(activeSchool)} className="research-stage-graph-backdrop" />}
+        <header className="research-stage-brand-bar" aria-label="Universidad Yachay Tech">
+          <img
+            className="research-stage-brand-logo"
+            src="./assets/yachay-logo-clean.svg"
+            width={731}
+            height={252}
+            alt="Universidad Yachay Tech"
+            draggable={false}
+          />
+        </header>
         <div className="research-stage-mascot-measure" ref={mascotMeasure} aria-hidden="true" />
         {assetsReady && <>
           <motion.div className="research-stage-mascot-slot research-stage-base-mascot" style={{ opacity: baseOpacity, scale: baseScale }} aria-hidden="true"><Mascot src={BASE_MASCOT} /></motion.div>
