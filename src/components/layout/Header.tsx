@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   <a href="#main-content" className="skip-link">Ir al contenido</a>
   <header className="portal-topbar">
    <button className="mobile-menu" aria-label={mobileOpen?'Cerrar menú':'Abrir menú'} aria-expanded={mobileOpen} onClick={()=>setMobileOpen(!mobileOpen)}>{mobileOpen?<X/>:<Menu/>}</button>
-   <div className="topbar-context"><span>SIMAPC</span><span>{school.name}</span></div>
+   <div className="topbar-context"><span>SIMAPC-{school.code === 'ECIAA' ? 'ECAA' : school.code}</span><span>{school.name}</span></div>
    <div className="topbar-actions">
     {p.currentUser ? <>
      <div className="relative" ref={notificationRef}><button className="notification-button" aria-label={`Avisos, ${unread} sin leer`} onClick={()=>setNotificationsOpen(!notificationsOpen)} aria-expanded={notificationsOpen}><Bell size={20}/><span>Avisos</span>{unread>0&&<b>{unread}</b>}</button>

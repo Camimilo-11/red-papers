@@ -18,7 +18,6 @@ export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfi
     <section className="school-summary school-summary-overview" aria-label="Resumen de la escuela" aria-labelledby="school-summary-title">
       <header className="school-summary-heading">
         <div className="school-summary-heading-copy">
-          <span className="school-summary-code">{school.code}</span>
           <h1 id="school-summary-title">La escuela en cifras</h1>
         </div>
         <div className="school-summary-emblem" aria-hidden="true">
