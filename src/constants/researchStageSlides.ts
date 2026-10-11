@@ -14,7 +14,7 @@ const SCHOOL_STAGE_MOTIFS: Record<SchoolCode, OfficialResearchLine> = {
   ECTEA: 'Geomática aplicada a las geociencias',
   ECMC: 'Inteligencia artificial',
   ECQI: 'Química medicinal y farmacología molecular',
-  YTLC: 'Education technology & AI',
+  YTLC: 'Sociolinguistics/Language and Culture',
 };
 
 /** School names share the official configuration; each school has exactly one slide. */
