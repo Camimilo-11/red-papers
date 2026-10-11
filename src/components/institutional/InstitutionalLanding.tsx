@@ -9,6 +9,13 @@ import { useMotionPreference } from './useMotionPreference';
 
 const LazyResearchStage = lazy(() => import('./ResearchStage').then(({ ResearchStage }) => ({ default: ResearchStage })));
 
+export type MobileHandoffLogo = {
+  element: HTMLSpanElement;
+  sourceX: MotionValue<number>;
+  sourceY: MotionValue<number>;
+  sourceSize: MotionValue<number>;
+};
+
 function SchoolStageFallback({ onSelect, touchLayout }: { onSelect: (school: SchoolConfig) => void; touchLayout: boolean }) {
   const trackHeight = touchLayout ? '700svh' : 'calc(100svh - var(--landing-header-height) + 910svh)';
   return <div id="escuelas" className="institutional-school-stage-fallback" style={{ height: trackHeight }} aria-label="Escuelas disponibles">
@@ -144,7 +151,7 @@ function LandingEmblem({ school, size }: { school: SchoolConfig; size: number })
 
 const handoffEase = cubicBezier(.22, 1, .36, 1);
 
-function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, touchLayout, handoff }: {
+function DesktopFloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, touchLayout, handoff }: {
   school: SchoolConfig;
   index: number;
   visible: boolean;
@@ -183,11 +190,7 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
   });
   const scale = useTransform(() => reducedMotion ? 1 : 1 + (40 / sourceSize.get() - 1) * travel.get());
   const rotate = useTransform(() => reducedMotion ? 0 : -parseFloat(position.rotation) * travel.get());
-  const opacity = useTransform(
-    handoff.progress,
-    touchLayout ? [0, .08, .25, .4] : [0, .58, .72, .8],
-    [1, 1, .35, 0],
-  );
+  const opacity = useTransform(handoff.progress, touchLayout ? [0, .08, .25, .4] : [0, .58, .72, .8], [1, 1, .35, 0]);
 
   useEffect(() => {
     const anchor = anchorRef.current;
@@ -204,7 +207,9 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
     observer.observe(overlay);
     observer.observe(anchor);
     measure();
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [position.size, sourceSize, sourceX, sourceY]);
 
   return (
@@ -231,6 +236,83 @@ function FloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion,
   );
 }
 
+function MobileFloatingLandingEmblem({ school, index, visible, scrollY, reducedMotion, handoff, handoffLogos }: {
+  school: SchoolConfig;
+  index: number;
+  visible: boolean;
+  scrollY: MotionValue<number>;
+  reducedMotion: boolean;
+  handoff: MascotHandoff;
+  handoffLogos: Map<SchoolConfig['code'], MobileHandoffLogo>;
+}) {
+  const position = emblemPositions[index];
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const sourceX = useMotionValue(0);
+  const sourceY = useMotionValue(0);
+  const sourceSize = useMotionValue<number>(position.size);
+  const angle = parseFloat(position.rotation) * Math.PI / 180;
+  const logoDelay = index * (40 / 900);
+  const transform = useTransform<number, string>([handoff.progress, handoff.targetX, handoff.targetY, sourceX, sourceY, scrollY], ([progress, targetX, targetY, originX, originY, pageY]) => {
+    if (reducedMotion) return 'none';
+    const travel = handoffEase(Math.min(1, Math.max(0, (progress - logoDelay) / (2 / 3 - logoDelay))));
+    const dx = targetX - originX;
+    const dy = targetY - originY;
+    const translateX = (dx * Math.cos(angle) + dy * Math.sin(angle)) * travel + pageY * Math.sin(angle);
+    const translateY = (-dx * Math.sin(angle) + dy * Math.cos(angle)) * travel + pageY * Math.cos(angle);
+    const scale = 1 - .5 * handoffEase(Math.min(1, Math.max(0, (travel - .6) / .4)));
+    const rotation = -parseFloat(position.rotation) * travel;
+    return `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg) scale(${scale})`;
+  });
+  const opacity = useTransform(handoff.progress, (progress) => {
+    if (reducedMotion) return 1 - Math.min(1, Math.max(0, progress));
+    const travel = handoffEase(Math.min(1, Math.max(0, (progress - logoDelay) / (2 / 3 - logoDelay))));
+    return 1 - handoffEase(Math.min(1, Math.max(0, (travel - .6) / .4)));
+  });
+
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    const overlay = anchor?.parentElement;
+    if (!anchor || !overlay) return;
+    const measure = () => {
+      const rect = anchor.getBoundingClientRect();
+      handoffLogos.set(school.code, { element: anchor, sourceX, sourceY, sourceSize });
+      sourceX.set(rect.left + rect.width / 2);
+      sourceY.set(rect.top + window.scrollY + rect.height / 2);
+      sourceSize.set(rect.width || position.size);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(overlay);
+    observer.observe(anchor);
+    measure();
+    return () => {
+      observer.disconnect();
+      if (handoffLogos.get(school.code)?.element === anchor) handoffLogos.delete(school.code);
+    };
+  }, [handoffLogos, position.size, school.code, sourceSize, sourceX, sourceY]);
+
+  return <span ref={anchorRef} className={`institutional-landing-hero-emblem ${visible ? 'is-visible' : ''}`} data-school={school.code}
+    style={{ left: position.left, top: position.top, '--emblem-rotation': position.rotation, '--emblem-size': `${position.size}px`, '--float-delay': position.floatDelay, '--entry-x': index % 2 === 0 ? '42px' : '-42px', '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg' } as React.CSSProperties}>
+    <motion.span className="institutional-landing-hero-emblem-parallax" style={{ transform, opacity }}>
+      <span className={`institutional-landing-hero-emblem-float ${visible ? 'is-floating' : ''}`}><LandingEmblem school={school} size={position.size} /></span>
+    </motion.span>
+  </span>;
+}
+
+function FloatingLandingEmblem(props: {
+  school: SchoolConfig;
+  index: number;
+  visible: boolean;
+  scrollY: MotionValue<number>;
+  reducedMotion: boolean;
+  touchLayout: boolean;
+  mobileTransition: boolean;
+  handoff: MascotHandoff;
+  handoffLogos: Map<SchoolConfig['code'], MobileHandoffLogo>;
+}) {
+  if (props.mobileTransition) return <MobileFloatingLandingEmblem {...props} />;
+  return <DesktopFloatingLandingEmblem school={props.school} index={props.index} visible={props.visible} scrollY={props.scrollY} reducedMotion={props.reducedMotion} touchLayout={props.touchLayout} handoff={props.handoff} />;
+}
+
 // Start the one scroll observer after the first paint, so its initial geometry
 // read does not force layout inside the intro's first animation frame.
 function LandingScrollDriver({ value }: { value: MotionValue<number> }) {
@@ -252,9 +334,17 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const handoff = useMascotHandoff();
   const [scrollReady, setScrollReady] = useState(false);
   const [touchLayout, setTouchLayout] = useState(() => window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches);
+  const [mobileTransition, setMobileTransition] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  const handoffLogos = useRef(new Map<SchoolConfig['code'], MobileHandoffLogo>());
   useEffect(() => {
     const query = window.matchMedia('(pointer: coarse), (max-width: 1024px)');
     const change = () => setTouchLayout(query.matches);
+    query.addEventListener('change', change);
+    return () => query.removeEventListener('change', change);
+  }, []);
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 760px)');
+    const change = () => setMobileTransition(query.matches);
     query.addEventListener('change', change);
     return () => query.removeEventListener('change', change);
   }, []);
@@ -398,6 +488,10 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const revealStyle = (step: number) => ({
     '--reveal-delay': `${step * INTRO_TIMING_MS.contentStagger}ms`,
   } as React.CSSProperties);
+  const welcomeFadeEnd = reducedMotion ? 1 : 1 / 3;
+  const welcomeOpacity = useTransform(handoff.progress, [0, welcomeFadeEnd], [1, 0]);
+  const welcomeY = useTransform(handoff.progress, [0, welcomeFadeEnd], [0, reducedMotion ? 0 : -16]);
+  const stageCanWarm = mobileTransition && logosReady && (phase === 'logo' || phase === 'transition');
 
   return (
     <main
@@ -443,7 +537,7 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
       )}
 
       <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
-        <div className="institutional-landing-hero-copy">
+        <motion.div className="institutional-landing-hero-copy" style={mobileTransition ? { opacity: welcomeOpacity, y: welcomeY } : undefined}>
           <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>UNIVERSIDAD YACHAY TECH · SIMAPC</p>
           <h1 id="landing-title" className="institutional-landing-title">
             <span className="institutional-landing-title-mask landing-reveal" style={revealStyle(1)}><span>¡BIENVENIDOS!</span></span>
@@ -455,18 +549,18 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
           <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(4)} href="#escuelas">
             Explora nuestras escuelas <span aria-hidden="true">↓</span>
           </a>
-        </div>
+        </motion.div>
       </section>
 
       <div ref={emblemsRef} className="institutional-landing-hero-emblems mascot-handoff-logos" aria-hidden="true" data-in-view="false" data-assets-ready={logosReady}>
         {SCHOOLS.map((school, index) => (
-          <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} touchLayout={touchLayout} handoff={handoff} />
+          <FloatingLandingEmblem key={school.code} school={school} index={index} visible={logosReady && visibleEmblems[index]} scrollY={scrollY} reducedMotion={!!reducedMotion} touchLayout={touchLayout} mobileTransition={mobileTransition} handoff={handoff} handoffLogos={handoffLogos.current} />
         ))}
       </div>
 
-      {phase === 'done' ? (
+      {phase === 'done' || stageCanWarm ? (
         <Suspense fallback={<SchoolStageFallback onSelect={onSelect} touchLayout={touchLayout} />}>
-          <LazyResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} />
+          <LazyResearchStage onSelect={onSelect} scrollY={scrollY} handoff={handoff} initialLogosReady={logosReady} mobileTransitionEnabled={mobileTransition} handoffLogos={handoffLogos.current} interactionEnabled={phase === 'done'} />
         </Suspense>
       ) : <SchoolStageFallback onSelect={onSelect} touchLayout={touchLayout} />}
 

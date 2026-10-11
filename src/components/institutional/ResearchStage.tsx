@@ -10,6 +10,7 @@ import './ResearchStage.css';
 import { TouchResearchStage } from './TouchResearchStage';
 import { useMotionPreference } from './useMotionPreference';
 import { ConstellationSparkles } from './ConstellationSparkles';
+import type { MobileHandoffLogo } from './InstitutionalLanding';
 
 export const STAGE_RESEARCH_LINES = SCHOOLS.reduce((lines, school) => {
   lines[school.code] = RESEARCH_STAGE_SLIDES[school.code].map((slide) => slide.line);
@@ -442,10 +443,18 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
   </div>;
 }
 
-export function ResearchStage({ onSelect, scrollY, handoff }: { onSelect: (school: SchoolConfig) => void; scrollY: MotionValue<number>; handoff: MascotHandoff }) {
+export function ResearchStage({ onSelect, scrollY, handoff, initialLogosReady = false, mobileTransitionEnabled = false, handoffLogos, interactionEnabled = true }: {
+  onSelect: (school: SchoolConfig) => void;
+  scrollY: MotionValue<number>;
+  handoff: MascotHandoff;
+  initialLogosReady?: boolean;
+  mobileTransitionEnabled?: boolean;
+  handoffLogos?: Map<SchoolConfig['code'], MobileHandoffLogo>;
+  interactionEnabled?: boolean;
+}) {
   const reduced = useMotionPreference();
   const [touchLayout, setTouchLayout] = useState(() => window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches);
-  const [logosReady, setLogosReady] = useState(false);
+  const [logosReady, setLogosReady] = useState(initialLogosReady);
   useEffect(() => {
     const query = window.matchMedia('(pointer: coarse), (max-width: 1024px)');
     const update = () => setTouchLayout(query.matches);
@@ -453,11 +462,15 @@ export function ResearchStage({ onSelect, scrollY, handoff }: { onSelect: (schoo
     return () => query.removeEventListener('change', update);
   }, []);
   useEffect(() => {
+    if (initialLogosReady) {
+      setLogosReady(true);
+      return;
+    }
     let mounted = true;
     void Promise.all([ensureSchoolLogosDecoded(), reduced || touchLayout ? Promise.resolve() : prepareMotifs()]).then(([ready]) => { if (mounted) setLogosReady(ready); });
     return () => { mounted = false; };
-  }, [reduced, touchLayout]);
-  if (reduced) return <div id="escuelas" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}><SelectionGrid onSelect={onSelect} reduced /></div>;
-  if (touchLayout) return <TouchResearchStage onSelect={onSelect} logosReady={logosReady} handoff={handoff} scrollY={scrollY} />;
+  }, [initialLogosReady, reduced, touchLayout]);
+  if (reduced && !(touchLayout && mobileTransitionEnabled)) return <div id="escuelas" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}><SelectionGrid onSelect={onSelect} reduced /></div>;
+  if (touchLayout) return <TouchResearchStage onSelect={onSelect} logosReady={logosReady} handoff={handoff} scrollY={scrollY} mobileTransitionEnabled={mobileTransitionEnabled} handoffLogos={handoffLogos} interactionEnabled={interactionEnabled} reducedMotion={reduced} />;
   return <AnimatedStage onSelect={onSelect} logosReady={logosReady} scrollY={scrollY} handoff={handoff} />;
 }
