@@ -11,7 +11,7 @@ const SCHOOL_STAGE_MOTIFS: Record<SchoolCode, OfficialResearchLine> = {
   ECIAA: 'Ciencias Agrícolas',
   ECBI: 'Biología celular, biología molecular y genética',
   ECFN: 'Materiales nanoestructurados, síntesis y caracterización',
-  ECTEA: 'Geología física y aplicada',
+  ECTEA: 'Geomática aplicada a las geociencias',
   ECMC: 'Ciencia de datos',
   ECQI: 'Química medicinal y farmacología molecular',
   YTLC: 'Education technology & AI',
