@@ -375,8 +375,43 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   }, []);
 
   useEffect(() => {
-    if (phase === 'done' && logosReady) enableNearbySchoolMascotPrefetch();
-  }, [phase, logosReady]);
+    // On phones the intro is long enough to warm the nearby mascots without
+    // competing with the first school change. Desktop keeps its existing timing.
+    if (logosReady && (mobileTransition || phase === 'done')) enableNearbySchoolMascotPrefetch();
+  }, [phase, logosReady, mobileTransition]);
+
+  useEffect(() => {
+    if (!mobileTransition) return;
+    let scheduled = false;
+    let cancelled = false;
+    let idleHandle: number | undefined;
+    let fallbackTimer: number | undefined;
+    const unsubscribe = handoff.progress.on('change', (progress) => {
+      if (scheduled || progress < .98) return;
+      scheduled = true;
+      const warmSchoolPortal = () => {
+        idleHandle = undefined;
+        fallbackTimer = undefined;
+        if (cancelled) return;
+        void import('../../PortalApp')
+          .then(({ preloadSchoolEntry }) => preloadSchoolEntry())
+          .catch(() => {});
+      };
+      const idleWindow = window as Window & { requestIdleCallback?: typeof window.requestIdleCallback };
+      if (idleWindow.requestIdleCallback) {
+        idleHandle = idleWindow.requestIdleCallback.call(window, warmSchoolPortal, { timeout: 1200 });
+      } else {
+        fallbackTimer = window.setTimeout(warmSchoolPortal, 250);
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+      const idleWindow = window as Window & { cancelIdleCallback?: typeof window.cancelIdleCallback };
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.call(window, idleHandle);
+      if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer);
+    };
+  }, [handoff.progress, mobileTransition]);
 
   useLayoutEffect(() => {
     const hero = heroRef.current;
@@ -488,9 +523,8 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
   const revealStyle = (step: number) => ({
     '--reveal-delay': `${step * INTRO_TIMING_MS.contentStagger}ms`,
   } as React.CSSProperties);
-  const welcomeFadeEnd = reducedMotion ? 1 : 1 / 3;
-  const welcomeOpacity = useTransform(handoff.progress, [0, welcomeFadeEnd], [1, 0]);
-  const welcomeY = useTransform(handoff.progress, [0, welcomeFadeEnd], [0, reducedMotion ? 0 : -16]);
+  const welcomeOpacity = useTransform(handoff.progress, (progress) => 1 - Math.max(0, Math.min(1, progress)));
+  const welcomeY = useTransform(handoff.progress, (progress) => reducedMotion ? 0 : -16 * handoffEase(Math.max(0, Math.min(1, progress))));
   const stageCanWarm = mobileTransition && logosReady && (phase === 'logo' || phase === 'transition');
 
   return (
@@ -546,7 +580,12 @@ export function InstitutionalLanding({ onSelect }: { onSelect: (school: SchoolCo
           <p className="institutional-landing-subtitle landing-reveal" style={revealStyle(3)}>
             La producción científica y la comunidad investigadora de Yachay Tech, en un solo lugar.
           </p>
-          <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(4)} href="#escuelas">
+          <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(4)} href="#escuelas" onClick={(event) => {
+            if (!mobileTransition) return;
+            event.preventDefault();
+            event.stopPropagation();
+            document.dispatchEvent(new Event('simapc-enter-schools'));
+          }}>
             Explora nuestras escuelas <span aria-hidden="true">↓</span>
           </a>
         </motion.div>

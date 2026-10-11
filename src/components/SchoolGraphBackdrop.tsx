@@ -24,6 +24,9 @@ import { N_NODES, SCHOOL_GRAPH_COLORS, getSchoolGraphs, type SchoolCode } from '
 interface Props {
   school: SchoolCode;
   className?: string;
+  active?: boolean;
+  pauseWhenSettled?: boolean;
+  snapToTarget?: boolean;
   /** Centro del grafo en escritorio, como fracción del contenedor (donde está la mascota). */
   anchorX?: number;
   anchorY?: number;
@@ -36,7 +39,7 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY = 0.52 }: Props) {
+export function SchoolGraphBackdrop({ school, className, active = true, pauseWhenSettled = false, snapToTarget = false, anchorX = 0.78, anchorY = 0.52 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const edgeRefs = useRef<(SVGPathElement | null)[]>([]);
   const bigRef = useRef<SVGPathElement>(null);
@@ -44,15 +47,23 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
   const targetRef = useRef<SchoolCode>(school);
   const anchorRef = useRef({ x: anchorX, y: anchorY });
   const wakeRef = useRef<() => void>(() => {});
+  const sleepRef = useRef<() => void>(() => {});
   const relayoutRef = useRef<() => void>(() => {});
+  const activeRef = useRef(active);
 
   anchorRef.current = { x: anchorX, y: anchorY };
+  activeRef.current = active;
 
   // El cambio de escuela solo actualiza el objetivo y despierta el bucle.
   useEffect(() => {
     targetRef.current = school;
     wakeRef.current();
   }, [school]);
+
+  useEffect(() => {
+    if (active) wakeRef.current();
+    else sleepRef.current();
+  }, [active]);
 
   useEffect(() => {
     relayoutRef.current();
@@ -139,11 +150,20 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
       const target = targetRef.current;
       if (target !== lastTarget) {
         lastTarget = target;
-        for (const s of sets) s.goal = 0;
-        const existing = sets.find((s) => s.code === target);
-        if (existing) existing.goal = 1;
-        else sets.push({ code: target, alpha: 0, goal: 1 });
-        while (sets.length > SET_COUNT) sets.shift();
+        if (snapToTarget) {
+          sets.splice(0, sets.length, { code: target, alpha: 1, goal: 1 });
+          pos.set(targets[target]);
+          const targetColor = hexToRgb(SCHOOL_GRAPH_COLORS[target]);
+          color[0] = targetColor[0];
+          color[1] = targetColor[1];
+          color[2] = targetColor[2];
+        } else {
+          for (const s of sets) s.goal = 0;
+          const existing = sets.find((s) => s.code === target);
+          if (existing) existing.goal = 1;
+          else sets.push({ code: target, alpha: 0, goal: 1 });
+          while (sets.length > SET_COUNT) sets.shift();
+        }
       }
 
       const tp = targets[target];
@@ -165,8 +185,8 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
 
       // posiciones de dibujo (con leve flotación si no hay reducción de movimiento)
       for (let i = 0; i < N_NODES; i++) {
-        px[i] = pos[i * 2] + (reduce ? 0 : Math.sin(t * 0.0006 + phase[i]) * float);
-        py[i] = pos[i * 2 + 1] + (reduce ? 0 : Math.cos(t * 0.00052 + phase[i] * 1.3) * float);
+        px[i] = pos[i * 2] + (reduce || pauseWhenSettled ? 0 : Math.sin(t * 0.0006 + phase[i]) * float);
+        py[i] = pos[i * 2 + 1] + (reduce || pauseWhenSettled ? 0 : Math.cos(t * 0.00052 + phase[i] * 1.3) * float);
         pointText[i] = `${px[i].toFixed(1)} ${py[i].toFixed(1)}`;
       }
 
@@ -217,7 +237,7 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
       last = now;
       const { settled } = render(now, dt);
       // con movimiento reducido y ya asentado, no hace falta seguir dibujando
-      if (reduce && settled) {
+      if ((reduce || pauseWhenSettled) && settled) {
         running = false;
         last = 0;
         return;
@@ -226,12 +246,19 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
     };
 
     const wake = () => {
-      if (running || !visible) return;
+      if (running || !visible || !activeRef.current) return;
       running = true;
       last = 0;
       raf = requestAnimationFrame(frame);
     };
     wakeRef.current = wake;
+    const sleep = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      running = false;
+      last = 0;
+    };
+    sleepRef.current = sleep;
 
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -258,6 +285,7 @@ export function SchoolGraphBackdrop({ school, className, anchorX = 0.78, anchorY
       ro.disconnect();
       document.removeEventListener('visibilitychange', onVis);
       wakeRef.current = () => {};
+      sleepRef.current = () => {};
       relayoutRef.current = () => {};
     };
   }, []);

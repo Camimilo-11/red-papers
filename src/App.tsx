@@ -1,10 +1,13 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { SCHOOLS, type SchoolConfig } from './constants/schools';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
+import { PortalEntryLoading } from './components/institutional/PortalEntryLoading';
 import { YachayLogo } from './components/institutional/SchoolLogo';
 import { ensureFloatingSchoolLogosDecoded } from './assets/schoolLogos';
 
-const PortalApp = lazy(() => import('./PortalApp'));
+let portalAppModule: Promise<typeof import('./PortalApp')> | undefined;
+const loadPortalApp = () => portalAppModule ??= import('./PortalApp');
+const PortalApp = lazy(loadPortalApp);
 const SESSION_USER_KEY = 'red_papers_current_user_v1';
 const APP_HISTORY_KEY = 'redPapersShell';
 
@@ -21,7 +24,10 @@ function currentSchoolFromSavedSession(): SchoolConfig | null {
 
 export default function App() {
   const [selectedSchool, setSelectedSchool] = useState<SchoolConfig | null>(currentSchoolFromSavedSession);
+  const mobileSchoolSelectionPending = useRef(false);
   const selectSchool = useCallback((school: SchoolConfig) => {
+    const mobile = window.matchMedia('(max-width: 760px)').matches;
+    if (mobile && mobileSchoolSelectionPending.current) return;
     const state = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
     const currentEntry = state[APP_HISTORY_KEY] as AppHistoryEntry | undefined;
     if (currentEntry?.screen !== 'schools') {
@@ -30,7 +36,14 @@ export default function App() {
 
     const nextState = (window.history.state && typeof window.history.state === 'object' ? window.history.state : {}) as Record<string, unknown>;
     window.history.pushState({ ...nextState, [APP_HISTORY_KEY]: { screen: 'school', schoolCode: school.code } satisfies AppHistoryEntry }, '');
-    setSelectedSchool(school);
+    if (mobile) {
+      mobileSchoolSelectionPending.current = true;
+      void loadPortalApp().then(() => setSelectedSchool(school), () => setSelectedSchool(school)).finally(() => {
+        mobileSchoolSelectionPending.current = false;
+      });
+    } else {
+      setSelectedSchool(school);
+    }
   }, []);
 
   const returnToSchools = useCallback(() => {
@@ -102,7 +115,9 @@ export default function App() {
   }
 
   return (
-    <Suspense fallback={<main className="portal-loading" role="status" aria-live="polite"><YachayLogo width={112} /><span>Abriendo el espacio de {selectedSchool.shortName}…</span></main>}>
+    <Suspense fallback={window.matchMedia('(max-width: 760px)').matches
+      ? <PortalEntryLoading />
+      : <main className="portal-loading" role="status" aria-live="polite"><YachayLogo width={112} /><span>Abriendo el espacio de {selectedSchool.shortName}…</span></main>}>
       <PortalApp initialSchool={selectedSchool} onChangeSchool={returnToSchools} />
     </Suspense>
   );
