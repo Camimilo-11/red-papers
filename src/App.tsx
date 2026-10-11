@@ -1,5 +1,7 @@
 import { RoleManagementView } from './components/roles/RoleManagementView';
 import { ProfileSettingsView } from './components/profile/ProfileSettingsView';
+import { StudentProfileSettingsView } from './components/profile/StudentProfileSettingsView';
+import { StudentCollaborationsView } from './components/profile/StudentCollaborationsView';
 import { canReview, canDevelop } from './constants/demoAccounts';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { storageService } from './services/storage';
@@ -75,7 +77,7 @@ export default function App() {
       const next = event.state?.redPapers;
       if (!next) return;
       const historyUser = authService.getCurrentUser();
-      if ((next.activeTab==='reviewer'&&!canReview(historyUser)) || (next.activeTab==='traceability'&&!canDevelop(historyUser)) || (next.activeTab==='roles'&&!canDevelop(historyUser)) || (next.activeTab==='settings'&&historyUser?.role!=='teacher')) next.activeTab='dashboard';
+      if ((next.activeTab==='reviewer'&&!canReview(historyUser)) || (next.activeTab==='traceability'&&!canDevelop(historyUser)) || (next.activeTab==='roles'&&!canDevelop(historyUser)) || (next.activeTab==='settings'&&historyUser?.role!=='teacher'&&historyUser?.role!=='student')) next.activeTab='dashboard';
       if(historyUser?.role==='reviewer_demo'){next.isRegisterProductOpen=false;if(next.activeTab==='mine')next.activeTab='dashboard';}
       const signedIn = !!historyUser;
       if (!signedIn) {
@@ -100,7 +102,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', onBack);
   }, []);
 
-  useEffect(()=>{if((activeTab==='mine'&&currentUser?.role==='reviewer_demo')||(activeTab==='reviewer'&&!canReview(currentUser))||(activeTab==='traceability'&&!canDevelop(currentUser))||(activeTab==='roles'&&!canDevelop(currentUser))||(activeTab==='settings'&&currentUser?.role!=='teacher')) setActiveTab('dashboard');},[activeTab,currentUser]);
+  useEffect(()=>{if((activeTab==='mine'&&currentUser?.role==='reviewer_demo')||(activeTab==='reviewer'&&!canReview(currentUser))||(activeTab==='traceability'&&!canDevelop(currentUser))||(activeTab==='roles'&&!canDevelop(currentUser))||(activeTab==='settings'&&currentUser?.role!=='teacher'&&currentUser?.role!=='student')) setActiveTab('dashboard');},[activeTab,currentUser]);
 
   // Cada vista empieza desde arriba; el foco del contenido no debe desplazarlo bajo el encabezado fijo.
   useEffect(()=>{window.scrollTo(0,0);},[activeTab]);
@@ -274,7 +276,7 @@ export default function App() {
         onLogoutClick={handleLogout}
         onSwitchUser={handleSwitchUser}
         onOpenRegisterModal={() => {
-          if(currentUser?.role==='reviewer_demo') return;
+          if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return;
           if (!currentUser) {
             // Si el visitante intenta registrar, le informamos que requiere inicio de sesión docente
             const proceed = confirm(
@@ -294,12 +296,12 @@ export default function App() {
 
       {/* 2. Contenedor de Contenido Principal */}
       <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''}`}>
-        {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>Ver mis registros</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
+        {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>{currentUser?.role==='student'?'Ver mis colaboraciones':'Ver mis registros'}</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
             {/* Banner Institucional con CTA */}
-            <InstitutionalBanner school={selectedSchool} showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            <InstitutionalBanner school={selectedSchool} showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
 
             <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
             <MetricCards metrics={schoolMetrics}/>
@@ -318,11 +320,13 @@ export default function App() {
         )}
 
         {/* Pestaña: Catálogo de Producción Científica (HU05, HU06, HU11) */}
-        {(activeTab === 'catalog' || activeTab === 'mine') && (
+        {activeTab==='mine'&&currentUser?.role==='student'&&<StudentCollaborationsView currentUser={currentUser} products={schoolProducts}/>}
+
+        {(activeTab === 'catalog' || (activeTab === 'mine'&&currentUser?.role!=='student')) && (
           <CatalogView
             key={activeTab + catalogTeacherFilter}
             onlyMine={activeTab === 'mine'}
-            allowRegister={!!currentUser && currentUser.role!=='reviewer_demo'}
+            allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')}
             allProducts={schoolProducts}
             teachers={schoolTeachers}
             currentUserId={currentUser ? currentUser.id : null}
@@ -337,7 +341,7 @@ export default function App() {
             }}
             onProjectUpdated={() => setProducts(storageService.getProducts())}
             onOpenRegister={() => {
-              if(currentUser?.role==='reviewer_demo') return;
+              if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return;
               if (!currentUser) setShowAccessScreen(true);
               else { setEditingProduct(null); setRegisterTypeLocked(false); setIsRegisterProductOpen(true); }
             }}
@@ -364,6 +368,7 @@ export default function App() {
         />}
         {activeTab==='roles' && canDevelop(currentUser) && <RoleManagementView currentUser={currentUser!} onChanged={()=>setCurrentUser(authService.getCurrentUser())}/> }
         {activeTab==='settings' && currentUser?.role==='teacher' && <ProfileSettingsView currentUser={currentUser} onUpdated={user=>{setCurrentUser(user);setTeachers(storageService.getTeachers());}}/>}
+        {activeTab==='settings' && currentUser?.role==='student' && <StudentProfileSettingsView currentUser={currentUser} onUpdated={setCurrentUser}/>}
       </main>
 
       {/* 3. Pie de Página Institucional */}
@@ -375,7 +380,7 @@ export default function App() {
         key={`${currentUser?.id}-${registerType}-${editingProduct?.id || 'new'}-${isRegisterProductOpen}`}
         initialType={registerType}
         lockType={registerTypeLocked}
-        isOpen={isRegisterProductOpen && !!currentUser && currentUser.role!=='reviewer_demo'}
+        isOpen={isRegisterProductOpen && !!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')}
         currentUser={currentUser}
         initialProduct={editingProduct}
         onClose={() => {setIsRegisterProductOpen(false);setEditingProduct(null);setRegisterTypeLocked(false);}}

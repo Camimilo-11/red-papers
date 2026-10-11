@@ -137,7 +137,7 @@ export interface TeacherUser {
   syntheticProfileSeedVersion?: number;
   bio?: string;
   school: string;
-  role: 'teacher' | 'reviewer_demo' | 'developer'; // Revisor como consola demo propuesta
+  role: 'teacher' | 'student' | 'reviewer_demo' | 'developer'; // Perfiles de acceso del portal
   createdAt: string;
 }
 

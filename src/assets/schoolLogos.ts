@@ -1,5 +1,6 @@
 import type { SchoolConfig } from '../constants/schools';
 import { BASE_MASCOT, SCHOOL_MASCOTS } from './schoolMascots';
+import { LOGIN_SCHOOL_LOGOS } from './loginSchoolLogos';
 
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
@@ -16,6 +17,7 @@ export const SCHOOL_LOGOS: Record<SchoolConfig['code'], string> = {
 
 const institutionalImages = [
   ...Object.values(SCHOOL_LOGOS),
+  ...Object.values(LOGIN_SCHOOL_LOGOS).map((logo) => logo.src),
   publicAsset('assets/yachay-logo-clean.svg'),
   BASE_MASCOT,
   ...Object.values(SCHOOL_MASCOTS),

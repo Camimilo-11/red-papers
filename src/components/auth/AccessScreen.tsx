@@ -2,7 +2,8 @@ import React, {useState,useRef,useEffect} from 'react';
 import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
 import type {SchoolMetrics} from '../../types';
-import {SchoolEmblem,SchoolEmblemDepth,YachayLogo} from '../institutional/SchoolLogo';
+import {YachayLogo} from '../institutional/SchoolLogo';
+import {LoginSchoolEmblem} from './LoginSchoolEmblem';
 interface AccessScreenProps {
  school:SchoolConfig; schoolMetrics:SchoolMetrics; teacherCount:number; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
@@ -22,21 +23,22 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
     <h1>Un espacio para<br/><em>su investigación.</em></h1>
     <p className="welcome-access-description">Publicaciones, proyectos y la comunidad científica de nuestra escuela.</p>
     <button className="welcome-public" onClick={p.onExploreAsGuest}><span><strong>Consultar sin iniciar sesión</strong><small>Explore el catálogo y las estadísticas públicas.</small></span><ArrowRight size={24} aria-hidden="true"/></button>
-    <dl className="welcome-access-metrics" aria-label={`Cifras de ${p.school.shortName}`}>
+    {p.school.code==='ECMC'?<dl className="welcome-access-dean">
+     <dt>Decano</dt>
+     <dd>Franklin Camacho, Ph.D.</dd>
+    </dl>:<dl className="welcome-access-metrics" aria-label={`Cifras de ${p.school.shortName}`}>
      <div><dt>Publicaciones</dt><dd>{p.schoolMetrics.totalPublications}</dd></div>
      <div><dt>Proyectos</dt><dd>{p.schoolMetrics.totalProjects}</dd></div>
      <div><dt>Docentes</dt><dd>{p.teacherCount}</dd></div>
      <div><dt>Líneas con producción</dt><dd>{p.schoolMetrics.researchLinesWithProduction}</dd></div>
-    </dl>
+    </dl>}
    </div>
    <div className="welcome-art" aria-hidden="true" data-school={p.school.code}>
    <div className="welcome-emblem-tilt"><div className="welcome-emblem-solid">
     {Array.from({length:49},(_,layer)=>{
      const isFace=layer===0||layer===48;
-     const cleanExtrusion=p.school.code!=='ECMC'&&p.school.code!=='ECIAA';
-     const depthScale=cleanExtrusion?0.35:1;
-     return <div key={layer} className={`welcome-emblem-layer ${isFace?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${(layer-24)*depthScale}px)`}}>
-      {isFace||!cleanExtrusion?<SchoolEmblem school={p.school} size={340}/>:<SchoolEmblemDepth school={p.school} size={340}/>}
+     return <div key={layer} className={`welcome-emblem-layer ${isFace?'emblem-face':'emblem-edge'}`} style={{transform:`translateZ(${layer-24}px)`}}>
+      <LoginSchoolEmblem school={p.school} size={340}/>
      </div>;
     })}
    </div></div>

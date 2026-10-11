@@ -27,7 +27,7 @@
 .research-stage-line-selector button > span { width: 10px; height: 10px; border: 1.5px solid var(--school-ink); border-radius: 999px; background: #fff;  }
 .research-stage-line-selector button:hover > span { background: color-mix(in srgb, var(--school-accent) 25%, #fff); }
 .research-stage-line-selector button.is-active > span { width: 24px; border-color: var(--school-accent); background: var(--school-accent); }
-.research-stage-navigation { position: fixed; z-index: 12; top: calc(var(--landing-header-height) + 7px); left: 50%; width: min(1200px, calc(100vw - 48px)); transform: translateX(-50%); }
+.research-stage-navigation { position: absolute; z-index: 12; top: 7px; left: 50%; width: min(1200px, calc(100% - 48px)); transform: translateX(-50%); }
 .research-stage-navigation ol { display: flex; justify-content: center; gap: 8px; padding: 0; margin: 0; list-style: none; }
 .research-stage-navigation li { flex: 1 1 0; min-width: 0; }
 .research-stage-school-button { position: relative; display: flex; width: 100%; min-width: 78px; min-height: 54px; align-items: center; justify-content: center; gap: 7px; overflow: hidden; padding: 6px 9px 9px; border: 1px solid #e0e3e5; border-radius: 999px; background: rgb(255 255 255 / 96%); color: #262a2e; cursor: pointer;  }
@@ -35,8 +35,8 @@
 .research-stage-navigation .is-active .research-stage-school-button { border-color: var(--school-accent); background: color-mix(in srgb, var(--school-accent) 13%, #fff); color: var(--school-ink); }
 .research-stage-school-emblem { display: grid; width: 26px; height: 26px; flex: 0 0 26px; place-items: center;  }
 .research-stage-school-button small { font-size: 11px; font-weight: 800; letter-spacing: .035em; }
-.research-stage-bottom { position: absolute; z-index: 5; left: var(--stage-gutter); bottom: 20px; }
-.research-stage-bottom button { display: inline-flex; min-width: 320px; min-height: 64px; align-items: center; justify-content: space-between; gap: 24px; padding: 0 28px; border: 1px solid var(--school-ink); border-radius: 6px; background: var(--school-ink); color: #fff; font-family: var(--font-sans); font-size: 18px; font-weight: 800; cursor: pointer; }
+.research-stage-bottom { position: relative; z-index: 5; grid-column: 2; grid-row: 3; width: fit-content; max-width: 100%; margin-top: 18px; }
+.research-stage-bottom button { display: inline-flex; max-width: 100%; min-height: 56px; align-items: center; justify-content: space-between; gap: 24px; padding: 10px 28px; border: 1px solid var(--school-ink); border-radius: 6px; background: var(--school-ink); color: #fff; font-family: var(--font-sans); font-size: 20px; font-weight: 800; line-height: 1.3; cursor: pointer; }
 .research-stage-bottom button span { font-size: 20px; }
 .research-stage-scroll-hint { position: absolute; z-index: 5; left: 50%; bottom: 27px; display: inline-flex; align-items: center; gap: 13px; color: #323940; font-size: 17px; font-weight: 700; letter-spacing: .04em; transform: translateX(-50%);  pointer-events: none; }
 .research-stage-scroll-hint span { display: inline-block; font-size: 23px; }
@@ -62,7 +62,7 @@
 @media (max-width: 1000px) and (min-width: 769px) {
   .research-stage-copy-stack { width: 72%; }
   .research-stage-emblem-camera { left: 67%; width: 260px; height: 300px; }
-  .research-stage-navigation { width: calc(100vw - 24px); }
+  .research-stage-navigation { width: calc(100% - 24px); }
   .research-stage-navigation ol { gap: 5px; }
   .research-stage-school-button { min-width: 0; gap: 4px; padding-inline: 5px; }
   .research-stage-school-button small { font-size: 10px; }
@@ -77,15 +77,13 @@
   .research-stage-copy-stack { top: 24%; bottom: 82px; left: 20px; width: calc(100% - 40px); max-height: none; }
   .research-stage-copy-stack::before { inset: -14px -20px -18px; background: linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(255 255 255 / 93%) 78%, #fff); }
   .research-stage-shot-copy h2 { font-size: clamp(38px, 9vw, 52px); line-height: 1.02; }
-  .research-stage-navigation { top: calc(var(--landing-header-height) + 5px); left: 0; width: 100%; padding: 0 10px; transform: none; overflow-x: auto; scrollbar-width: none; }
+  .research-stage-navigation { top: 5px; left: 0; width: 100%; padding: 0 10px; transform: none; overflow-x: auto; scrollbar-width: none; }
   .research-stage-navigation::-webkit-scrollbar { display: none; }
   .research-stage-navigation ol { width: max-content; min-width: 100%; justify-content: flex-start; gap: 6px; }
   .research-stage-navigation li { flex: 0 0 auto; }
   .research-stage-school-button { width: 77px; min-width: 77px; min-height: 54px; gap: 5px; padding: 4px 5px 8px; }
   .research-stage-school-emblem { width: 22px; height: 22px; flex-basis: 22px; }
   .research-stage-school-button small { font-size: 10px; }
-  .research-stage-bottom { left: 20px; bottom: 12px; }
-  .research-stage-bottom button { min-height: 46px; padding-inline: 12px; gap: 8px; font-size: 12px; }
   .research-stage-scroll-hint { bottom: 68px; font-size: 13px; }
   .research-stage-scroll-hint span { font-size: 19px; }
   .research-stage-selection { width: calc(100% - 40px); padding: 68px 0; }
@@ -96,7 +94,6 @@
 @media (max-height: 700px) and (max-width: 768px) {
   .research-stage-copy-stack { top: 23%; bottom: 72px; }
   .research-stage-shot-copy h2 { font-size: 38px; }
-  .research-stage-bottom { bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .research-stage, .research-stage-track { position: static; height: auto; overflow: visible; }
@@ -163,8 +160,6 @@
 .research-stage-slide .research-stage-copy-stack { width: min(760px, 58%); }
 .research-stage-navigation .is-active .research-stage-school-button { background: #fff; }
 .research-stage-school-emblem { border-radius: 4px; background: #fff; }
-.research-stage-navigation li[data-school='YTLC'] { flex-grow: 1.6; }
-.research-stage-navigation li[data-school='YTLC'] small { max-width: 160px; line-height: 1.3; }
 .research-stage-school-emblem { width: 32px; height: 32px; flex-basis: 32px; }
 @media (max-width: 1000px) and (min-width: 769px) {
   .research-stage-mascot-slot { left: 65%; width: 33vw; top: 22%; }
@@ -174,18 +169,15 @@
 }
 @media (max-width: 768px) {
   .research-stage-mascot-slot { --mascot-size: min(66vw, 280px); left: calc((100% - var(--mascot-size)) / 2); top: 68px; width: var(--mascot-size); }
-  .research-stage-slide .research-stage-copy-stack { top: max(350px, 52%); bottom: 72px; width: calc(100% - 40px); }
+  .research-stage-slide .research-stage-copy-stack { top: max(350px, 52%); bottom: auto; width: calc(100% - 40px); }
   .research-stage-title-row { grid-template-columns: 64px minmax(0, 1fr); column-gap: 14px; row-gap: 12px; }
   .research-stage-title-emblem { grid-row: 1; width: 64px; margin-top: 0; }
   .research-stage-school-acronym { align-self: center; font-size: 15px; }
   .research-stage-title-row h2 { grid-column: 1 / -1; font-size: clamp(22px, 6vw, 26px); line-height: 1.16; }
-  .research-stage-bottom { left: 20px; right: 20px; bottom: 18px; }
-  .research-stage-bottom button { width: 100%; min-width: 0; min-height: 60px; padding-inline: 22px; gap: 16px; font-size: 16px; }
+  .research-stage-bottom { grid-column: 1 / -1; width: 100%; margin-top: 16px; }
+  .research-stage-bottom button { width: 100%; min-height: 56px; padding-inline: 16px; gap: 12px; font-size: 16px; }
   .research-stage-school-button { width: 88px; min-width: 88px; }
   .research-stage-school-emblem { width: 28px; height: 28px; flex-basis: 28px; }
-  .research-stage-navigation li[data-school='YTLC'] { flex-grow: 0; }
-  .research-stage-navigation li[data-school='YTLC'] .research-stage-school-button { width: 194px; }
-  .research-stage-navigation li[data-school='YTLC'] small { font-size: 11px; max-width: 138px; }
   .research-stage-line-selector { margin-top: 2px; }
 }
 @media (max-width: 768px) and (max-height: 700px) {
@@ -193,6 +185,7 @@
   .research-stage-slide .research-stage-copy-stack { top: 270px; }
   .research-stage-title-row h2 { font-size: 22px; }
   .research-stage-title-row { grid-template-columns: 48px minmax(0, 1fr); row-gap: 8px; }
+  .research-stage-bottom { margin-top: 20px; }
   .research-stage-title-emblem { width: 48px; }
 }
 

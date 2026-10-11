@@ -286,9 +286,27 @@ button:disabled { cursor:wait; }
 .password-settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .profile-links-note { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:13px; }
 .profile-links-note svg { color:var(--accent); flex-shrink:0; }
+.student-collaborations { max-width:1120px; margin:0 auto; }
+.student-collaborations .reviewer-heading { margin-bottom:24px; }
+.student-collaborations-note { display:flex; align-items:flex-start; gap:10px; margin:0 0 20px; padding:13px 16px; border:1px solid #f0d1cd; border-radius:7px; background:#fff8f6; color:#6a514e; font-size:13px; line-height:1.5; }
+.student-collaborations-note svg { flex:0 0 auto; margin-top:1px; color:var(--school-accent,#c73a32); }
+.student-collaborations-list { display:grid; gap:16px; }
+.student-collaboration-card { overflow:hidden; border:1px solid #e5dfd8; border-left:4px solid var(--school-accent,#c73a32); border-radius:9px; background:#fff; box-shadow:0 4px 18px #2b21120a; }
+.student-collaboration-role { display:flex; align-items:center; gap:9px; padding:13px 24px 0; color:var(--accent); font-size:13px; font-weight:700; }
+.student-collaboration-card .product-row { border-bottom:0; padding-top:18px; padding-bottom:18px; }
+.student-collaboration-actions { display:flex; align-items:center; justify-content:space-between; gap:14px; margin:0 24px; padding:13px 0 18px; border-top:1px solid #eee9e3; }
+.student-collaboration-actions>span { color:var(--muted); font-size:12px; }
+.student-certificate-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:9px 14px; border:1px solid var(--school-accent,#c73a32); border-radius:6px; background:var(--school-accent,#c73a32); color:#fff; font-size:13px; font-weight:700; }
+.student-certificate-button:hover:not(:disabled) { filter:brightness(.92); }
+.student-certificate-button:disabled { cursor:not-allowed; opacity:.5; }
+.student-collaborations-empty { display:grid; justify-items:center; gap:9px; padding:44px 20px; border:1px dashed #d8cec5; border-radius:8px; background:#fff; text-align:center; color:var(--muted); }
+.student-collaborations-empty svg { color:var(--accent); }
+.student-collaborations-empty h2 { color:var(--ink); font-size:18px; font-weight:700; }
+.student-collaborations-empty p { font-size:14px; }
 @media(max-width:1100px){.reviewer-workspace{grid-template-columns:1fr;}.reviewer-list{max-height:300px;}.reviewer-detail{padding:22px;}}
 @media(max-width:760px){.reviewer-heading h1{font-size:34px;}.reviewer-demo{align-items:flex-start;}.reviewer-detail{padding:18px;}}
 @media(max-width:760px){.profile-settings-card{padding:20px 16px;}.profile-settings-card-heading{display:block;}.profile-settings-card-heading>p{margin-top:12px;}.profile-settings-grid,.password-settings-grid{grid-template-columns:1fr;gap:16px;}.profile-settings-field-wide,.profile-research-lines-field{grid-column:auto;}.profile-research-line-options{grid-template-columns:1fr;}.profile-settings-actions .primary-button{width:100%;}.profile-settings-identity{padding:15px;}}
+@media(max-width:760px){.student-collaboration-role{padding:13px 16px 0;align-items:flex-start;}.student-collaboration-actions{align-items:stretch;flex-direction:column;margin:0 16px;}.student-certificate-button{width:100%;}.student-collaborations-note{font-size:12px;}}
 
 /* Balanced sign-in: compact form and a restrained institutional panel. */
 .access-page { min-height:100dvh; display:grid; place-items:center; padding:24px; background:#f6f3ef; }
@@ -758,6 +776,9 @@ html, body {
 .welcome-access-metrics>div:first-child{border-left:0;padding-left:0;}
 .welcome-access-metrics dt{font-size:12px;line-height:1.35;color:#625c56;}
 .welcome-access-metrics dd{margin:0;font-family:Georgia,serif;font-size:clamp(30px,2.6vw,40px);line-height:1.2;font-variant-numeric:lining-nums tabular-nums;color:#292522;}
+.welcome-access-dean{margin:28px 0 0;padding:0;}
+.welcome-access-dean dt{font-size:13px;font-weight:600;line-height:1.35;color:var(--accent);}
+.welcome-access-dean dd{margin:6px 0 0;font-family:Georgia,serif;font-size:clamp(24px,2.2vw,32px);line-height:1.25;color:#292522;}
 .welcome-emblem-tilt{width:100%;height:100%;transform:rotateZ(-28deg) rotateX(12deg);transform-style:preserve-3d;}
 .welcome-emblem-solid{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:welcome-solid-turn 9s linear infinite;}
 .welcome-emblem-layer{position:absolute;inset:0;display:grid;place-items:center;backface-visibility:visible;}
@@ -766,6 +787,9 @@ html, body {
 .school-emblem-depth{display:block;flex:none;background:color-mix(in srgb,var(--school-accent) 70%,#292522);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;}
 .welcome-emblem-layer.emblem-edge .school-emblem-svg{filter:brightness(.72) saturate(.94);}
 .welcome-emblem-layer.emblem-face .school-emblem-svg{filter:drop-shadow(2px 4px 3px rgba(50,35,20,.20));}
+.login-school-emblem-svg{display:block;flex:none;overflow:visible;color:var(--school-accent);}
+.welcome-emblem-layer.emblem-edge .login-school-emblem-svg{color:color-mix(in srgb,var(--school-accent) 70%,#292522);}
+.welcome-emblem-layer.emblem-face .login-school-emblem-svg{color:color-mix(in srgb,var(--school-accent) 76%,#71635a);}
 .school-emblem-ecmc svg{display:block;}
 .welcome-emblem-layer.emblem-edge .school-emblem-ecmc svg [stroke]{stroke:#bc766d;}
 .welcome-emblem-layer.emblem-edge .school-emblem-ecmc svg [fill]:not([fill="none"]){fill:#bc766d;}

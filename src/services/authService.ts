@@ -37,6 +37,24 @@ export interface TeacherProfileUpdate {
   profileImage?: string;
 }
 
+export interface StudentProfileUpdate {
+  orcid?: string;
+  githubUrl?: string;
+  googleScholarId?: string;
+  bio?: string;
+  profileImage?: string;
+}
+
+type StudentProfileFields = Pick<TeacherUser, 'orcid' | 'githubUrl' | 'googleScholarId' | 'bio' | 'profileImage'>;
+const STUDENT_PROFILES_KEY = 'red_papers_student_profiles_v1';
+
+function readStudentProfiles(): Record<string, StudentProfileFields> {
+  try {
+    const value = JSON.parse(localStorage.getItem(STUDENT_PROFILES_KEY) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch { return {}; }
+}
+
 function readCredentials(): Record<string, {passwordHash: string; updatedAt?: string}> {
   try { return JSON.parse(localStorage.getItem('red_papers_auth_creds_v1') || '{}'); }
   catch { return {}; }
@@ -135,7 +153,8 @@ export const authService = {
     if (!saved) return null;
     const fixture = DEMO_ACCOUNTS.find(a=>a.user.id===saved.id);
     const storedTeacher = storageService.getTeachers().find(t=>t.id===saved.id);
-    const base = fixture ? {...fixture.user, ...storedTeacher, ...saved, role:fixture.user.role} : saved;
+    const studentProfile = fixture?.user.role === 'student' ? readStudentProfiles()[saved.id] : undefined;
+    const base = fixture ? {...fixture.user, ...storedTeacher, ...saved, ...studentProfile, role:fixture.user.role} : saved;
     return resolveRole(base);
   },
 
@@ -163,7 +182,8 @@ export const authService = {
         : password===account.password;
       if(!valid) return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
       const storedTeacher=storageService.getTeachers().find(t=>t.id===account.user.id);
-      const user=resolveRole({...account.user,...storedTeacher,role:account.user.role});
+      const studentProfile=account.user.role==='student' ? readStudentProfiles()[account.user.id] : undefined;
+      const user=resolveRole({...account.user,...storedTeacher,...studentProfile,role:account.user.role});
       storageService.setCurrentUser(user);
       return {success:true,user};
     }
@@ -304,6 +324,28 @@ export const authService = {
     storageService.saveTeachers(teachers);
     storageService.setCurrentUser(updated);
     return {success:true,user:updated};
+  },
+
+  updateStudentProfile(data: StudentProfileUpdate): {success:boolean; user?:TeacherUser; error?:string} {
+    const current=this.getCurrentUser();
+    if(!current || current.role!=='student') return {success:false,error:'Solo un estudiante puede editar este perfil.'};
+    const orcid=normalizeOrcid(data.orcid);
+    const githubUrl=normalizeGithub(data.githubUrl);
+    const googleScholarId=normalizeScholarId(data.googleScholarId);
+    const bio=data.bio?.trim();
+    if(data.orcid?.trim() && (!orcid || !isValidOrcid(orcid))) return {success:false,error:'El ORCID debe tener el formato 0000-0002-1825-0097.'};
+    if(data.githubUrl?.trim() && !githubUrl) return {success:false,error:'Ingrese un usuario o enlace válido de GitHub.'};
+    if(data.googleScholarId?.trim() && !googleScholarId) return {success:false,error:'Ingrese un ID o enlace válido de Google Scholar.'};
+    if((bio?.length||0)>500) return {success:false,error:'La descripción debe tener 500 caracteres o menos.'};
+    if(data.profileImage && (!/^data:image\/jpeg;base64,[a-z\d+/]+=*$/i.test(data.profileImage) || data.profileImage.length>1_500_000)) return {success:false,error:'La imagen de perfil no tiene un formato válido o es demasiado grande.'};
+
+    const profile:StudentProfileFields={orcid,githubUrl,googleScholarId,bio:bio||undefined,profileImage:data.profileImage||undefined};
+    try {
+      localStorage.setItem(STUDENT_PROFILES_KEY,JSON.stringify({...readStudentProfiles(),[current.id]:profile}));
+      const updated:TeacherUser={...current,...profile,syntheticAcademicProfileFields:[]};
+      storageService.setCurrentUser(updated);
+      return {success:true,user:updated};
+    } catch { return {success:false,error:'No se pudo guardar el perfil. Inténtelo de nuevo.'}; }
   },
 
   changePassword(currentPassword:string, newPassword:string): {success:boolean; error?:string} {

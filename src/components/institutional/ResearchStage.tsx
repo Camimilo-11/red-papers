@@ -29,7 +29,7 @@ export function getStageState(value: number) {
   return { progress, activeIndex };
 }
 const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
-const RESEARCH_ENTRY_LABEL = 'Ver investigaciones';
+const RESEARCH_ENTRY_LABEL = 'Ver investigaciones y proyectos';
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
@@ -150,9 +150,9 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
       <h2 id={`research-shot-title-${index}`} aria-label={plane.title}>
         {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}><span className={plane.accentWords.includes(wordIndex) ? 'is-accent' : undefined}>{word.split('/').map((part, partIndex, parts) => <React.Fragment key={partIndex}>{part}{partIndex < parts.length - 1 && <>/<wbr /></>}</React.Fragment>)}</span>{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
       </h2>
+      <div className="research-stage-bottom"><button type="button" aria-label={`${RESEARCH_ENTRY_LABEL} de ${school.name}`} onClick={() => onSelectSchool(school)}>{RESEARCH_ENTRY_LABEL} <span aria-hidden="true">→</span></button></div>
       </div>
     </div>
-    <div className="research-stage-bottom"><button type="button" aria-label={`${RESEARCH_ENTRY_LABEL} de ${school.name}`} onClick={() => onSelectSchool(school)}>{RESEARCH_ENTRY_LABEL} <span aria-hidden="true">→</span></button></div>
   </motion.section>;
 }
 
@@ -163,7 +163,7 @@ function SchoolNavigationItem({ school, schoolIndex, timeline, jump }: {
   const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageSlidesFor(school).length));
   return <li data-school={school.code} style={schoolStyle(school)}>
     <button className="research-stage-school-button" type="button" data-school-index={schoolIndex} aria-label={`Ir a ${school.name}`} aria-current={schoolIndex === 0 ? 'step' : undefined} onClick={() => jump(school)}>
-      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{school.code === 'YTLC' ? school.shortName : displaySchoolCode(school)}</small>
+      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{displaySchoolCode(school)}</small>
       <motion.span className="research-stage-school-fill" style={{ scaleX: fill }} aria-hidden="true" />
     </button>
   </li>;
@@ -384,6 +384,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
       navigationAnimation.current = [animate(jumpBlend, 1, { duration: .35, ease })];
     }
   };
+
   const keyboardNavigation = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const element = event.target as HTMLElement;
     if (element.isContentEditable || element.closest('input, textarea, select')) return;
@@ -411,8 +412,8 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
         <motion.div className="research-stage-mascot-slot research-stage-mascot-flash" style={{ opacity: flashOpacity, scale: flashScale }} aria-hidden="true" />
       </motion.div>}
       {logosReady && <motion.span className="research-stage-scroll-hint" style={{ opacity: hintOpacity, x: '-50%', y: hintY }}>Desliza <span aria-hidden="true">↓</span></motion.span>}
+      {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}
     </div>
-    {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}
     <ol className="research-stage-accessible-lines" aria-label="Escuelas en el orden del recorrido">{STAGE_PLANES.map(({ school, title }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {title}</li>)}</ol>
   </div>;
 }

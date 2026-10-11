@@ -3,7 +3,7 @@ import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
 import { storageService } from './storage';
 type Role = TeacherUser['role'];
 const key = 'red_papers_roles_v1';
-export const ROLE_LABELS: Record<Role,string> = {teacher:'Profesor', reviewer_demo:'Comité Científico', developer:'Desarrollador'};
+export const ROLE_LABELS: Record<Role,string> = {teacher:'Profesor', student:'Estudiante', reviewer_demo:'Comité Científico', developer:'Desarrollador'};
 function assignments(): Record<string,Role> {
   try { const data=JSON.parse(localStorage.getItem(key)||'{}'); return data && typeof data==='object' && !Array.isArray(data)?data:{}; } catch { return {}; }
 }
@@ -15,7 +15,7 @@ export function resolveRole(user: TeacherUser): TeacherUser {
 export const roleService = {
   users(): TeacherUser[] {
     const users = new Map(storageService.getTeachers().map(u=>[u.id,u]));
-    DEMO_ACCOUNTS.forEach(a=>users.set(a.user.id,a.user));
+    DEMO_ACCOUNTS.filter(a=>a.user.role!=='student').forEach(a=>users.set(a.user.id,a.user));
     return [...users.values()].map(resolveRole);
   },
   assign(id:string, role:Role): {success:boolean; error?:string} {
