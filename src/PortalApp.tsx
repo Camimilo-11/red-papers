@@ -13,17 +13,23 @@ import { Header, type ActiveTab } from './components/layout/Header';
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
+import { PortalEntryLoading } from './components/institutional/PortalEntryLoading';
 import { getSchoolByCode, type SchoolConfig } from './constants/schools';
 
 const RoleManagementView = lazy(() => import('./components/roles/RoleManagementView').then((module) => ({ default: module.RoleManagementView })));
 const ProfileSettingsView = lazy(() => import('./components/profile/ProfileSettingsView').then((module) => ({ default: module.ProfileSettingsView })));
 const StudentProfileSettingsView = lazy(() => import('./components/profile/StudentProfileSettingsView').then((module) => ({ default: module.StudentProfileSettingsView })));
 const StudentCollaborationsView = lazy(() => import('./components/profile/StudentCollaborationsView').then((module) => ({ default: module.StudentCollaborationsView })));
-const InstitutionalBanner = lazy(() => import('./components/dashboard/InstitutionalBanner').then((module) => ({ default: module.InstitutionalBanner })));
-const FeaturedPublicationCarousel = lazy(() => import('./components/dashboard/FeaturedPublicationCarousel').then((module) => ({ default: module.FeaturedPublicationCarousel })));
-const MetricCards = lazy(() => import('./components/dashboard/MetricCards').then((module) => ({ default: module.MetricCards })));
-const ResearchDashboard = lazy(() => import('./components/dashboard/ResearchDashboard').then((module) => ({ default: module.ResearchDashboard })));
-const TeacherMetricsTable = lazy(() => import('./components/dashboard/TeacherMetricsTable').then((module) => ({ default: module.TeacherMetricsTable })));
+const loadInstitutionalBanner = () => import('./components/dashboard/InstitutionalBanner').then((module) => ({ default: module.InstitutionalBanner }));
+const loadFeaturedPublicationCarousel = () => import('./components/dashboard/FeaturedPublicationCarousel').then((module) => ({ default: module.FeaturedPublicationCarousel }));
+const loadMetricCards = () => import('./components/dashboard/MetricCards').then((module) => ({ default: module.MetricCards }));
+const loadResearchDashboard = () => import('./components/dashboard/ResearchDashboard').then((module) => ({ default: module.ResearchDashboard }));
+const loadTeacherMetricsTable = () => import('./components/dashboard/TeacherMetricsTable').then((module) => ({ default: module.TeacherMetricsTable }));
+const InstitutionalBanner = lazy(loadInstitutionalBanner);
+const FeaturedPublicationCarousel = lazy(loadFeaturedPublicationCarousel);
+const MetricCards = lazy(loadMetricCards);
+const ResearchDashboard = lazy(loadResearchDashboard);
+const TeacherMetricsTable = lazy(loadTeacherMetricsTable);
 const CatalogView = lazy(() => import('./components/catalog/CatalogView').then((module) => ({ default: module.CatalogView })));
 const DirectoryView = lazy(() => import('./components/directory/DirectoryView').then((module) => ({ default: module.DirectoryView })));
 const TraceabilityView = lazy(() => import('./components/traceability/TraceabilityView').then((module) => ({ default: module.TraceabilityView })));
@@ -32,6 +38,20 @@ const ReviewerConsoleModal = lazy(() => import('./components/reviewer/ReviewerCo
 
 function PortalViewLoading() {
   return <div className="portal-view-loading" role="status" aria-live="polite"><span aria-hidden="true" />Cargando el contenido de la escuela…</div>;
+}
+
+function PortalEntryFallback() {
+  return window.matchMedia('(max-width: 760px)').matches ? <PortalEntryLoading /> : <PortalViewLoading />;
+}
+
+export function preloadSchoolEntry() {
+  return Promise.all([
+    loadInstitutionalBanner(),
+    loadFeaturedPublicationCarousel(),
+    loadMetricCards(),
+    loadResearchDashboard(),
+    loadTeacherMetricsTable(),
+  ]).then(() => undefined);
 }
 
 export default function App({ initialSchool, onChangeSchool }: { initialSchool: SchoolConfig; onChangeSchool: () => void }) {
@@ -303,7 +323,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       {/* 2. Contenedor de Contenido Principal */}
       <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''}`}>
         {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>{currentUser?.role==='student'?'Ver mis colaboraciones':'Ver mis registros'}</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
-        <Suspense fallback={<PortalViewLoading />}>
+        <Suspense fallback={<PortalEntryFallback />}>
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
