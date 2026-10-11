@@ -29,6 +29,7 @@ export function getStageState(value: number) {
   return { progress, activeIndex };
 }
 const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
+const RESEARCH_ENTRY_LABEL = 'Ver investigaciones';
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
@@ -101,7 +102,7 @@ function Mascot({ src }: { src: string }) {
   return <><span className="research-stage-mascot-shadow" /><img src={src} width={1024} height={1024} alt="" draggable={false} /></>;
 }
 
-function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlend, registerHost, onSelectLine, onPreviewLine, onSelectSchool }: {
+function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlend, registerHost, onSelectSchool }: {
   index: number;
   timeline: MotionValue<number>;
   live: MotionValue<boolean>;
@@ -110,8 +111,6 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
   jumpTo: MotionValue<number>;
   jumpBlend: MotionValue<number>;
   registerHost: (index: number, node: HTMLDivElement | null) => void;
-  onSelectLine: (school: SchoolConfig, lineIndex: number) => void;
-  onPreviewLine: (index: number) => void;
   onSelectSchool: (school: SchoolConfig) => void;
 }) {
   const plane = STAGE_PLANES[index];
@@ -146,20 +145,14 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
     </div>
     <motion.div className="research-stage-mascot-slot" style={{ opacity: mascotOpacity, y: mascotY }} aria-hidden="true"><Mascot src={SCHOOL_MASCOTS[school.code]} /></motion.div>
     <div className="research-stage-copy-stack" aria-labelledby={`research-shot-title-${index}`}>
-      <p className="research-stage-counter"><span>{displaySchoolCode(school)}</span><span>{String(plane.lineIndex + 1).padStart(2, '0')} / {String(stageSlidesFor(school).length).padStart(2, '0')}</span></p>
       <div className="research-stage-title-row"><span className="research-stage-title-emblem" aria-hidden="true"><Emblem school={school} /></span>
+      <p className="research-stage-school-acronym">{displaySchoolCode(school)}</p>
       <h2 id={`research-shot-title-${index}`} aria-label={plane.title}>
-        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}>{plane.accentWords.includes(wordIndex) ? <span className="is-accent">{word}</span> : word}{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
+        {words.map((word, wordIndex) => <React.Fragment key={`${word}-${wordIndex}`}><span className={plane.accentWords.includes(wordIndex) ? 'is-accent' : undefined}>{word.split('/').map((part, partIndex, parts) => <React.Fragment key={partIndex}>{part}{partIndex < parts.length - 1 && <>/<wbr /></>}</React.Fragment>)}</span>{wordIndex < words.length - 1 ? ' ' : ''}</React.Fragment>)}
       </h2>
       </div>
-      <nav className="research-stage-line-selector" aria-label={`Líneas de investigación de ${school.name}`}>
-        {stageSlidesFor(school).map((slide, lineIndex) => <button key={`${school.code}-${lineIndex}`} type="button" className={plane.lineIndex === lineIndex ? 'is-active' : ''} aria-label={`Mostrar ${slide.title}`} aria-current={plane.lineIndex === lineIndex ? 'step' : undefined}
-          onClick={() => onSelectLine(school, lineIndex)}
-          onPointerEnter={(event) => { if (event.pointerType === 'mouse') onPreviewLine(SCHOOL_LINE_OFFSETS[SCHOOLS.indexOf(school)] + lineIndex); }}
-          onPointerLeave={() => onPreviewLine(-1)}><span aria-hidden="true" /></button>)}
-      </nav>
     </div>
-    <div className="research-stage-bottom"><button type="button" onClick={() => onSelectSchool(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button></div>
+    <div className="research-stage-bottom"><button type="button" aria-label={`${RESEARCH_ENTRY_LABEL} de ${school.name}`} onClick={() => onSelectSchool(school)}>{RESEARCH_ENTRY_LABEL} <span aria-hidden="true">→</span></button></div>
   </motion.section>;
 }
 
@@ -170,7 +163,7 @@ function SchoolNavigationItem({ school, schoolIndex, timeline, jump }: {
   const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageSlidesFor(school).length));
   return <li data-school={school.code} style={schoolStyle(school)}>
     <button className="research-stage-school-button" type="button" data-school-index={schoolIndex} aria-label={`Ir a ${school.name}`} aria-current={schoolIndex === 0 ? 'step' : undefined} onClick={() => jump(school)}>
-      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{displaySchoolCode(school)}</small>
+      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{school.code === 'YTLC' ? school.shortName : displaySchoolCode(school)}</small>
       <motion.span className="research-stage-school-fill" style={{ scaleX: fill }} aria-hidden="true" />
     </button>
   </li>;
@@ -186,12 +179,12 @@ function SelectionGrid({ onSelect, reduced = false }: { onSelect: (school: Schoo
           <article id={`research-school-${school.code}`} className="research-stage-school-card" data-school={school.code} style={schoolStyle(school)} key={school.code}>
             {reduced && <svg className="research-stage-static-motif" viewBox="170 -30 510 430" aria-hidden="true" focusable="false">{React.createElement(RESEARCH_LINE_MOTIFS[stageSlidesFor(school)[0].line])}</svg>}
             <div className="research-stage-card-emblem" aria-hidden="true"><Emblem school={school} /></div>
-            <p className="research-stage-eyebrow">{school.code}</p>
+            <p className="research-stage-eyebrow">{displaySchoolCode(school)}</p>
             <h3>{school.name}</h3>
-            <button id={`research-select-${school.code}`} type="button" onClick={() => onSelect(school)}>Explorar esta escuela <span aria-hidden="true">→</span></button>
+            <button id={`research-select-${school.code}`} type="button" onClick={() => onSelect(school)}>{RESEARCH_ENTRY_LABEL} <span aria-hidden="true">→</span></button>
             <details open={reduced || undefined}>
               <summary>Líneas de investigación <span aria-hidden="true">+</span></summary>
-              <ul>{stageSlidesFor(school).map((slide, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={`${school.code}-${lineIndex}`} tabIndex={-1}>{slide.title}</li>)}</ul>
+              <ul>{school.researchLines.map((line, lineIndex) => <li id={`research-line-${school.code}-${lineIndex}`} key={`${school.code}-${lineIndex}`} tabIndex={-1}>{line}</li>)}</ul>
             </details>
           </article>
         ))}
@@ -409,10 +402,10 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
   };
 
   return <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation}>
-    <div ref={scene} className="research-stage" data-school={SCHOOLS[0].code} role="region" aria-label="Recorrido por las líneas de investigación" aria-busy={!logosReady}>
+    <div ref={scene} className="research-stage" data-school={SCHOOLS[0].code} role="region" aria-label="Recorrido por las escuelas" aria-busy={!logosReady}>
       <div className="research-stage-mascot-slot research-stage-mascot-measure" ref={mascotSlot} aria-hidden="true" />
       {logosReady && <motion.div className="research-stage-slides">
-        {STAGE_PLANES.map((plane, index) => <StageSlide key={`${plane.school.code}-${index}`} index={index} timeline={timeline} live={live} handoff={handoff} jumpFrom={jumpFrom} jumpTo={jumpTo} jumpBlend={jumpBlend} registerHost={registerHost} onSelectLine={jump} onSelectSchool={onSelect} onPreviewLine={(next) => preview.set(next)} />)}
+        {STAGE_PLANES.map((plane, index) => <StageSlide key={`${plane.school.code}-${index}`} index={index} timeline={timeline} live={live} handoff={handoff} jumpFrom={jumpFrom} jumpTo={jumpTo} jumpBlend={jumpBlend} registerHost={registerHost} onSelectSchool={onSelect} />)}
         <motion.div className="research-stage-preview research-stage-motif-camera" style={{ opacity: previewOpacity }} aria-hidden="true"><div ref={previewHost} className="research-stage-motif-ambient" /></motion.div>
         <motion.div className="research-stage-mascot-slot research-stage-base-mascot" style={{ opacity: baseOpacity, scale: baseScale }} aria-hidden="true"><Mascot src={BASE_MASCOT} /></motion.div>
         <motion.div className="research-stage-mascot-slot research-stage-mascot-flash" style={{ opacity: flashOpacity, scale: flashScale }} aria-hidden="true" />
@@ -420,7 +413,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
       {logosReady && <motion.span className="research-stage-scroll-hint" style={{ opacity: hintOpacity, x: '-50%', y: hintY }}>Desliza <span aria-hidden="true">↓</span></motion.span>}
     </div>
     {logosReady && <nav ref={rail} className="research-stage-navigation" aria-label="Escuelas de investigación"><ol>{SCHOOLS.map((school, index) => <SchoolNavigationItem key={school.code} school={school} schoolIndex={index} timeline={timeline} jump={jump} />)}</ol></nav>}
-    <ol className="research-stage-accessible-lines" aria-label="Líneas de investigación en el orden del recorrido">{STAGE_PLANES.map(({ school, title }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {title}</li>)}</ol>
+    <ol className="research-stage-accessible-lines" aria-label="Escuelas en el orden del recorrido">{STAGE_PLANES.map(({ school, title }, index) => <li key={`${school.code}-${index}`}>{displaySchoolCode(school)}: {title}</li>)}</ol>
   </div>;
 }
 

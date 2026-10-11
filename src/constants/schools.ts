@@ -92,8 +92,8 @@ export const SCHOOLS = [
   },
   {
     code: 'YTLC',
-    name: 'Yachay Tech Language Center',
-    shortName: 'Yachay Tech Language Center',
+    name: 'YachayTech Language Center',
+    shortName: 'YachayTech Language Center',
     accent: '#0ca2b0',
     logoCrop: { x: 737, y: 149, width: 180, height: 68 },
     iconTilePosition: { x: 23, y: 398 },
