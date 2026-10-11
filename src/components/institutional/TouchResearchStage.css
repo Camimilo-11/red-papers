@@ -113,6 +113,14 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
 /* On phone-sized screens, keep every school reachable in a fixed thumb zone. */
 @media (max-width: 760px) {
   .touch-school-track { overscroll-behavior-y: contain; }
+  /* Let institutional links cover the fixed scene after the last school. */
+  .institutional-landing-footer {
+    position: relative;
+    z-index: 2;
+    min-height: calc(100svh - var(--landing-header-height));
+    touch-action: pan-y pinch-zoom;
+    scroll-margin-top: var(--landing-header-height);
+  }
   .touch-school-stage {
     position: fixed;
     z-index: 1;

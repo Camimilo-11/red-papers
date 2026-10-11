@@ -434,13 +434,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       handoff.progress.set(0);
       scrollY.set(0);
     } else if (index >= SCHOOLS.length) {
-      if (mobileTransitionEnabled) {
-        const lastSchoolTop = start + (SCHOOLS.length - 1) * height;
-        window.scrollTo({ top: lastSchoolTop, behavior: 'instant' });
-        scrollY.set(lastSchoolTop);
-      } else {
-        window.scrollTo({ top: start + SCHOOLS.length * height, behavior: 'instant' });
-      }
+      window.scrollTo({ top: start + SCHOOLS.length * height, behavior: 'instant' });
     } else {
       if (mobileTransitionEnabled && !entered.current && active.current === 0 && index === 0) { beginTransition('schools'); return; }
       commit(index);
@@ -528,20 +522,18 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
         }
         return;
       }
-      if (mobileTransitionEnabled && entered.current && active.current === SCHOOLS.length - 1) {
-        const lastSchoolTop = geometry.current.start + (SCHOOLS.length - 1) * geometry.current.height;
-        if (window.scrollY > lastSchoolTop + 1) {
-          window.scrollTo({ top: lastSchoolTop, behavior: 'instant' });
-          scrollY.set(lastSchoolTop);
-          return;
-        }
-      }
       window.clearTimeout(timer);
       timer = window.setTimeout(settle, 140);
     };
     const pointerDown = (event: PointerEvent) => {
       if (event.pointerType !== 'touch') return;
       const target = event.target as HTMLElement;
+      // A focused footer link can keep native scroll snapping in the footer
+      // after returning from its tab. Release it when a new touch starts there.
+      if (mobileTransitionEnabled && target.closest('.institutional-landing-footer')) {
+        const focused = document.activeElement;
+        if (focused instanceof HTMLElement && focused.closest('.institutional-landing-footer')) focused.blur();
+      }
       const stage = target.closest<HTMLElement>('.touch-school-stage');
       const stageBounds = mobileTransitionEnabled ? null : stage?.getBoundingClientRect();
       const inTour = mobileTransitionEnabled ? !!stage : !!stageBounds && stageBounds.top < window.innerHeight && stageBounds.bottom > 0;
@@ -568,12 +560,6 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     };
     const wheel = (event: WheelEvent) => {
       if (!mobileTransitionEnabled || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-      if (!transitionAnimating.current && entered.current && active.current === SCHOOLS.length - 1 && event.deltaY > 0) {
-        event.preventDefault();
-        const lastSchoolTop = geometry.current.start + (SCHOOLS.length - 1) * geometry.current.height;
-        window.scrollTo({ top: lastSchoolTop, behavior: 'instant' });
-        return;
-      }
       if (transitionAnimating.current) {
         event.preventDefault();
         queueTransitionIntent(active.current + (event.deltaY > 0 ? 1 : -1));
