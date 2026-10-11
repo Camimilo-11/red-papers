@@ -9,7 +9,7 @@ export interface ResearchStageSlide {
 /** One existing SVG motif accompanies each school presentation. */
 const SCHOOL_STAGE_MOTIFS: Record<SchoolCode, OfficialResearchLine> = {
   ECIAA: 'Ciencias Agrícolas',
-  ECBI: 'Ecología, evolución y conservación de ecosistemas terrestres',
+  ECBI: 'Biología celular, biología molecular y genética',
   ECFN: 'Materiales nanoestructurados, síntesis y caracterización',
   ECTEA: 'Geología física y aplicada',
   ECMC: 'Ciencia de datos',
