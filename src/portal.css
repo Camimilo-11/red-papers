@@ -2034,6 +2034,85 @@ body {
   }
 }
 
+/* Conserva una fila de cifras cuando el contenido de escritorio aún tiene ancho suficiente. */
+@media (min-width: 981px) and (max-width: 1024px) {
+  .portal-main-public-dashboard .school-metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Ventanas bajas: reserva espacio para los controles, el progreso y el margen inferior. */
+@media (min-width: 761px) and (max-height: 720px) {
+  .portal-main-public-dashboard {
+    padding-top: 12px;
+  }
+
+  .portal-main-public-dashboard .school-summary.school-summary-overview {
+    padding-block: 9px;
+  }
+
+  .portal-main-public-dashboard .school-summary-heading {
+    margin-bottom: 6px;
+  }
+
+  .portal-main-public-dashboard .school-summary-emblem {
+    flex-basis: 56px;
+    width: 56px;
+    height: 56px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    border-radius: 13px;
+  }
+
+  .portal-main-public-dashboard .school-summary-emblem .school-icon-crop {
+    transform: scale(.67);
+  }
+
+  .portal-main-public-dashboard .school-metric {
+    padding-block: 5px 7px;
+  }
+
+  .portal-main-public-dashboard .school-metric dd {
+    margin-top: 3px;
+    font-size: 32px;
+  }
+
+  .portal-main-public-dashboard .featured-publications-heading {
+    margin-bottom: 6px;
+  }
+
+  .portal-main-public-dashboard .featured-paper-card {
+    gap: 9px 18px;
+    padding-block: 12px 10px;
+  }
+
+  .portal-main-public-dashboard .featured-paper-copy .eyebrow {
+    margin-bottom: 4px;
+  }
+
+  .portal-main-public-dashboard .featured-paper-line {
+    margin-bottom: 5px;
+  }
+
+  .portal-main-public-dashboard .featured-paper-copy h3 {
+    font-size: clamp(22px, 1.9vw, 28px);
+    line-height: 1.16;
+  }
+
+  .portal-main-public-dashboard .featured-paper-authors {
+    margin: 7px 0 3px;
+    line-height: 1.4;
+  }
+
+  .portal-main-public-dashboard .featured-paper-meta {
+    line-height: 1.4;
+  }
+
+  .portal-main-public-dashboard .featured-paper-actions {
+    margin-top: 6px;
+  }
+}
+
 /* Portada pública móvil: acerca el carrusel al primer encuadre sin ocultar datos. */
 @media (max-width: 760px) {
   .portal-main-public-dashboard {
