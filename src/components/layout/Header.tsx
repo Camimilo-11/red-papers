@@ -4,11 +4,12 @@ import { TeacherUser, UserNotification } from '../../types';
 import { getSchoolByCode, SchoolConfig } from '../../constants/schools';
 import { YachaySymbol } from '../institutional/SchoolLogo';
 import { NotificationsPopover } from './NotificationsPopover';
-import { Home, BookOpen, Users, FolderOpen, Bell, LogOut, LogIn, Menu, X, ShieldCheck, GitBranch, Settings } from 'lucide-react';
+import { Home, BookOpen, Users, FolderOpen, Bell, LogOut, LogIn, Menu, X, ShieldCheck, GitBranch, Settings, ChevronDown } from 'lucide-react';
 export type ActiveTab = 'dashboard' | 'catalog' | 'directory' | 'mine' | 'settings' | 'traceability' | 'reviewer' | 'roles';
 interface HeaderProps {
   activeTab: ActiveTab; onTabChange: (tab: ActiveTab) => void;
   currentUser: TeacherUser | null; teachers: TeacherUser[]; notifications: UserNotification[]; school?: SchoolConfig;
+  onChangeSchool?: () => void;
   onLoginClick: () => void; onLogoutClick: () => void; onSwitchUser: (id: string) => void;
   onOpenRegisterModal: () => void; onOpenReviewerConsole: () => void;
   onMarkNotificationAsRead: (id: string) => void; onMarkAllNotificationsAsRead: () => void;
@@ -35,9 +36,10 @@ export const Header: React.FC<HeaderProps> = (p) => {
  const unread=p.notifications.filter(n=>!n.read).length;
  return <>
   <a href="#main-content" className="skip-link">Ir al contenido</a>
-  <header className="portal-topbar">
+  <header className={`portal-topbar${p.currentUser ? '' : ' portal-topbar-guest'}`}>
    <button className="mobile-menu" aria-label={mobileOpen?'Cerrar menú':'Abrir menú'} aria-expanded={mobileOpen} onClick={()=>setMobileOpen(!mobileOpen)}>{mobileOpen?<X/>:<Menu/>}</button>
    <div className="topbar-context"><span>SIMAPC-{school.code === 'ECIAA' ? 'ECAA' : school.code}</span><span>{school.name}</span></div>
+   {!p.currentUser && p.onChangeSchool && <button type="button" className="mobile-school-change" aria-label="Cambiar escuela" onClick={p.onChangeSchool}><ChevronDown size={18} aria-hidden="true" /></button>}
    <div className="topbar-actions">
     {p.currentUser ? <>
      <div className="relative" ref={notificationRef}><button className="notification-button" aria-label={`Avisos, ${unread} sin leer`} onClick={()=>setNotificationsOpen(!notificationsOpen)} aria-expanded={notificationsOpen}><Bell size={20}/><span>Avisos</span>{unread>0&&<b>{unread}</b>}</button>
@@ -46,6 +48,9 @@ export const Header: React.FC<HeaderProps> = (p) => {
     </>:<button className="primary-button" onClick={p.onLoginClick}><LogIn size={20}/>Iniciar sesión</button>}
    </div>
   </header>
+  <nav className="portal-mobile-navigation" aria-label="Navegación principal móvil">
+   {tabs.slice(0, 3).map(({id,label,icon:Icon})=><button type="button" key={id} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={16} aria-hidden="true"/><span>{label}</span></button>)}
+  </nav>
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
    <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="SIMAPC, ir al inicio"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>

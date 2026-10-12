@@ -1,4 +1,5 @@
 import './portal.css';
+import './mobile-portal.css';
 import { canReview, canDevelop } from './constants/demoAccounts';
 import React, { lazy, Suspense, useState, useEffect, useMemo, useRef } from 'react';
 import { storageService } from './services/storage';
@@ -288,6 +289,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       {/* 1. Encabezado Horizontal */}
       <Header
         school={selectedSchool}
+        onChangeSchool={onChangeSchool}
         activeTab={activeTab}
         onTabChange={(tab) => {
           setActiveTab(tab);
