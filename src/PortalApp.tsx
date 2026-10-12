@@ -13,6 +13,7 @@ import { Header, type ActiveTab } from './components/layout/Header';
 
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
+import { LoginDialog } from './components/auth/LoginDialog';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
 import { PortalEntryLoading } from './components/institutional/PortalEntryLoading';
 import { getSchoolByCode, type SchoolConfig } from './constants/schools';
@@ -73,6 +74,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   });
 
   // Modales
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterProductOpen, setIsRegisterProductOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ScientificProduct | null>(null);
   const [registerType, setRegisterType] = useState<'publicacion'|'proyecto'>('publicacion');
@@ -101,6 +103,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   }, [navigationKey]);
   useEffect(() => {
     const onBack = (event: PopStateEvent) => {
+      setIsLoginOpen(false);
       const next = event.state?.redPapers;
       if (!next) return;
       const historyUser = authService.getCurrentUser();
@@ -164,6 +167,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         return { success: false, error: 'Esta cuenta pertenece a otra escuela. Seleccione la escuela asociada a su cuenta.' };
       }
       setCurrentUser(res.user);
+      setIsLoginOpen(false);
       setShowAccessScreen(false);
       setActiveTab('dashboard');
       return { success: true };
@@ -178,6 +182,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   };
 
   const handleSchoolSelect = (school: NonNullable<typeof selectedSchool>) => {
+    setIsLoginOpen(false);
     setSelectedSchool(school);
     setShowAccessScreen(true);
     setActiveTab('dashboard');
@@ -186,6 +191,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   // Cierre de sesión (HU02)
   const handleLogout = () => {
     authService.logout();
+    setIsLoginOpen(false);
     setCurrentUser(null);
     setSelectedSchool(null);
     setNotice('');
@@ -300,7 +306,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         currentUser={currentUser}
         teachers={schoolTeachers}
         notifications={userNotifications}
-        onLoginClick={() => setShowAccessScreen(true)}
+        onLoginClick={() => setIsLoginOpen(true)}
         onLogoutClick={handleLogout}
         onSwitchUser={handleSwitchUser}
         onOpenRegisterModal={() => {
@@ -310,7 +316,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
             const proceed = confirm(
               `El registro de producción científica requiere iniciar sesión como docente de ${selectedSchool.shortName}. ¿Deseas ingresar a tu cuenta institucional?`
             );
-            if (proceed) setShowAccessScreen(true);
+            if (proceed) setIsLoginOpen(true);
           } else {
             setEditingProduct(null);
             setRegisterTypeLocked(false);
@@ -332,7 +338,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
             <MetricCards metrics={schoolMetrics} school={selectedSchool}/>
 
             {/* Acciones disponibles para el perfil actual. */}
-            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setShowAccessScreen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setIsLoginOpen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
 
             <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
 
@@ -372,7 +378,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
             onProjectUpdated={() => setProducts(storageService.getProducts())}
             onOpenRegister={() => {
               if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return;
-              if (!currentUser) setShowAccessScreen(true);
+              if (!currentUser) setIsLoginOpen(true);
               else { setEditingProduct(null); setRegisterTypeLocked(false); setIsRegisterProductOpen(true); }
             }}
           />
@@ -406,6 +412,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       <footer className="portal-footer"><span>SIMAPC · {selectedSchool.code}</span><span>Universidad Yachay Tech</span></footer>
 
       {/* 4. Modales Globales */}
+      <LoginDialog isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onLogin={handleLogin} />
       {/* Modal de Registro Asistido de Producción (HU03 y HU04) */}
       {isRegisterProductOpen && !!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer') && <Suspense fallback={<PortalViewLoading />}>
         <RegisterProductModal

@@ -1,18 +1,16 @@
-import React, {useState,useRef,useEffect} from 'react';
-import {ArrowLeft,ArrowRight,Eye,EyeOff,LogIn,X} from 'lucide-react';
+import React, {useState,useEffect} from 'react';
+import {ArrowLeft,ArrowRight,LogIn} from 'lucide-react';
 import {SchoolConfig} from '../../constants/schools';
 import type {SchoolMetrics} from '../../types';
 import {YachayLogo} from '../institutional/SchoolLogo';
 import {LoginSchoolEmblem} from './LoginSchoolEmblem';
+import {LoginDialog} from './LoginDialog';
 interface AccessScreenProps {
  school:SchoolConfig; schoolMetrics:SchoolMetrics; teacherCount:number; onLogin:(email:string,pass:string)=>{success:boolean;error?:string}; onExploreAsGuest:()=>void; onChangeSchool:()=>void;
 }
 export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
- const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [visible,setVisible]=useState(false);const [error,setError]=useState('');const [forgot,setForgot]=useState(false);
  const [loginOpen,setLoginOpen]=useState(false);
  const [compactArt,setCompactArt]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(max-width: 760px)').matches);
- const dialog=useRef<HTMLDialogElement>(null);
- useEffect(()=>{if(loginOpen)dialog.current?.showModal();else dialog.current?.close();},[loginOpen]);
  useEffect(()=>{
   const query=window.matchMedia('(max-width: 760px)');
   const update=()=>setCompactArt(query.matches);
@@ -25,7 +23,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><YachayLogo width={130}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
-   <nav aria-label="Acceso a la plataforma"><button type="button" className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button type="button" className="welcome-login-trigger" onClick={()=>{setError('');setLoginOpen(true);}}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
+   <nav aria-label="Acceso a la plataforma"><button type="button" className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button type="button" className="welcome-login-trigger" onClick={()=>setLoginOpen(true)}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>
   </header>
   <main className="welcome-access-main">
    <div className="welcome-access-content">
@@ -56,18 +54,6 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
    </div>
   </main>
   <footer className="welcome-access-footer"><span>{p.school.name}</span><span>Investigación · {p.school.code}</span></footer>
-  <dialog ref={dialog} className="welcome-login-dialog" onCancel={()=>setLoginOpen(false)} onClose={()=>setLoginOpen(false)} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setLoginOpen(false);}}} aria-labelledby="welcome-login-title">
-   <button className="welcome-login-close" aria-label="Cerrar inicio de sesión" onClick={()=>setLoginOpen(false)}><X size={22}/></button>
-   <div className="login-form"><p className="eyebrow">SIMAPC</p><h2 id="welcome-login-title">Iniciar sesión</h2><p>Ingrese con su cuenta institucional.</p>
-   <form onSubmit={e=>{e.preventDefault();const result=p.onLogin(email,password);setError(result.success?'':result.error||'No se pudo iniciar sesión.');}}>
-    <label htmlFor="login-email">Correo institucional</label><input id="login-email" type="email" autoComplete="username" placeholder="nombre@yachaytech.edu.ec" required value={email} onChange={e=>setEmail(e.target.value)}/>
-    <label htmlFor="login-password">Contraseña</label><div className="password-field"><input id="login-password" type={visible?'text':'password'} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" aria-label={visible?'Ocultar contraseña':'Mostrar contraseña'} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={22}/>:<Eye size={22}/>}</button></div>
-    <button type="button" className="forgot-link" onClick={()=>setForgot(!forgot)}>¿Olvidó su contraseña?</button>
-    {forgot&&<p role="status" className="login-note">Para recuperar su acceso, contacte con el administrador de la plataforma.</p>}
-    {error&&<p role="alert" className="login-error">{error}</p>}
-    <button type="submit" className="primary-button login-submit">Iniciar sesión<ArrowRight size={20}/></button>
-   </form>
-   </div>
-  </dialog>
+  <LoginDialog isOpen={loginOpen} onClose={()=>setLoginOpen(false)} onLogin={p.onLogin}/>
  </div>;
 };
