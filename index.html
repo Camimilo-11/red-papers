@@ -27,7 +27,7 @@
         try { sessionStorage.setItem(introKey, 'started'); } catch { /* The page still runs without session storage. */ }
         root.dataset.simapcStartup = 'intro';
         // Identifies the startup shell to React; its visible deadline is set below.
-        window.__SIMAPC_STARTUP_END_AT = performance.now() + 1500;
+        window.__SIMAPC_STARTUP_END_AT = performance.now() + 800;
       })();
     </script>
     <style>
@@ -37,7 +37,7 @@
       #simapc-startup[hidden], html[data-simapc-startup="portal"] #simapc-startup { display:none; }
       #simapc-startup-header { position:absolute; z-index:2; inset:0 0 auto; height:86px; display:grid; place-items:center; background:#24618e; }
       #simapc-startup-header img { display:block; width:180px; max-height:62px; height:auto; object-fit:contain; filter:brightness(0) invert(1); opacity:0; transform:translateY(42px) scale(.64); }
-      html[data-simapc-startup="intro"] #simapc-startup-header img { animation:simapc-startup-logo 350ms cubic-bezier(.22,1,.36,1) 1.15s forwards; }
+      html[data-simapc-startup="intro"] #simapc-startup-header img { animation:simapc-startup-logo 200ms cubic-bezier(.22,1,.36,1) 600ms forwards; }
       html[data-simapc-startup="welcome"] #simapc-startup-header { z-index:4; }
       html[data-simapc-startup="welcome"] #simapc-startup-header img { opacity:1; transform:translateY(0) scale(1); }
       #simapc-startup-hero { position:absolute; inset:86px 0 0; display:flex; align-items:center; padding:72px max(24px,calc((100vw - 1320px)/2)) 88px; opacity:0; transition:opacity 350ms cubic-bezier(.22,1,.36,1); }
@@ -62,9 +62,9 @@
       #simapc-startup-logos img:nth-child(7) { left:93%; top:91%; animation-delay:-6s; }
       #simapc-startup-curtain { position:absolute; z-index:3; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:24px; overflow:hidden; background:#24618e; color:#fff; font-family:Impact,"Arial Narrow",sans-serif; font-size:clamp(27px,5vw,54px); font-weight:900; letter-spacing:.09em; line-height:1; text-align:center; transition:transform 600ms cubic-bezier(.22,1,.36,1); }
       html[data-simapc-intro-skipped="true"] #simapc-startup-curtain { display:none; }
-      #simapc-startup-curtain span { opacity:0; transform:translateY(14px); animation:simapc-startup-word 350ms cubic-bezier(.22,1,.36,1) forwards; }
-      #simapc-startup-curtain span:nth-child(2) { animation-delay:330ms; }
-      #simapc-startup-curtain small { margin-top:12px; font:700 12px/1 sans-serif; letter-spacing:.35em; opacity:0; animation:simapc-startup-word 350ms cubic-bezier(.22,1,.36,1) 700ms forwards; }
+      #simapc-startup-curtain span { opacity:0; transform:translateY(14px); animation:simapc-startup-word 200ms cubic-bezier(.22,1,.36,1) forwards; }
+      #simapc-startup-curtain span:nth-child(2) { animation-delay:180ms; }
+      #simapc-startup-curtain small { margin-top:12px; font:700 12px/1 sans-serif; letter-spacing:.35em; opacity:0; animation:simapc-startup-word 200ms cubic-bezier(.22,1,.36,1) 370ms forwards; }
       html[data-simapc-startup="welcome"] #simapc-startup-curtain { transform:translateY(-100%); }
       html[data-simapc-startup="welcome-pending"] #simapc-startup-curtain span,
       html[data-simapc-startup="welcome-pending"] #simapc-startup-curtain small { opacity:0; transition:opacity 250ms cubic-bezier(.22,1,.36,1); }
@@ -155,10 +155,10 @@
           // rather than spending its visible duration waiting for styles to load.
           window.__SIMAPC_STARTUP_PAINTED = new Promise((resolve) => {
             requestAnimationFrame(() => requestAnimationFrame(() => {
-              window.__SIMAPC_STARTUP_END_AT = performance.now() + 1500;
+              window.__SIMAPC_STARTUP_END_AT = performance.now() + 800;
               window.setTimeout(() => {
                 root.dataset.simapcStartup = root.dataset.simapcLogosReady === 'true' ? 'welcome' : 'welcome-pending';
-              }, 1500);
+              }, 800);
               resolve();
             }));
           });
