@@ -11,16 +11,16 @@ button:disabled { cursor:wait; }
 .institutional-landing {
   --landing-header-height: 86px;
   --landing-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --landing-intro-words-ms: 1150ms;
-  --landing-logo-form-ms: 350ms;
+  --landing-intro-words-ms: 600ms;
+  --landing-logo-form-ms: 200ms;
   --landing-transition-ms: 800ms;
   --landing-logo-travel-ms: 600ms;
   --landing-curtain-ms: 600ms;
-  --landing-content-start-ms: 1850ms;
+  --landing-content-start-ms: 1150ms;
   --landing-content-stagger-ms: 70ms;
-  --landing-emblems-start-ms: 1950ms;
+  --landing-emblems-start-ms: 1250ms;
   --landing-emblem-stagger-ms: 50ms;
-  --landing-total-ms: 2300ms;
+  --landing-total-ms: 1600ms;
   position: relative;
   width: 100%;
   min-height: 100vh;
@@ -121,20 +121,20 @@ button:disabled { cursor:wait; }
 .institutional-landing-intro-words > span {
   opacity: 0;
   transform: translateY(14px);
-  animation: institutional-intro-word-in 350ms var(--landing-ease) forwards;
+  animation: institutional-intro-word-in 200ms var(--landing-ease) forwards;
 }
 
-.institutional-landing-intro-words > span:nth-child(2) { animation-delay: 330ms; }
+.institutional-landing-intro-words > span:nth-child(2) { animation-delay: 180ms; }
 .institutional-landing-intro-words > small {
   margin-top: 12px;
   font: 700 12px/1 sans-serif;
   letter-spacing: .35em;
   opacity: 0;
-  animation: institutional-intro-word-in 350ms var(--landing-ease) 700ms forwards;
+  animation: institutional-intro-word-in 200ms var(--landing-ease) 370ms forwards;
 }
 
 .institutional-landing.is-logo .institutional-landing-intro-words,
-.institutional-landing.is-transition .institutional-landing-intro-words { opacity: 0; transition: opacity 350ms var(--landing-ease); }
+.institutional-landing.is-transition .institutional-landing-intro-words { opacity: 0; transition: opacity 200ms var(--landing-ease); }
 
 @keyframes institutional-intro-word-in {
   to { opacity: 1; transform: translateY(0); }

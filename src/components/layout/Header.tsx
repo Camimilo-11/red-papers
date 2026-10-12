@@ -53,15 +53,15 @@ export const Header: React.FC<HeaderProps> = (p) => {
   </nav>
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
-   <button className="sidebar-brand" onClick={()=>navigate('dashboard')} aria-label="SIMAPC, ir al inicio"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
+   <button type="button" className="sidebar-brand" onClick={p.onChangeSchool} aria-label="SIMAPC, volver a la bienvenida"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
-   <div className="sidebar-bottom">
+   {p.currentUser && <div className="sidebar-bottom">
     {canDevelop(p.currentUser) && <details className="secondary-tools"><summary>Otras herramientas</summary><button onClick={()=>navigate('traceability')}><GitBranch size={19}/>Trazabilidad del proyecto</button><button aria-current={p.activeTab==='reviewer'?'page':undefined} onClick={()=>{setMobileOpen(false);setNotificationsOpen(false);p.onOpenReviewerConsole();}}><ShieldCheck size={19}/>Comité Científico</button>
 
      <button aria-current={p.activeTab==='roles'?'page':undefined} onClick={()=>navigate('roles')}><Users size={19}/>Asignar comité</button>
     </details>}
-    {(p.currentUser?.role==='teacher'||p.currentUser?.role==='student') ? <button type="button" className={`sidebar-profile sidebar-profile-button ${p.activeTab==='settings'?'is-current':''}`} aria-label={`Abrir configuración del perfil de ${p.currentUser.name}`} aria-current={p.activeTab==='settings'?'page':undefined} onClick={()=>navigate('settings')}><span className="profile-initial">{p.currentUser.name.charAt(0).toUpperCase()}</span><span><strong>{p.currentUser.name}</strong><small>{p.currentUser.role==='student'?'Estudiante':'Profesor'} · Configuración</small></span><Settings className="sidebar-profile-settings-icon" size={17} aria-hidden="true"/></button> : <div className="sidebar-profile"><span className="profile-initial">{p.currentUser?'D':'V'}</span><div><strong>{p.currentUser?.name||'Visitante'}</strong><small>{p.currentUser ? (p.currentUser.role==='developer'?'Desarrollador':p.currentUser.role==='reviewer_demo'?'Comité Científico':'Profesor') : 'Consulta pública'}</small></div></div>}
-   </div>
+    {(p.currentUser.role==='teacher'||p.currentUser.role==='student') ? <button type="button" className={`sidebar-profile sidebar-profile-button ${p.activeTab==='settings'?'is-current':''}`} aria-label={`Abrir configuración del perfil de ${p.currentUser.name}`} aria-current={p.activeTab==='settings'?'page':undefined} onClick={()=>navigate('settings')}><span className="profile-initial">{p.currentUser.name.charAt(0).toUpperCase()}</span><span><strong>{p.currentUser.name}</strong><small>{p.currentUser.role==='student'?'Estudiante':'Profesor'} · Configuración</small></span><Settings className="sidebar-profile-settings-icon" size={17} aria-hidden="true"/></button> : <div className="sidebar-profile"><span className="profile-initial">D</span><div><strong>{p.currentUser.name}</strong><small>{p.currentUser.role==='developer'?'Desarrollador':p.currentUser.role==='reviewer_demo'?'Comité Científico':'Profesor'}</small></div></div>}
+   </div>}
   </aside>
  </>;
 };

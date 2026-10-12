@@ -29,17 +29,17 @@ function SchoolStageFallback({ onSelect, touchLayout }: { onSelect: (school: Sch
 }
 
 const INTRO_TIMING_MS = {
-  intro: 1500,
-  words: 1150,
-  logoFormation: 350,
+  intro: 800,
+  words: 600,
+  logoFormation: 200,
   pageTransition: 800,
   logoTravel: 600,
   curtainRetraction: 600,
-  contentStart: 1850,
+  contentStart: 1150,
   contentStagger: 70,
   emblemsStart: 0,
   emblemStagger: 50,
-  total: 1500 + 800,
+  total: 800 + 800,
   reducedFade: 200,
 } as const;
 
