@@ -4,7 +4,7 @@
   padding: 16px 18px;
   border: 1px solid color-mix(in srgb, var(--school-accent) 20%, #e5e1dc);
   border-radius: 20px;
-  background: linear-gradient(120deg, color-mix(in srgb, var(--school-accent) 8%, white), #fff 75%);
+  background: #fff;
   box-shadow: 0 8px 24px rgba(37, 35, 33, .04);
 }
 
@@ -57,10 +57,6 @@
   border-top: 3px solid var(--school-accent);
   border-radius: 12px;
   background: #fff;
-}
-
-.school-metric[data-metric="citations"] {
-  background: color-mix(in srgb, var(--school-accent) 6%, white);
 }
 
 .school-metric dt {
