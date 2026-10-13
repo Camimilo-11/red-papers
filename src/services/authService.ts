@@ -1,5 +1,5 @@
 import { resolveRole } from './roleService';
-import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
+import { DEMO_ACCOUNTS, DEMO_ENABLED, isDemoAccount } from '../constants/demoAccounts';
 import { AcademicDegree, OfficialResearchLine, SchoolCode, TeacherResearchSublines, TeacherUser } from '../types';
 import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { ALLOWED_EMAIL_DOMAIN, ALL_OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
@@ -160,6 +160,7 @@ export const authService = {
   getCurrentUser(): TeacherUser | null {
     const saved = storageService.getCurrentUser();
     if (!saved) return null;
+    if (!DEMO_ENABLED && isDemoAccount(saved)) return null;
     const fixture = DEMO_ACCOUNTS.find(a=>a.user.id===saved.id);
     const storedTeacher = storageService.getTeachers().find(t=>t.id===saved.id);
     const studentProfile = fixture?.user.role === 'student' ? readStudentProfiles()[saved.id] : undefined;
@@ -182,6 +183,9 @@ export const authService = {
     if (!cleanEmail || !password) {
       return { success: false, error: 'Por favor ingresa usuario/correo y contraseña.' };
     }
+    if (!DEMO_ENABLED && isDemoAccount({email: cleanEmail})) {
+      return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
+    }
 
     const account = DEMO_ACCOUNTS.find(a=>a.user.email===cleanEmail);
     if(account){
@@ -199,7 +203,7 @@ export const authService = {
     const teachers = storageService.getTeachers();
     const teacher = teachers.find((t) => t.email.toLowerCase() === cleanEmail);
 
-    if (!teacher) {
+    if (!teacher || (!DEMO_ENABLED && isDemoAccount(teacher))) {
       return {
         success: false,
         error: 'Credenciales inválidas. Verifica tu correo institucional y contraseña.',
@@ -209,7 +213,7 @@ export const authService = {
     const credentials = readCredentials();
     const valid = credentials[teacher.id]
       ? credentials[teacher.id].passwordHash === hashPassword(password)
-      : password === '123456';
+      : DEMO_ENABLED && password === '123456';
     if (!valid) return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
     const user = resolveRole(teacher);
     if (!storageService.setCurrentUser(user)) return { success: false, error: SAVE_ERROR };
@@ -241,7 +245,7 @@ export const authService = {
     } else {
       const teachers = storageService.getTeachers();
       const existing = teachers.find((t) => t.email.toLowerCase() === cleanEmail);
-      if (existing || DEMO_ACCOUNTS.some(a=>a.user.email===cleanEmail)) {
+      if (existing || isDemoAccount({email: cleanEmail})) {
         errors.email = 'Ya existe un profesor registrado con este correo institucional.';
       }
     }
@@ -371,7 +375,7 @@ export const authService = {
     const fixture=DEMO_ACCOUNTS.find(a=>a.user.id===current.id);
     const valid=credentials[current.id]?.passwordHash
       ? credentials[current.id].passwordHash===hashPassword(currentPassword)
-      : fixture ? currentPassword===fixture.password : currentPassword==='123456';
+      : DEMO_ENABLED && (fixture ? currentPassword===fixture.password : currentPassword==='123456');
     if(!valid) return {success:false,error:'La contraseña actual no es correcta.'};
     try {
       credentials[current.id]={passwordHash:hashPassword(newPassword),updatedAt:new Date().toISOString()};
@@ -384,6 +388,7 @@ export const authService = {
    * Cambiar de docente activo para pruebas en modo demostración
    */
   switchDemoUser(teacherId: string): TeacherUser | null {
+    if (!DEMO_ENABLED) return null;
     if (this.getCurrentUser()?.role !== 'developer') return null;
     const teachers = storageService.getTeachers();
     const found = teachers.find((t) => t.id === teacherId);

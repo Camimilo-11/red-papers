@@ -4,6 +4,22 @@
 
 ---
 
+## Modo de demostración
+
+`VITE_ENABLE_DEMO` controla las cuentas de `DEMO_ACCOUNTS`, el acceso de prueba con la contraseña por defecto `123456` y el cambio de usuario de demostración. Si no se define, su valor efectivo es `'true'` para conservar la demo actual.
+
+Para desactivarlo en una compilación de producción, añade a `.env.local` antes de ejecutar `npm run build`:
+
+```dotenv
+VITE_ENABLE_DEMO=false
+```
+
+En producción solo el valor exacto `'true'` habilita la demo (o la ausencia del flag, por el valor por defecto). Las cuentas demo se rechazan incluso si tienen otra contraseña o una sesión guardada; sus correos siguen reservados. Los docentes registrados con credenciales propias siguen pudiendo entrar, incluso si eligieron `123456` como contraseña: el flag desactiva el acceso por defecto, no contraseñas registradas.
+
+En el servidor de desarrollo (`import.meta.env.DEV`) la demo permanece habilitada aunque el flag sea `false`, conforme a la condición `DEV || VITE_ENABLE_DEMO === 'true'`. Para verificar el bloqueo usa una compilación de producción (`npm run build` y `npm run preview`). El flag se resuelve al compilar; cambiarlo requiere recompilar.
+
+---
+
 ## 1. Identidad Visual y Lineamientos de Marca
 - **Identidad del sistema:** SIMAPC usa el logotipo institucional de Yachay Tech; cada escuela conserva su color e identidad visual.
 - **Colores de interfaz:** Los controles y estados usan el color correspondiente a la escuela seleccionada.
