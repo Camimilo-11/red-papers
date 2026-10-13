@@ -138,7 +138,7 @@ export const productService = {
     ownerId: string
   ): { success: boolean; product?: ScientificProduct; error?: string; warning?: string } {
     const actor=authService.getCurrentUser();
-    if (!actor || actor.role==='reviewer_demo' || actor.id!==ownerId) return {success:false,error:'Su perfil no permite registrar publicaciones ni proyectos.'};
+    if (!actor || !['teacher', 'developer'].includes(actor.role) || actor.id!==ownerId) return {success:false,error:'Su perfil no permite registrar publicaciones ni proyectos.'};
     const dupCheck = this.checkDuplicates(productData);
     if (dupCheck.hasDuplicate) {
       return { success: false, error: dupCheck.message };
