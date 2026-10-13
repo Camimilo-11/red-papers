@@ -1,6 +1,9 @@
 import * as XLSX from 'xlsx';
 import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../types';
+import { SCHOOLS } from '../constants/schools';
 import { productDateValue } from './productPresentation';
+import bricolageFontUrl from '../assets/fonts/bricolage-grotesque-latin-wght-normal.woff2?url';
+import sourceSansFontUrl from '../assets/fonts/source-sans-3-latin-wght-normal.woff2?url';
 
 function doiForDisplay(product: ScientificProduct): string | undefined {
   return product.status === 'verificado' ? product.doi : undefined;
@@ -178,6 +181,7 @@ export const exportService = {
     if (!printWindow) {
       return false;
     }
+    const schoolAccent = SCHOOLS.find(school => meta.school.includes(school.code) || meta.school === school.name)?.accent ?? '#252321';
 
     const tableRowsHtml = products
       .map(
@@ -226,10 +230,14 @@ export const exportService = {
         <title>Reporte de Producción Científica - SIMAPC</title>
         <style>
           @page { size: A4 landscape; margin: 12mm; }
-          body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1F2937; margin: 0; padding: 20px; }
-          .header { border-bottom: 2px solid #EF4035; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+          @font-face { font-family: 'Bricolage Grotesque'; src: url('${bricolageFontUrl}') format('woff2'); font-style: normal; font-weight: 200 800; }
+          @font-face { font-family: 'Source Sans 3'; src: url('${sourceSansFontUrl}') format('woff2'); font-style: normal; font-weight: 200 900; }
+          :root { --school-accent: ${schoolAccent}; --school-ink: color-mix(in srgb, var(--school-accent) 46%, #252321); }
+          body { font-family: 'Source Sans 3', sans-serif; color: #252321; margin: 0; padding: 20px; }
+          h1, h2, h3 { font-family: 'Bricolage Grotesque', sans-serif; color: #252321; }
+          .header { border-bottom: 1px solid var(--school-accent); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
           .brand { display: flex; align-items: center; gap: 12px; }
-          .brand-title { font-size: 20px; font-weight: 900; color: #EF4035; margin: 0; line-height: 1; }
+          .brand-title { font-size: 20px; font-weight: 800; color: #252321; margin: 0; line-height: 1; }
           .brand-subtitle { font-size: 11px; font-weight: 600; color: #4B5563; text-transform: uppercase; margin-top: 4px; }
           .meta-box { font-size: 10px; color: #6B7280; text-align: right; }
           table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -291,6 +299,7 @@ export const exportService = {
   exportTeacherCv(teacher: TeacherUser, products: ScientificProduct[], metrics: TeacherMetrics, generatedAt: string): boolean {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return false;
+    const schoolAccent = SCHOOLS.find(school => teacher.school === school.code)?.accent ?? '#252321';
 
     const profileLink = (field: 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId', label: string, href: string, identifier: string) => {
       if (!identifier) return '';
@@ -327,10 +336,14 @@ export const exportService = {
 
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>CV · ${escapeHtml(teacher.name)}</title>
       <style>
-        @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#25221f;line-height:1.45;margin:0;font-size:10.5pt}
-        header{border-bottom:3px solid #bd3027;padding-bottom:14px;margin-bottom:22px}h1{font-size:25pt;line-height:1.15;margin:0 0 5px}header p{margin:3px 0;color:#645d56}
-        .eyebrow{font-size:9pt;font-weight:bold;letter-spacing:1.4px;text-transform:uppercase;color:#a62e26;margin:0 0 6px}
-        h2{font-size:13pt;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid #ded7ce;padding-bottom:5px;margin:19px 0 8px}
+        @font-face{font-family:'Bricolage Grotesque';src:url('${bricolageFontUrl}') format('woff2');font-style:normal;font-weight:200 800}
+        @font-face{font-family:'Source Sans 3';src:url('${sourceSansFontUrl}') format('woff2');font-style:normal;font-weight:200 900}
+        :root{--school-accent:${schoolAccent};--school-ink:color-mix(in srgb,var(--school-accent) 46%,#252321)}
+        @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:'Source Sans 3',sans-serif;color:#252321;line-height:1.45;margin:0;font-size:10.5pt}
+        h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;color:#252321}
+        header{border-bottom:1px solid var(--school-accent);padding-bottom:14px;margin-bottom:22px}h1{font-size:25pt;line-height:1.15;margin:0 0 5px}header p{margin:3px 0;color:#645d56}
+        .eyebrow{font-size:9pt;font-weight:bold;letter-spacing:1.4px;color:var(--school-ink);margin:0 0 6px}
+        h2{font-size:13pt;letter-spacing:-.015em;border-bottom:1px solid #ded7ce;padding-bottom:5px;margin:19px 0 8px}
         h3{font-size:11pt;margin:3px 0}.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}.facts p{margin:2px 0}.muted,.product-meta{color:#6a625b;font-size:9pt}.links{font-size:9pt}.links a{color:#8b2a23;text-decoration:none}.product{padding:8px 0;border-bottom:1px solid #e5dfd8;break-inside:avoid}.product p{margin:2px 0}.authors{font-weight:600}.bio{white-space:pre-wrap}.footer{margin-top:24px;padding-top:8px;border-top:1px solid #ded7ce;color:#777;font-size:8pt;display:flex;justify-content:space-between}
         @media print{a{color:inherit}}
       </style></head><body>

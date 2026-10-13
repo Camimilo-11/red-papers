@@ -160,7 +160,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-neutral-300 hover:border-neutral-400 bg-white text-neutral-700 text-xs font-semibold shadow-xs transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 border border-neutral-300 hover:border-neutral-400 bg-white text-neutral-700 text-xs font-semibold transition-colors"
             >
               <Download className="w-3.5 h-3.5 text-neutral-500" />
               <span>Descargar resultados</span>
@@ -168,7 +168,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </button>
 
             {showExportMenu && (
-              <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-neutral-200 z-30 p-1.5 text-xs">
+              <div className="absolute right-0 mt-1.5 w-48 z-30 p-1.5 text-xs">
                 <button
                   onClick={() => handleExport('csv')}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 flex items-center gap-2 font-medium text-neutral-700"
@@ -197,7 +197,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           {/* Acceso al registro solo en Mis registros */}
           {onlyMine && allowRegister && <button
             onClick={onOpenRegister}
-            className="school-accent-button flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-xs font-bold shadow-xs transition-colors"
+            className="school-accent-button flex items-center gap-1.5 px-4 py-2 text-white text-xs font-bold transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Registrar</span>
@@ -207,7 +207,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       {/* Aviso de exportación si aplica */}
       {exportNotice && (
-        <div className="p-3 rounded-lg bg-neutral-900 text-white text-xs flex items-center justify-between gap-2 shadow-lg animate-in fade-in">
+        <div className="p-3 bg-neutral-900 text-white text-xs flex items-center justify-between gap-2 animate-in fade-in">
           <span>{exportNotice}</span>
           <button onClick={() => setExportNotice(null)} className="text-white/70 hover:text-white">
             <X className="w-3.5 h-3.5" />
@@ -216,7 +216,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       )}
 
       {/* 2. Barra de Búsqueda y Pestañas Rápidas de Tipo */}
-      <div className="bg-white rounded-xl p-4 sm:p-5 border border-neutral-200 shadow-xs space-y-4">
+      <div className="p-4 sm:p-5 space-y-4">
         <div className="flex flex-col md:flex-row gap-3">
           {/* Input de Búsqueda */}
           <div className="relative flex-1">
@@ -231,7 +231,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           </div>
 
           {/* Segmented control: Todos, Publicaciones, Proyectos */}
-          <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-lg shrink-0 text-xs font-semibold">
+          <div className="flex items-center gap-1 p-1 shrink-0 text-xs font-semibold">
             <button
               type="button"
               aria-pressed={filters.productType === 'todos'}
@@ -273,7 +273,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
         <details className="catalog-filters"><summary><Filter size={19}/> Más filtros</summary>
         {/* 3. Fila de filtros para docente, periodo y línea de investigación */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-neutral-100 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 text-xs">
           {/* Filtro Docente */}
           <div>
             <label className="block text-[11px] font-semibold text-neutral-500 mb-1">
@@ -350,7 +350,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 Filtros activos:
               </span>
               {filters.searchQuery && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-[11px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Búsqueda: "{filters.searchQuery}"
                   <button onClick={() => {setSearchDraft('');setFilters({ ...filters, searchQuery: '' });}}>
                     <X className="w-3 h-3" />
@@ -358,7 +358,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 </span>
               )}
               {filters.productType !== 'todos' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-[11px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Tipo: {filters.productType}
                   <button onClick={() => setFilters({ ...filters, productType: 'todos' })}>
                     <X className="w-3 h-3" />
@@ -366,7 +366,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 </span>
               )}
               {filters.teacherId !== 'todos' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-[11px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Docente: {teachers.find((t) => t.id === filters.teacherId)?.name}
                   <button onClick={() => setFilters({ ...filters, teacherId: 'todos' })}>
                     <X className="w-3 h-3" />
@@ -374,7 +374,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 </span>
               )}
               {filters.researchLine !== 'todas' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-[11px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Línea: {filters.researchLine}
                   <button onClick={() => setFilters({ ...filters, researchLine: 'todas' })}>
                     <X className="w-3 h-3" />
@@ -382,7 +382,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 </span>
               )}
               {filters.periodYear !== 'todos' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 text-[11px]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Periodo: {filters.periodYear}
                   <button onClick={() => setFilters({ ...filters, periodYear: 'todos' })}>
                     <X className="w-3 h-3" />
@@ -424,7 +424,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       {/* 5. Catálogo en Rejilla de 2 Columnas (Captura 08) */}
       {filteredProducts.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center border border-neutral-200 shadow-xs space-y-3">
+        <div className="p-12 text-center space-y-3">
           <AlertCircle className="w-10 h-10 text-neutral-400 mx-auto" />
           <h3 className="text-base font-bold text-neutral-900">
             No se encontraron productos con los criterios seleccionados

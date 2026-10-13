@@ -1,11 +1,10 @@
 .school-summary.school-summary-overview {
   min-width: 0;
   margin: 0 0 16px;
-  padding: 16px 18px;
-  border: 1px solid color-mix(in srgb, var(--school-accent) 20%, #e5e1dc);
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(37, 35, 33, .04);
+  padding: 12px 0 18px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
 }
 
 .school-summary-heading {
@@ -23,11 +22,11 @@
 .school-summary-heading h1 {
   margin: 0;
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family:var(--font-display);
   font-size: clamp(28px, 2.3vw, 32px);
-  font-weight: 400;
-  letter-spacing: -.7px;
-  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.08;
   text-wrap: balance;
 }
 
@@ -38,26 +37,25 @@
   height: 82px;
   place-items: center;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--school-accent) 18%, #e5e1dc);
-  border-radius: 17px;
-  background: #fff;
+  border: 0;
+  background: transparent;
 }
 
 .school-metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 0;
   margin: 0;
 }
 
 .school-metric {
   min-width: 0;
-  padding: 11px 16px 13px;
-  border: 1px solid color-mix(in srgb, var(--school-accent) 14%, #e5e1dc);
-  border-top: 3px solid var(--school-accent);
-  border-radius: 12px;
-  background: #fff;
+  padding: 10px 18px 12px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: transparent;
 }
+.school-metric:first-child { border-left: 0; padding-left: 0; }
 
 .school-metric dt {
   min-height: 22px;
@@ -102,6 +100,9 @@
   .school-metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .school-metric { border-bottom: 1px solid var(--line); }
+  .school-metric:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .school-metric:nth-last-child(-n+2) { border-bottom: 0; }
 }
 
 @media (max-width: 1100px) {
@@ -120,8 +121,7 @@
 @media (max-width: 760px) {
   .school-summary.school-summary-overview {
     margin-bottom: 14px;
-    padding: 12px 14px;
-    border-radius: 16px;
+    padding: 12px 0 14px;
   }
 
   .school-summary.school-summary-overview .school-summary-emblem {
@@ -142,17 +142,20 @@
     flex-basis: 66px;
     width: 66px;
     height: 66px;
-    border-radius: 14px;
   }
 
   .school-metrics-grid {
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .school-metric {
-    padding: 9px 11px 10px;
-    border-radius: 10px;
+    padding: 10px 12px 12px;
+    border-left: 0;
+    border-bottom: 1px solid var(--line);
   }
+  .school-metric:nth-child(even) { border-left: 1px solid var(--line); }
+  .school-metric:nth-last-child(-n+2) { border-bottom: 0; }
+  .school-metric:first-child { padding-left: 0; }
 
   .school-metric dt {
     min-height: 20px;

@@ -5,6 +5,7 @@ import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ens
 import { useMascotHandoff } from './mascotHandoff';
 import type { MascotHandoff } from './mascotHandoff';
 import './MascotHandoff.css';
+import './TouchResearchStage.css';
 import { useMotionPreference } from './useMotionPreference';
 
 const LazyResearchStage = lazy(() => import('./ResearchStage').then(({ ResearchStage }) => ({ default: ResearchStage })));
@@ -478,10 +479,9 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
       const overlayTop = mobileWelcome && link && copy
         ? hero.offsetTop + copy.offsetTop + link.offsetTop + link.offsetHeight + 48
         : hero.offsetTop;
-      overlay.style.top = `${overlayTop}px`;
-      overlay.style.left = `${hero.offsetLeft}px`;
-      overlay.style.width = `${hero.offsetWidth}px`;
-      overlay.style.height = `${Math.max(0, hero.offsetTop + hero.offsetHeight - overlayTop)}px`;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const overlayHeight = Math.max(0, hero.offsetTop + hero.offsetHeight - overlayTop);
+      overlay.style.transform = `translate3d(${hero.offsetLeft}px, ${overlayTop}px, 0) scaleY(${overlayHeight / viewportHeight})`;
     };
     const observer = new ResizeObserver(measure);
     observer.observe(hero);

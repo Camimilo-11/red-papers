@@ -18,13 +18,13 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl border border-neutral-200 z-50 overflow-hidden">
-      <div className="px-4 py-3 bg-neutral-50 border-b border-neutral-200 flex items-center justify-between">
+    <div className="notifications-popover absolute right-0 mt-2 w-96 max-w-[90vw] bg-white z-50 overflow-hidden">
+      <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#EF4035]" />
+          <Bell className="w-4 h-4 text-[var(--school-ink)]" />
           <span className="font-semibold text-sm text-neutral-900">Notificaciones</span>
           {unreadCount > 0 && (
-            <span className="px-1.5 py-0.5 text-xs font-bold rounded-full bg-[#EF4035] text-white">
+            <span className="px-1.5 py-0.5 text-xs font-bold bg-[var(--school-ink)] text-white">
               {unreadCount}
             </span>
           )}
@@ -32,7 +32,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
         {unreadCount > 0 && (
           <button
             onClick={onMarkAllAsRead}
-            className="text-xs text-neutral-600 hover:text-[#EF4035] flex items-center gap-1 transition-colors"
+            className="text-xs text-neutral-600 hover:text-[var(--school-ink)] flex items-center gap-1 transition-colors"
           >
             <CheckCheck className="w-3.5 h-3.5" />
             Marcar leídas
@@ -62,17 +62,17 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                 <div className="flex items-start gap-3">
                   <div className="shrink-0 mt-0.5">
                     {isCargado && (
-                      <span className="p-1 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center">
+                      <span className="p-1 bg-amber-100 text-amber-700 flex items-center justify-center">
                         <Clock className="w-3.5 h-3.5" />
                       </span>
                     )}
                     {isVerificado && (
-                      <span className="p-1 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <span className="p-1 bg-emerald-100 text-emerald-700 flex items-center justify-center">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </span>
                     )}
                     {isRechazado && (
-                      <span className="p-1 rounded-md bg-red-100 text-red-700 flex items-center justify-center">
+                      <span className="p-1 bg-red-100 text-red-700 flex items-center justify-center">
                         <AlertTriangle className="w-3.5 h-3.5" />
                       </span>
                     )}
@@ -94,7 +94,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                     <p className="text-xs text-neutral-600 leading-relaxed mb-1.5">{notif.message.replace(/Comité Revisor Institucional/gi,'Comité Científico').replace(/dictamen de rechazo/gi,'producto en observación').replace(/rechazad[oa]s?/gi,'en observación')}</p>
 
                     {notif.reason && (
-                      <div className="p-2 rounded bg-red-50 border border-red-200 text-xs text-red-800 mb-1.5">
+                      <div className="p-2 bg-red-50 text-xs text-red-800 mb-1.5">
                         <strong>Observación del Comité Científico:</strong> {notif.reason}
                       </div>
                     )}
@@ -102,7 +102,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                     {!notif.read && (
                       <button
                         onClick={() => onMarkAsRead(notif.id)}
-                        className="text-[11px] font-medium text-[#EF4035] hover:underline flex items-center gap-1"
+                        className="text-[11px] font-medium text-[var(--school-ink)] hover:underline flex items-center gap-1"
                       >
                         <Check className="w-3 h-3" />
                         Marcar como leída
@@ -116,7 +116,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
         )}
       </div>
 
-      <div className="p-2 bg-neutral-50 border-t border-neutral-200 text-center">
+      <div className="p-2 text-center">
         <button
           onClick={onClose}
           className="text-xs font-medium text-neutral-600 hover:text-neutral-900 py-1 px-3"

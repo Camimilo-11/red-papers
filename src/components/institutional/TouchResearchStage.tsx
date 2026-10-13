@@ -22,7 +22,7 @@ const label = 'Ver investigaciones y proyectos';
 const acronym = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
 const styleFor = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
-  '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
+  '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`,
 } as React.CSSProperties);
 
 const TouchSlide = React.memo(function TouchSlide({ school, active, handoff, onSelect, mobileTransition, stageInteractive, reducedMotion, schoolFade, sharedEcaaMascotFade, transitionRole }: {

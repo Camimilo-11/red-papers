@@ -413,11 +413,11 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="register-heading" tabIndex={-1} className="registration-dialog bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-neutral-200 overflow-hidden">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="register-heading" tabIndex={-1} className="registration-dialog bg-white max-w-3xl w-full shadow-2xl border border-neutral-200 overflow-hidden">
         {/* Encabezado */}
-        <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
+        <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-red-50 text-[#EF4035]">
+            <div className="p-2 bg-red-50 text-[var(--school-ink)]">
               {initialProduct?<PencilLine className="w-5 h-5"/>:<Plus className="w-5 h-5 stroke-[3]"/>}
             </div>
             <div>
@@ -440,15 +440,15 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         </div>
 
         <ol className="registration-steps" aria-label="Pasos del registro">{(initialProduct?['Datos básicos','Autores y detalles','Confirmar y reenviar']:['Datos básicos','Autores y detalles','Confirmar y guardar']).map((name,index)=><li key={name} aria-current={step===index+1?'step':undefined} className={step===index+1?'current':step>index+1?'complete':''}><span>{index+1}</span>{name}</li>)}</ol>
-        {initialProduct?.rejectionReason&&<div className="mx-6 mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true"/><span><strong>Observación del Comité Científico:</strong> {initialProduct.rejectionReason}</span></div>}
+        {initialProduct?.rejectionReason&&<div className="mx-6 mt-4 flex items-start gap-2 bg-amber-50 p-3 text-xs text-amber-900"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true"/><span><strong>Observación del Comité Científico:</strong> {initialProduct.rejectionReason}</span></div>}
         {!initialProduct&&step===1 && <>
         {/* Pestañas de Vía de Ingreso */}
-        <div className="bg-white border-b border-neutral-200 px-6 pt-3 flex items-center gap-2 overflow-x-auto">
+        <div className="px-6 pt-3 flex items-center gap-2 overflow-x-auto">
           {productType==='publicacion' && <button
             onClick={() => setActiveTab('identifier')}
             className={`pb-3 px-3 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'identifier'
-                ? 'border-[#EF4035] text-[#EF4035]'
+                ? 'border-[var(--school-accent)] text-[var(--school-ink)]'
                 : 'border-transparent text-neutral-500 hover:text-neutral-800'
             }`}
           >
@@ -460,7 +460,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             onClick={() => setActiveTab('pdf')}
             className={`pb-3 px-3 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'pdf'
-                ? 'border-[#EF4035] text-[#EF4035]'
+                ? 'border-[var(--school-accent)] text-[var(--school-ink)]'
                 : 'border-transparent text-neutral-500 hover:text-neutral-800'
             }`}
           >
@@ -472,7 +472,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             onClick={() => setActiveTab('manual')}
             className={`pb-3 px-3 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'manual'
-                ? 'border-[#EF4035] text-[#EF4035]'
+                ? 'border-[var(--school-accent)] text-[var(--school-ink)]'
                 : 'border-transparent text-neutral-500 hover:text-neutral-800'
             }`}
           >
@@ -486,10 +486,10 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         <div ref={contentRef} className="registration-content p-6 overflow-y-auto space-y-5">
           {/* Pestaña 1: Asistente DOI / ORCID */}
           {!initialProduct&&step===1 && productType==='publicacion' && activeTab === 'identifier' && (
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3">
+            <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#EF4035]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[var(--school-ink)]" />
                   <span>Búsqueda Asistida por Identificador</span>
                 </span>
                 <span className="text-[11px] text-neutral-400">
@@ -503,13 +503,13 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                   value={identifierInput}
                   onChange={(e) => setIdentifierInput(e.target.value)}
                   placeholder="Ej. 10.1145/3576915.3623102  o  0000-0002-1825-0097"
-                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white font-mono"
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)] bg-white tabular-nums"
                 />
                 <button
                   type="button"
                   onClick={handleSearchIdentifier}
                   disabled={isSearchingId}
-                  className="px-4 py-2 bg-[#EF4035] hover:bg-[#D02B20] disabled:bg-neutral-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
+                  className="px-4 py-2 bg-[var(--school-ink)] hover:bg-[var(--school-ink)] disabled:bg-neutral-300 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>{isSearchingId ? 'Buscando...' : 'Consultar'}</span>
@@ -533,7 +533,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
 
               {/* Lista de obras si la búsqueda fue por ORCID */}
               {orcidWorks.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-neutral-200">
+                <div className="space-y-2 pt-2">
                   <span className="text-[11px] font-bold text-neutral-500 uppercase">
                     Obras encontradas en ORCID:
                   </span>
@@ -542,10 +542,10 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                       <div
                         key={work.id}
                         onClick={() => handleSelectOrcidWork(work)}
-                        className="p-2.5 rounded-lg bg-white border border-neutral-200 hover:border-[#EF4035] cursor-pointer transition-all flex items-center justify-between text-xs group"
+                        className="p-2.5 cursor-pointer transition-all flex items-center justify-between text-xs group"
                       >
                         <div className="min-w-0 pr-2">
-                          <p className="font-bold text-neutral-900 group-hover:text-[#EF4035] truncate">
+                          <p className="font-bold text-neutral-900 group-hover:text-[var(--school-ink)] truncate">
                             {work.title}
                           </p>
                           <p className="text-[10px] text-neutral-500">
@@ -553,7 +553,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                             {work.venue} • {work.year}
                           </p>
                         </div>
-                        <span className="px-2 py-1 rounded bg-neutral-100 text-neutral-700 text-[10px] font-semibold shrink-0 group-hover:bg-[#EF4035] group-hover:text-white transition-colors">
+                        <span className="px-2 py-1 text-neutral-700 text-[10px] font-semibold shrink-0 group-hover:bg-[var(--school-ink)] group-hover:text-white transition-colors">
                           Seleccionar
                         </span>
                       </div>
@@ -566,16 +566,16 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
 
           {/* Pestaña 2: Asistente PDF de Proyecto */}
           {step===1 && productType === 'proyecto' && activeTab === 'pdf' && (
-            <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-3">
+            <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-800 flex items-center gap-1.5">
-                  <Upload className="w-3.5 h-3.5 text-[#EF4035]" />
+                  <Upload className="w-3.5 h-3.5 text-[var(--school-ink)]" />
                   <span>Documento del proyecto</span>
                 </span>
                 <span className="text-[11px] text-neutral-400">PDF máx. 10 MB · <strong>Simulado</strong></span>
               </div>
 
-              <div className="border-2 border-dashed border-neutral-300 rounded-xl p-6 text-center hover:border-[#EF4035] bg-white transition-colors">
+              <div className="p-6 text-center transition-colors">
                 <input
                   type="file"
                   id="project-pdf-input"
@@ -598,20 +598,20 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               </div>
 
               {pdfExtracting && (
-                <p className="text-xs text-[#EF4035] font-semibold text-center animate-pulse">
+                <p className="text-xs text-[var(--school-ink)] font-semibold text-center animate-pulse">
                   Procesando documento y extrayendo metadatos...
                 </p>
               )}
 
               {pdfError && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                <div className="p-3 bg-red-50 text-xs text-red-700 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{pdfError}</span>
                 </div>
               )}
 
               {pdfSuccessMessage && (
-                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
+                <div className="p-3 bg-emerald-50 text-xs text-emerald-800 flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{pdfSuccessMessage}</span>
                 </div>
@@ -623,14 +623,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Mensajes de error o advertencia */}
             {errorMessage && (
-              <div role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2 font-medium">
+              <div role="alert" className="p-3 bg-red-50 text-xs text-red-700 flex items-start gap-2 font-medium">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             {duplicateWarning && (
-              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
+              <div className="p-3 bg-amber-50 text-xs text-amber-800 flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{duplicateWarning}</span>
               </div>
@@ -682,7 +682,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Título completo de la publicación o proyecto..."
                 required
-                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)]"
               />
             </div>
 
@@ -699,7 +699,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 onChange={(e) => setAuthorsText(e.target.value)}
                 placeholder="Ej. Juan Pablo Astudillo León, Elena Valdivieso Castro"
                 required
-                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)]"
               />
             </div>
 
@@ -707,7 +707,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block font-semibold text-neutral-700 mb-1">{productType==='publicacion'?'Fecha de publicación *':'Fecha de inicio del proyecto *'}</label>
-                <input aria-label={productType==='publicacion'?'Fecha de publicación':'Fecha de inicio del proyecto'} type="date" value={productDate} onChange={e=>setProductDate(e.target.value)} required className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white"/>
+                <input aria-label={productType==='publicacion'?'Fecha de publicación':'Fecha de inicio del proyecto'} type="date" value={productDate} onChange={e=>setProductDate(e.target.value)} required className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)] bg-white"/>
                 <small className="mt-1 block text-neutral-500">El año se obtendrá automáticamente de esta fecha.</small>
               </div>
 
@@ -718,7 +718,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               <select aria-label="Línea de Investigación"
                   value={researchLine}
                   onChange={(e) => setResearchLine(e.target.value as OfficialResearchLine)}
-                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] bg-white"
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)] bg-white"
                 >
                   {researchLines.map((line) => (
                     <option key={line} value={line}>
@@ -749,7 +749,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={doi}
                     onChange={(e) => setDoi(e.target.value)}
                     placeholder="DOI oficial, si ya fue asignado"
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs font-mono focus:ring-1 focus:ring-[#EF4035]"
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs tabular-nums focus:ring-1 focus:ring-[var(--school-accent)]"
                   />
                   <small className="mt-1 block text-neutral-500">Si la publicación aún no tiene un DOI oficial, deje este campo vacío.</small>
                 </div>
@@ -763,7 +763,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                     placeholder="Ej. ACM CCS 2025 / IEEE Transactions..."
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -776,7 +776,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={volumeIssue}
                     onChange={(e) => setVolumeIssue(e.target.value)}
                     placeholder="Ej. Vol. 12, Núm. 2, pp. 35-48"
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)]"
                   />
                 </div>
               </div>
@@ -791,7 +791,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={projectCode}
                     onChange={(e) => setProjectCode(e.target.value)}
                     placeholder={`Ej. ${currentUser?.school || 'ECMC'}-INV-2024-008`}
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs font-mono focus:ring-1 focus:ring-[#EF4035]"
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs tabular-nums focus:ring-1 focus:ring-[var(--school-accent)]"
                   />
                 </div>
 
@@ -804,14 +804,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                     placeholder="Ej. Convocatoria Semilla Yachay Tech..."
-                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035]"
+                    className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)]"
                   />
                 </div>
               </div>
             )}
 
             {productType === 'publicacion' && (
-              <section className="space-y-3 rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-4" aria-labelledby="article-upload-title">
+              <section className="space-y-3 bg-[#fffaf7] p-4" aria-labelledby="article-upload-title">
                 <div className="flex items-start gap-2">
                   <FileCheck2 className="mt-0.5 h-4 w-4 shrink-0 school-accent-text" aria-hidden="true" />
                   <div>
@@ -828,7 +828,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                   {(articleFile || initialProduct?.articleAttachment) && <span className="min-w-0 text-[11px] text-neutral-700"><strong className="break-all">{articleFile?.name || initialProduct?.articleAttachment?.fileName}</strong>{articleFile && articleFile.size > 0 && ` · ${(articleFile.size / (1024 * 1024)).toFixed(2)} MB`}</span>}
                 </div>
                 {articleFileError && <p role="alert" className="text-[11px] font-medium text-red-700">{articleFileError}</p>}
-                <div className="flex items-start gap-2 rounded-lg border border-neutral-200 bg-white p-3">
+                <div className="flex items-start gap-2 p-3">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#47745e]" aria-hidden="true" />
                   <label className="flex cursor-pointer items-start gap-2 text-[11px] leading-relaxed text-neutral-700">
                     <input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} className="mt-0.5 school-accent-checkbox" />
@@ -850,14 +850,14 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                 rows={3}
                 placeholder="Descripción concisa de la metodología y resultados del trabajo..."
                 required={productType === 'publicacion'}
-                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)] resize-none"
               />
             </div>
 
             </>}
             {step===3 && <section className="review-summary"><h3>{initialProduct?'Revise las correcciones antes de reenviar':'Verifique la información del registro'}</h3><dl><dt>Tipo</dt><dd>{productType==='publicacion'?'Publicación':'Proyecto'}</dd><dt>Título</dt><dd>{title}</dd><dt>{productType==='publicacion'?'Autores':'Participantes'}</dt><dd>{authorsText}</dd><dt>{productType==='publicacion'?'Fecha de publicación':'Inicio del proyecto'}</dt><dd>{productDate}</dd>{productType==='proyecto'&&<><dt>Estado del proyecto</dt><dd>{PROJECT_STATUS_LABELS[projectStatus]}</dd><dt>Duración</dt><dd>{projectDurationMonths} meses</dd><dt>Dirección</dt><dd>{projectDirector||'No indicada'}</dd><dt>Productos esperados</dt><dd>{expectedProductsText}</dd></>}<dt>Línea de investigación</dt><dd>{researchLine}</dd>{productType==='publicacion'&&<><dt>Artículo</dt><dd>{articleFile?.name||initialProduct?.articleAttachment?.fileName||'No adjunto'}</dd><dt>Privacidad</dt><dd>{privacyAccepted?'Autorización confirmada para revisión privada':'Pendiente de confirmación'}</dd><dt>Identificador</dt><dd>{doi?'Registrado; se mostrará al verificarse':'Sin DOI registrado'}</dd><dt>Medio / revista</dt><dd>{venue||'No indicado'}</dd><dt>Volumen / número</dt><dd>{volumeIssue||'No indicado'}</dd></>}<dt>Resumen</dt><dd>{abstract||'No indicado'}</dd></dl></section>}
             {/* Aviso sobre estado inicial "cargado" (Sección 8) */}
-            <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-[11px] text-neutral-600 flex items-start gap-2">
+            <div className="p-3 text-[11px] text-neutral-600 flex items-start gap-2">
               <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
               <span>
                 {initialProduct
@@ -867,7 +867,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
             </div>
 
             {/* Botones de acción */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+            <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={()=>step>1?setStep(step-1):onClose()}
@@ -877,7 +877,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-lg bg-[#EF4035] hover:bg-[#D02B20] text-white font-bold transition-colors shadow-sm"
+                className="px-5 py-2 bg-[var(--school-ink)] hover:bg-[var(--school-ink)] text-white font-bold transition-colors"
               >
                 {step<3?'Continuar':initialProduct?'Confirmar y reenviar':'Confirmar y guardar'}
               </button>

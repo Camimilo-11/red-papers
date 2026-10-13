@@ -21,9 +21,9 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
   return (
     <div className="research-chart-card research-semester-chart">
       {/* Encabezado del gráfico */}
-      <div className="semester-chart-heading flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-neutral-100">
+      <div className="semester-chart-heading flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4">
         <div className="flex items-center gap-2">
-          <div className="semester-chart-accent-icon p-1.5 rounded-lg">
+          <div className="semester-chart-accent-icon p-1.5">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
@@ -37,7 +37,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
         </div>
 
         {/* Alternador de Series (Segmented control) */}
-        <div className="semester-mode-control flex items-center gap-1 p-1 bg-neutral-100 rounded-lg self-start sm:self-auto text-xs font-semibold">
+        <div className="semester-mode-control flex items-center gap-1 p-1 self-start sm:self-auto text-xs font-semibold">
           <button
             type="button"
             aria-pressed={seriesMode === 'total'}
@@ -88,7 +88,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
       <div className="semester-chart-viewport relative pt-6 pb-2">
         {/* Tooltip flotante si hay hover */}
         {hoveredPoint && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2 pointer-events-none z-20">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-3 py-1.5 flex items-center gap-2 pointer-events-none z-20">
             <span className="font-bold">{hoveredPoint.semester}:</span>
             <span>
               {seriesMode === 'total' && `${hoveredPoint.total} productos (${hoveredPoint.publications} pub, ${hoveredPoint.projects} proy)`}
@@ -104,7 +104,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
             className="semester-chart-content"
             style={{ '--semester-chart-width': `${data.length * 48}px` } as React.CSSProperties}
           >
-            <div className="semester-chart-plot h-56 flex items-end justify-between gap-1 sm:gap-2 px-2 border-b border-neutral-200">
+            <div className="semester-chart-plot h-56 flex items-end justify-between gap-1 sm:gap-2 px-2">
               {data.map((d) => {
                 const val =
                   seriesMode === 'total'
@@ -149,7 +149,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full max-w-[42px] bg-neutral-100 rounded-t-md relative flex items-end overflow-hidden h-full">
+                      <div className="w-full max-w-[42px] relative flex items-end overflow-hidden h-full">
                         <div
                           style={{ height: `${heightPercent}%` }}
                           className={`semester-single-bar ${seriesMode === 'projects' ? 'project' : 'publication'} ${val === 0 ? 'is-empty' : ''} ${isHovered ? 'is-hovered' : ''}`}

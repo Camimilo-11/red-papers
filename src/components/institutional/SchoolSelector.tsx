@@ -43,7 +43,7 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
 
         <section className="school-selector-grid" aria-label="Escuelas disponibles" aria-busy={!logosReady} style={{ visibility: logosReady ? 'visible' : 'hidden' }}>
           {SCHOOLS.map((school) => (
-            <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--accent': `color-mix(in srgb, ${school.accent} 45%, #292522)` } as React.CSSProperties}>
+            <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`, '--accent': `color-mix(in srgb, ${school.accent} 46%, #252321)` } as React.CSSProperties}>
               <div className="school-selector-logo"><SchoolSelectorMark school={school} /></div>
               <span className="school-selector-code">{school.code}</span>
               <h2>{school.name}</h2>
