@@ -289,6 +289,24 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
     );
   }
 
+  const teacherDashboard = currentUser?.role === 'teacher';
+  const dashboardActions = <InstitutionalBanner
+    showActions={!!currentUser}
+    primary={teacherDashboard}
+    onViewRecords={teacherDashboard ? () => {setCatalogTeacherFilter('todos'); setActiveTab('mine');} : undefined}
+    onReview={currentUser?.role === 'reviewer_demo' ? () => setActiveTab('reviewer') : undefined}
+    allowRegister={!!currentUser && (currentUser.role === 'teacher' || currentUser.role === 'developer')}
+    onOpenRegister={(type) => {
+      if (currentUser?.role === 'reviewer_demo' || currentUser?.role === 'student') return;
+      setEditingProduct(null);
+      setRegisterType(type);
+      setRegisterTypeLocked(true);
+      if (!currentUser) setIsLoginOpen(true);
+      else setIsRegisterProductOpen(true);
+    }}
+    onBrowse={() => setActiveTab('catalog')}
+  />;
+
   // Vista principal de SIMAPC
   return (
     <div className="portal-app min-h-screen font-sans" style={{ '--accent': `color-mix(in srgb, ${selectedSchool.accent} 46%, #252321)`, '--school-accent': selectedSchool.accent, '--school-ink': `color-mix(in srgb, ${selectedSchool.accent} 46%, #252321)` } as React.CSSProperties}>
@@ -329,17 +347,16 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       />
 
       {/* 2. Contenedor de Contenido Principal */}
-      <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''}`}>
+      <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''} ${activeTab === 'dashboard' && teacherDashboard ? 'portal-main-teacher-dashboard' : ''}`}>
         {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>{currentUser?.role==='student'?'Ver mis colaboraciones':'Ver mis registros'}</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
         <Suspense fallback={<PortalEntryFallback />}>
         <ScreenScrollStart screenKey={screenKey} />
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
-            <MetricCards metrics={schoolMetrics} school={selectedSchool}/>
-
-            {/* Acciones disponibles para el perfil actual. */}
-            <InstitutionalBanner showActions={!!currentUser} onReview={currentUser?.role==='reviewer_demo'?()=>setActiveTab('reviewer'):undefined} allowRegister={!!currentUser && (currentUser.role==='teacher'||currentUser.role==='developer')} onOpenRegister={(type) => { if(currentUser?.role==='reviewer_demo'||currentUser?.role==='student') return; setEditingProduct(null); setRegisterType(type); setRegisterTypeLocked(true); if (!currentUser) setIsLoginOpen(true); else setIsRegisterProductOpen(true); }} onBrowse={()=>setActiveTab('catalog')} />
+            {teacherDashboard && dashboardActions}
+            <MetricCards metrics={schoolMetrics} school={selectedSchool} secondary={teacherDashboard}/>
+            {!teacherDashboard && dashboardActions}
 
             <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
 
