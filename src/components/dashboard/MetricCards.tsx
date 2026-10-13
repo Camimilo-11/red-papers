@@ -6,7 +6,8 @@ import './MetricCards.css';
 
 const numberFormat = new Intl.NumberFormat('es-EC');
 
-export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfig }> = ({ metrics, school }) => {
+export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfig; secondary?: boolean }> = ({ metrics, school, secondary = false }) => {
+  const Heading = secondary ? 'h2' : 'h1';
   const summary = [
     { id: 'publications', value: metrics.totalPublications, label: 'Publicaciones' },
     { id: 'projects', value: metrics.totalProjects, label: 'Proyectos' },
@@ -18,10 +19,10 @@ export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfi
     <section className="school-summary school-summary-overview" aria-label="Resumen de la escuela" aria-labelledby="school-summary-title">
       <header className="school-summary-heading">
         <div className="school-summary-heading-copy">
-          <h1 id="school-summary-title">La escuela en cifras</h1>
+          <Heading id="school-summary-title">La escuela en cifras</Heading>
         </div>
         <div className="school-summary-emblem" aria-hidden="true">
-          <SchoolIconTile school={school} size={72} />
+          <SchoolIconTile school={school} size={secondary ? 40 : 72} />
         </div>
       </header>
       <dl className="school-metrics-grid">
