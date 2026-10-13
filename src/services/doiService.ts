@@ -1,6 +1,7 @@
 import { OfficialResearchLine, AcademicSemester } from '../types';
 
 export interface ExtractedPublicationMetadata {
+  simulated: boolean;
   title: string;
   authors: string[];
   year: number;
@@ -12,6 +13,7 @@ export interface ExtractedPublicationMetadata {
 }
 
 export interface OrcidWorkItem {
+  simulated: boolean;
   id: string;
   title: string;
   year: number;
@@ -58,6 +60,7 @@ export const doiService = {
     // 1. Catálogo de demostración precargado de respuesta inmediata
     const KNOWN_MOCKS: Record<string, ExtractedPublicationMetadata> = {
       '10.1145/3576915.3623102': {
+        simulated: true,
         title: 'Lattice-Based Zero-Knowledge Cryptographic Proofs for Decentralized Academic Credential Verification',
         authors: ['Roberto Cárdenas Guanoluisa', 'Juan Pablo Astudillo León'],
         year: 2025,
@@ -68,6 +71,7 @@ export const doiService = {
         researchLine: 'Tecnologías de la información',
       },
       '10.1038/s42003-024-06122-8': {
+        simulated: true,
         title: 'Deep Residual Learning for Genomic Variant Classification in High-Altitude Populations',
         authors: ['Sofía Arcentales Mora', 'Elena Valdivieso Castro'],
         year: 2024,
@@ -78,6 +82,7 @@ export const doiService = {
         researchLine: 'Ciencia de datos',
       },
       '10.1016/j.cam.2023.114920': {
+        simulated: true,
         title: 'Finite Element Simulation of Magnetohydrodynamic Convection in Porous Nanofluids',
         authors: ['Carlos Mendoza Paredes'],
         year: 2024,
@@ -88,6 +93,7 @@ export const doiService = {
         researchLine: 'Ecuaciones diferenciales, análisis matemático, modelamiento y optimización',
       },
       '10.1109/tevc.2023.3298411': {
+        simulated: true,
         title: 'Hybrid Metaheuristic Approaches for Large-Scale Vehicle Routing in Mountainous Topographies',
         authors: ['Juan Pablo Astudillo León', 'Carlos Mendoza Paredes'],
         year: 2024,
@@ -125,6 +131,7 @@ export const doiService = {
         return {
           success: true,
           data: {
+            simulated: false,
             title,
             authors: authors.length > 0 ? authors : ['Investigador de Yachay Tech'],
             year,
@@ -155,6 +162,7 @@ export const doiService = {
     return [
       {
         id: 'work-1',
+        simulated: true,
         title: 'Distributed Consensus Algorithms for Decentralized Edge Analytics in Ecuador',
         year: 2025,
         venue: 'IEEE Latin America Transactions',
@@ -165,6 +173,7 @@ export const doiService = {
       },
       {
         id: 'work-2',
+        simulated: true,
         title: 'Topological Data Analysis for High-Dimensional Biosensor Clustering',
         year: 2024,
         venue: 'Journal of Mathematical Biology & Systems',
@@ -175,6 +184,7 @@ export const doiService = {
       },
       {
         id: 'work-3',
+        simulated: true,
         title: 'Proyecto: Red Telemática Abierta para Monitoreo Ambiental de Alta Montaña',
         year: 2025,
         venue: 'Fondo de Cooperación Científica ECMC',

@@ -1,6 +1,7 @@
 import { OfficialResearchLine, AcademicSemester } from '../types';
 
 export interface ExtractedPdfProjectMetadata {
+  simulated: boolean;
   title: string;
   projectCode?: string;
   director?: string;
@@ -52,7 +53,7 @@ export const pdfExtractorService = {
   },
 
   /**
-   * Extrae metadatos básicos estructurados desde un documento PDF de proyecto
+   * Simula metadatos preliminares tras validar el PDF; no es un parser real.
    */
   async extractProjectMetadata(file: File): Promise<{
     success: boolean;
@@ -85,10 +86,6 @@ export const pdfExtractorService = {
       // Limpieza del nombre de archivo para inferir datos si el PDF está escaneado
       const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
 
-      // Detección de código de proyecto institucional (ej. ECMC-INV-2024-008 o YACHAY-202X)
-      const codeMatch = rawText.match(/ECMC[-_]INV[-_]\d{4}[-_]\d{3}/i) || rawText.match(/INV[-_]\d{4}[-_]\d{3}/i);
-      const projectCode = codeMatch ? codeMatch[0].toUpperCase().replace(/_/g, '-') : `ECMC-INV-${new Date().getFullYear()}-001`;
-
       // Detección de año y semestre
       const yearMatch = rawText.match(/\b(202[1-6])\b/);
       const detectedYear = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
@@ -102,10 +99,12 @@ export const pdfExtractorService = {
       return {
         success: true,
         data: {
+          simulated: true,
           title,
-          projectCode,
-          director: 'Investigador Principal',
-          participants: ['Investigador Principal', 'Co-investigador ECMC'],
+          // La simulación no identifica estos datos; debe completarlos el usuario.
+          projectCode: '',
+          director: '',
+          participants: [],
           year: detectedYear,
           semester: detectedSemester,
           researchLine: 'Computación científica',
