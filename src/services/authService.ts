@@ -1,6 +1,6 @@
 import { resolveRole } from './roleService';
 import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
-import { AcademicDegree, OfficialResearchLine, TeacherResearchSublines, TeacherUser } from '../types';
+import { AcademicDegree, OfficialResearchLine, SchoolCode, TeacherResearchSublines, TeacherUser } from '../types';
 import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { ALLOWED_EMAIL_DOMAIN, ALL_OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
 import { getSchoolByCode } from '../constants/schools';
@@ -9,6 +9,7 @@ export interface RegisterFormData {
   name: string;
   email: string;
   password: string;
+  school: SchoolCode | '';
   orcid?: string;
   bio?: string;
 }
@@ -17,6 +18,7 @@ export interface RegisterValidationErrors {
   name?: string;
   email?: string;
   password?: string;
+  school?: string;
   orcid?: string;
   general?: string;
 }
@@ -234,8 +236,8 @@ export const authService = {
     const cleanEmail = formData.email ? formData.email.trim().toLowerCase() : '';
     if (!cleanEmail) {
       errors.email = 'El correo institucional es obligatorio.';
-    } else if (!cleanEmail.endsWith(ALLOWED_EMAIL_DOMAIN)) {
-      errors.email = `El correo debe pertenecer al dominio institucional (${ALLOWED_EMAIL_DOMAIN}).`;
+    } else if (!/^[a-z0-9_%+-]+(?:\.[a-z0-9_%+-]+)*@yachaytech\.edu\.ec$/i.test(cleanEmail) || !cleanEmail.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+      errors.email = `Ingrese un correo institucional válido (${ALLOWED_EMAIL_DOMAIN}).`;
     } else {
       const teachers = storageService.getTeachers();
       const existing = teachers.find((t) => t.email.toLowerCase() === cleanEmail);
@@ -254,7 +256,10 @@ export const authService = {
       errors.orcid = 'El formato de ORCID debe ser válido (ej. 0000-0002-1825-0097).';
     }
 
-    if (Object.keys(errors).length > 0) {
+    const selectedSchool = getSchoolByCode(formData.school);
+    if (!selectedSchool) errors.school = 'Seleccione una escuela válida.';
+
+    if (Object.keys(errors).length > 0 || !selectedSchool) {
       return { success: false, errors };
     }
 
@@ -268,7 +273,7 @@ export const authService = {
       rank: 'Profesor',
       orcid: formData.orcid ? formData.orcid.trim() : undefined,
       bio: formData.bio ? formData.bio.trim() : `Docente Investigador de la ${ALLOWED_EMAIL_DOMAIN}.`,
-      school: 'ECMC',
+      school: selectedSchool.code,
       role: 'teacher',
       createdAt: new Date().toISOString(),
     };
