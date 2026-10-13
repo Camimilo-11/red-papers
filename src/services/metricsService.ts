@@ -11,6 +11,10 @@ export interface TemporalDataPoint {
 
 const academicSemesterSet = new Set<AcademicSemester>(ACADEMIC_SEMESTERS);
 
+function normalizeAuthorName(name: string): string {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
 function semesterForProduct(product: ScientificProduct): AcademicSemester | undefined {
   if (product.semester && academicSemesterSet.has(product.semester)) return product.semester;
 
@@ -57,9 +61,10 @@ export const metricsService = {
   calculateTeacherMetrics(teacher: TeacherUser, allProducts: ScientificProduct[]): TeacherMetrics {
     // Las métricas de perfiles públicos se calculan solo con productos verificados.
     const verifiedProducts = allProducts.filter((p) => p.status === 'verificado');
+    const teacherName = normalizeAuthorName(teacher.name);
     const teacherProducts = verifiedProducts.filter((p) => {
       if (p.ownerId === teacher.id) return true;
-      return p.authors.some((author) => author.toLowerCase().includes(teacher.name.toLowerCase()));
+      return !!teacherName && p.authors.some((author) => normalizeAuthorName(author) === teacherName);
     });
 
     const publications = teacherProducts.filter((p) => p.type === 'publicacion');

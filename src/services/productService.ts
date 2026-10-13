@@ -21,6 +21,10 @@ const validIsoDate = (value: string) => {
 
 const cleanList = (values: string[]) => values.map(value => value.trim()).filter(Boolean);
 
+function normalizeAuthorName(name: string): string {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
 function todayLocalIso(): string {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -436,12 +440,13 @@ export const productService = {
    */
   filterProducts(products: ScientificProduct[], filters: FilterState): ScientificProduct[] {
     const query = filters.searchQuery.trim().toLowerCase();
+    const authorQuery = normalizeAuthorName(filters.searchQuery);
 
     return products.filter((p) => {
       // 1. Búsqueda de texto (título, autores, DOI, medio/venue, código)
       if (query) {
         const matchesTitle = p.title.toLowerCase().includes(query);
-        const matchesAuthor = p.authors.some((a) => a.toLowerCase().includes(query));
+        const matchesAuthor = !!authorQuery && p.authors.some((a) => normalizeAuthorName(a) === authorQuery);
         const matchesDoi = p.doi ? p.doi.toLowerCase().includes(query) : false;
         const matchesVenue = p.venue ? p.venue.toLowerCase().includes(query) : false;
         const matchesCode = p.projectCode ? p.projectCode.toLowerCase().includes(query) : false;
@@ -462,7 +467,8 @@ export const productService = {
         if (teacher) {
           // Coincidencia por ID de propietario o autor en la lista
           const isOwner = p.ownerId === teacher.id;
-          const isCoauthor = p.authors.some((a) => a.toLowerCase().includes(teacher.name.toLowerCase()));
+          const teacherName = normalizeAuthorName(teacher.name);
+          const isCoauthor = !!teacherName && p.authors.some((a) => normalizeAuthorName(a) === teacherName);
           if (!isOwner && !isCoauthor) return false;
         }
       }
