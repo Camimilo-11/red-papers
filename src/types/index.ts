@@ -85,7 +85,7 @@ export interface ScientificProduct {
   publicationDate?: string; // Fecha ISO para publicaciones
   projectStartDate?: string;
   projectEndDate?: string;
-  researchLine: OfficialResearchLine;
+  researchLine: OfficialResearchLine | ''; // Empty when the source does not provide a classification.
   abstract: string;
   status: ProductStatus;
   createdAt: string;
@@ -93,6 +93,16 @@ export interface ScientificProduct {
   verifiedAt?: string;
   rejectionReason?: string;
   citations: number; // 0 o número de citas (fuente identificada como simulada en demo)
+  authorIds?: string[]; // Researchers explicitly associated with this work by the imported source.
+  bibliographicSource?: {
+    dataset: string;
+    publicationType: string;
+    researcherOrcids: string[];
+    sourceRows: number[];
+    citations: number | null;
+    sjrQuartile: string | null;
+    sjrScore: number | null;
+  };
 
   // Específico para publicaciones
   doi?: string;

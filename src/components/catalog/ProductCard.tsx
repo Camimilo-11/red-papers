@@ -1,8 +1,8 @@
 import React from 'react';
-import { ScientificProduct, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { ScientificProduct, PROJECT_STATUS_LABELS } from '../../types';
 import { BookOpen, FolderOpen, ArrowRight, CheckCircle2, Clock, ExternalLink, AlertTriangle, PencilLine } from 'lucide-react';
 import { normalizeDoi } from '../../services/doiService';
-import { productDateLabel } from '../../services/productPresentation';
+import { productDateLabel, productStatusLabel } from '../../services/productPresentation';
 
 export const ProductCard: React.FC<{
   product: ScientificProduct;
@@ -11,7 +11,7 @@ export const ProductCard: React.FC<{
   showStatus?: boolean;
 }> = ({ product, onClick, onEdit, showStatus = false }) => {
   const Icon = product.type === 'publicacion' ? BookOpen : FolderOpen;
-  const Status = product.status === 'verificado'
+  const Status = product.bibliographicSource ? BookOpen : product.status === 'verificado'
     ? CheckCircle2
     : product.status === 'rechazado' ? AlertTriangle : Clock;
   const doi = product.type === 'publicacion' && product.status === 'verificado' ? normalizeDoi(product.doi) : '';
@@ -22,10 +22,10 @@ export const ProductCard: React.FC<{
       <div className="product-row-body">
         <div className="product-meta">
           <span>{product.type === 'publicacion' ? 'Publicación' : 'Proyecto'} · {productDateLabel(product)}{product.type==='proyecto'&&product.projectStatus?` · ${PROJECT_STATUS_LABELS[product.projectStatus]}`:''}</span>
-          {showStatus && (
+          {(showStatus || product.bibliographicSource) && (
             <span className={`status-label status-${product.status}`}>
               <Status size={17} />
-              {PRODUCT_STATUS_LABELS[product.status]}
+              {productStatusLabel(product)}
             </span>
           )}
         </div>
@@ -43,7 +43,7 @@ export const ProductCard: React.FC<{
             <ExternalLink size={14} aria-hidden="true" />
           </a>
         )}
-        <span className="product-line">{product.researchLine}</span>
+        <span className="product-line">{product.researchLine || 'Línea no asignada'}</span>
       </div>
       <div className="product-row-actions">
         {onEdit&&<button type="button" className="product-edit" onClick={onEdit}><PencilLine size={16} aria-hidden="true"/>Corregir y reenviar</button>}

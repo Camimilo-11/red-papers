@@ -734,6 +734,7 @@ export function ResearchLineBackdrop({ researchLine }: { researchLine: OfficialR
   const backdrop = useRef<SVGSVGElement>(null);
   useBackdropMotionVisibility(backdrop);
   const Motif = MOTIFS[researchLine];
+  if (!Motif) return null;
   return (
     <svg
       ref={backdrop}

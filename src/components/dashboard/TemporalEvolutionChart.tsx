@@ -11,6 +11,9 @@ type ChartSeriesMode = 'total' | 'publications' | 'projects';
 export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ data }) => {
   const [seriesMode, setSeriesMode] = useState<ChartSeriesMode>('total');
   const [hoveredPoint, setHoveredPoint] = useState<TemporalDataPoint | null>(null);
+  const annual = data.some(point => point.unit === 'year');
+  const period = annual && data.length ? `${data[0].semester} - ${data[data.length - 1].semester}` : '2021 - 2026';
+  const unit = annual ? 'año' : 'semestre';
 
   // Mantener una escala común para comparar publicaciones y proyectos.
   const maxValue = Math.max(
@@ -28,10 +31,10 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
           </div>
           <div>
             <h3 className="font-bold text-sm sm:text-base text-neutral-900 tracking-tight">
-              Evolución de la Producción Científica de la Escuela (2021 - 2026)
+              Evolución de la Producción Científica de la Escuela ({period})
             </h3>
             <p className="text-[11px] text-neutral-500">
-              Publicaciones y proyectos por semestre
+              Publicaciones y proyectos por {unit}
             </p>
           </div>
         </div>
@@ -99,7 +102,7 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
         )}
 
         {/* Contenedor de barras */}
-        <div className="semester-chart-scroll" role="region" aria-label="Gráfica de producción por semestre" tabIndex={0}>
+        <div className="semester-chart-scroll" role="region" aria-label={`Gráfica de producción por ${unit}`} tabIndex={0}>
           <div
             className="semester-chart-content"
             style={{ '--semester-chart-width': `${data.length * 48}px` } as React.CSSProperties}

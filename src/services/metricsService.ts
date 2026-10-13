@@ -1,19 +1,17 @@
 import { ScientificProduct, TeacherUser, TeacherMetrics, SchoolMetrics, AcademicSemester } from '../types';
 import { ACADEMIC_SEMESTERS } from '../constants/researchLines';
 import { storageService } from './storage';
+import { productCitationValue, productMatchesTeacher } from './productPresentation';
 
 export interface TemporalDataPoint {
-  semester: AcademicSemester;
+  semester: string;
+  unit?: 'year' | 'semester';
   publications: number;
   projects: number;
   total: number;
 }
 
 const academicSemesterSet = new Set<AcademicSemester>(ACADEMIC_SEMESTERS);
-
-function normalizeAuthorName(name: string): string {
-  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
-}
 
 function semesterForProduct(product: ScientificProduct): AcademicSemester | undefined {
   if (product.semester && academicSemesterSet.has(product.semester)) return product.semester;
@@ -45,13 +43,13 @@ export const metricsService = {
     const publications = verifiedProducts.filter((p) => p.type === 'publicacion');
     const projects = verifiedProducts.filter((p) => p.type === 'proyecto');
 
-    const totalCitations = publications.reduce((acc, p) => acc + (p.citations || 0), 0);
+    const totalCitations = publications.reduce((acc, p) => acc + (productCitationValue(p) ?? 0), 0);
 
     return {
       totalPublications: publications.length,
       totalProjects: projects.length,
       totalCitations,
-      researchLinesWithProduction: new Set(verifiedProducts.map((product) => product.researchLine)).size,
+      researchLinesWithProduction: new Set(verifiedProducts.map((product) => product.researchLine).filter(Boolean)).size,
     };
   },
 
@@ -61,17 +59,13 @@ export const metricsService = {
   calculateTeacherMetrics(teacher: TeacherUser, allProducts: ScientificProduct[]): TeacherMetrics {
     // Las métricas de perfiles públicos se calculan solo con productos verificados.
     const verifiedProducts = allProducts.filter((p) => p.status === 'verificado');
-    const teacherName = normalizeAuthorName(teacher.name);
-    const teacherProducts = verifiedProducts.filter((p) => {
-      if (p.ownerId === teacher.id) return true;
-      return !!teacherName && p.authors.some((author) => normalizeAuthorName(author) === teacherName);
-    });
+    const teacherProducts = verifiedProducts.filter(product => productMatchesTeacher(product, teacher));
 
     const publications = teacherProducts.filter((p) => p.type === 'publicacion');
     const projects = teacherProducts.filter((p) => p.type === 'proyecto');
 
     // Citas acumuladas en publicaciones
-    const citationsTotal = publications.reduce((acc, p) => acc + (p.citations || 0), 0);
+    const citationsTotal = publications.reduce((acc, p) => acc + (productCitationValue(p) ?? 0), 0);
     return {
       teacher,
       publicationsCount: publications.length,
@@ -95,6 +89,22 @@ export const metricsService = {
    * Los semestres sin producción registran explícitamente 0
    */
   getTemporalEvolutionData(products: ScientificProduct[]): TemporalDataPoint[] {
+    if (products.some(product => product.school === 'ECMC' && product.bibliographicSource)) {
+      const verified = products.filter(product => product.status === 'verificado');
+      const years = verified.map(product => product.year).filter(year => Number.isInteger(year) && year > 0);
+      if (!years.length) return [];
+      // The imported source records a year, not a semester or publication day.
+      // An annual series keeps every record without inventing either value.
+      const firstYear = Math.min(...years);
+      const lastYear = Math.max(...years);
+      return Array.from({ length: lastYear - firstYear + 1 }, (_, index) => {
+        const year = firstYear + index;
+        const yearProducts = verified.filter(product => product.year === year);
+        const publications = yearProducts.filter(product => product.type === 'publicacion').length;
+        const projects = yearProducts.filter(product => product.type === 'proyecto').length;
+        return { semester: String(year), unit: 'year' as const, publications, projects, total: publications + projects };
+      });
+    }
     const counts = new Map<AcademicSemester, { publications: number; projects: number }>(
       ACADEMIC_SEMESTERS.map((semester) => [semester, { publications: 0, projects: 0 }])
     );
