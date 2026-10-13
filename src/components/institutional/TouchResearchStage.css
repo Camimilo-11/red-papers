@@ -206,6 +206,21 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
 }
 
 @media (max-width: 760px) {
+  /* Keep welcome geometry independent of lazy stylesheet insertion order. */
+  .institutional-landing .institutional-landing-hero {
+    align-items: flex-start;
+    padding: 26px max(20px, env(safe-area-inset-left));
+  }
+  .institutional-landing .institutional-landing-title {
+    font-size: clamp(30px, 9.8vw, 56px);
+    line-height: 1.02;
+  }
+  .institutional-landing .institutional-landing-subtitle {
+    margin: 18px 0 16px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .institutional-landing .institutional-landing-hero-link { margin-top: 4px; }
   .institutional-landing-hero,
   .institutional-landing > .mascot-handoff-logos { touch-action: pan-x pinch-zoom; }
   html.simapc-mobile-transition-lock { scroll-snap-type: none !important; touch-action: none; overscroll-behavior: none; }
