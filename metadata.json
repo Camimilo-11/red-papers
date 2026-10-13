@@ -1,6 +1,0 @@
-{
-  "name": "SIMAPC - Producción Científica · Universidad Yachay Tech",
-  "description": "Sistema de Información, Monitoreo y Administración de la Producción Científica de las escuelas de la Universidad Yachay Tech.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
