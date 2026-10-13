@@ -88,11 +88,13 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   const [expectedProductsText, setExpectedProductsText] = useState(initialProduct?.expectedProducts?.join('\n')||'');
 
   // Estados de carga e integración
+  const [simulatedAutofill, setSimulatedAutofill] = useState(false);
   const [identifierInput, setIdentifierInput] = useState('');
   const [isSearchingId, setIsSearchingId] = useState(false);
   const [idSearchMessage, setIdSearchMessage] = useState<{
     type: 'success' | 'error' | 'info';
     text: string;
+    simulated?: boolean;
   } | null>(null);
 
   // Obras encontradas por ORCID
@@ -153,6 +155,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
           setOrcidWorks(works);
           setIdSearchMessage({
             type: 'info',
+            simulated: works.some(work => work.simulated),
             text: `Se encontraron ${works.length} obras en el perfil ORCID. Selecciona una para precargar sus metadatos.`,
           });
         } else {
@@ -176,6 +179,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       const res = await doiService.resolveDoi(raw);
       setIsSearchingId(false);
       if (res.success && res.data) {
+        setSimulatedAutofill(res.data.simulated);
         setTitle(res.data.title);
         setAuthorsText(res.data.authors.join(', '));
         setProductDate('');
@@ -187,6 +191,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
         }
         setIdSearchMessage({
           type: 'success',
+          simulated: res.data.simulated,
           text: '¡Metadatos recuperados exitosamente! Verifica los campos y ajusta lo que consideres necesario.',
         });
       } else {
@@ -207,6 +212,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
   };
 
   const handleSelectOrcidWork = (work: OrcidWorkItem) => {
+    setSimulatedAutofill(work.simulated);
     setTitle(work.title);
     setProductDate('');
     setVenue(work.venue);
@@ -217,6 +223,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     setOrcidWorks([]);
     setIdSearchMessage({
       type: 'success',
+      simulated: work.simulated,
       text: `Obra seleccionada: "${work.title}". Campos precargados para revisión.`,
     });
   };
@@ -235,6 +242,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
     setPdfExtracting(false);
 
     if (result.success && result.data) {
+      setSimulatedAutofill(result.data.simulated);
       if (!lockType) setProductType('proyecto');
       setTitle(result.data.title);
       setProjectCode(result.data.projectCode || '');
@@ -244,8 +252,8 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       setAbstract(result.data.abstract);
       setVenue(result.data.fundingVenue || '');
       setPdfSuccessMessage(
-        result.warning ||
-          'Metadatos básicos extraídos del documento PDF. Revisa y completa los campos antes de guardar.'
+        `${result.data.simulated ? 'Simulado · ' : ''}${result.warning ||
+          'Metadatos básicos extraídos del documento PDF. Revisa y completa los campos antes de guardar.'}`
       );
     } else {
       setPdfError(
@@ -417,6 +425,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
               </h2>
               <p className="text-xs text-neutral-500">
                 {initialProduct?'Revise las observaciones y vuelva a enviar el producto al Comité Científico.':'Complete los datos y verifique la información antes de guardar.'}
+                {simulatedAutofill && <> · <strong>Simulado</strong></>}
               </p>
             </div>
           </div>
@@ -517,7 +526,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                   }`}
                 >
                   <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{idSearchMessage.text}</span>
+                  <span>{idSearchMessage.simulated && <><strong>Simulado</strong> · </>}{idSearchMessage.text}</span>
                 </div>
               )}
 
@@ -539,6 +548,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                             {work.title}
                           </p>
                           <p className="text-[10px] text-neutral-500">
+                            {work.simulated && <><strong>Simulado</strong> · </>}
                             {work.venue} • {work.year}
                           </p>
                         </div>
@@ -561,7 +571,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
                   <Upload className="w-3.5 h-3.5 text-[#EF4035]" />
                   <span>Documento del proyecto</span>
                 </span>
-                <span className="text-[11px] text-neutral-400">PDF máx. 10 MB</span>
+                <span className="text-[11px] text-neutral-400">PDF máx. 10 MB · <strong>Simulado</strong></span>
               </div>
 
               <div className="border-2 border-dashed border-neutral-300 rounded-xl p-6 text-center hover:border-[#EF4035] bg-white transition-colors">

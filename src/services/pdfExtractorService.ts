@@ -1,6 +1,7 @@
 import { OfficialResearchLine, AcademicSemester } from '../types';
 
 export interface ExtractedPdfProjectMetadata {
+  simulated: boolean;
   title: string;
   projectCode?: string;
   director?: string;
@@ -52,7 +53,7 @@ export const pdfExtractorService = {
   },
 
   /**
-   * Extrae metadatos básicos estructurados desde un documento PDF de proyecto
+   * Simula metadatos preliminares tras validar el PDF; no es un parser real.
    */
   async extractProjectMetadata(file: File): Promise<{
     success: boolean;
@@ -102,6 +103,7 @@ export const pdfExtractorService = {
       return {
         success: true,
         data: {
+          simulated: true,
           title,
           projectCode,
           director: 'Investigador Principal',
