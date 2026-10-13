@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../types';
 import { SCHOOLS } from '../constants/schools';
 import { productDateValue } from './productPresentation';
+import { openPrintableDocument } from './printDocument';
 import bricolageFontUrl from '../assets/fonts/bricolage-grotesque-latin-wght-normal.woff2?url';
 import sourceSansFontUrl from '../assets/fonts/source-sans-3-latin-wght-normal.woff2?url';
 
@@ -172,15 +173,11 @@ export const exportService = {
   /**
    * Genera vista imprimible o PDF del reporte filtrado
    */
-  exportToPrintablePdf(products: ScientificProduct[], meta: ExportMetadata): boolean {
+  async exportToPrintablePdf(products: ScientificProduct[], meta: ExportMetadata): Promise<boolean> {
     if (!products || products.length === 0) {
       return false;
     }
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      return false;
-    }
     const schoolAccent = SCHOOLS.find(school => meta.school.includes(school.code) || meta.school === school.name)?.accent ?? '#252321';
 
     const tableRowsHtml = products
@@ -286,19 +283,10 @@ export const exportService = {
       </html>
     `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 400);
-
-    return true;
+    return openPrintableDocument(html);
   },
 
-  exportTeacherCv(teacher: TeacherUser, products: ScientificProduct[], metrics: TeacherMetrics, generatedAt: string): boolean {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return false;
+  async exportTeacherCv(teacher: TeacherUser, products: ScientificProduct[], metrics: TeacherMetrics, generatedAt: string): Promise<boolean> {
     const schoolAccent = SCHOOLS.find(school => teacher.school === school.code)?.accent ?? '#252321';
 
     const profileLink = (field: 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId', label: string, href: string, identifier: string) => {
@@ -358,10 +346,6 @@ export const exportService = {
       <div class="footer"><span>Universidad Yachay Tech · SIMAPC</span><span>Generado ${escapeHtml(generatedAt)}</span></div>
       </body></html>`;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 400);
-    return true;
+    return openPrintableDocument(html);
   },
 };

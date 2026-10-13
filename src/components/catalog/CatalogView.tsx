@@ -107,7 +107,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   };
 
   // Manejador de exportaciones (HU11)
-  const handleExport = (format: 'csv' | 'xlsx' | 'pdf') => {
+  const handleExport = async (format: 'csv' | 'xlsx' | 'pdf') => {
     setShowExportMenu(false);
 
     if (filteredProducts.length === 0) {
@@ -130,7 +130,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     } else if (format === 'xlsx') {
       success = exportService.exportToExcel(filteredProducts, meta);
     } else if (format === 'pdf') {
-      success = exportService.exportToPrintablePdf(filteredProducts, meta);
+      success = await exportService.exportToPrintablePdf(filteredProducts, meta);
     }
 
     if (success) {
