@@ -1,9 +1,10 @@
-import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SCHOOLS, type SchoolConfig } from './constants/schools';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
 import { PortalEntryLoading } from './components/institutional/PortalEntryLoading';
 import { YachayLogo } from './components/institutional/SchoolLogo';
 import { ensureFloatingSchoolLogosDecoded } from './assets/schoolLogos';
+import { useScreenScrollStart } from './components/layout/ScreenScrollStart';
 
 let portalAppModule: Promise<typeof import('./PortalApp')> | undefined;
 const loadPortalApp = () => portalAppModule ??= import('./PortalApp');
@@ -24,6 +25,12 @@ function currentSchoolFromSavedSession(): SchoolConfig | null {
 
 export default function App() {
   const [selectedSchool, setSelectedSchool] = useState<SchoolConfig | null>(currentSchoolFromSavedSession);
+  useLayoutEffect(() => {
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => { window.history.scrollRestoration = previous; };
+  }, []);
+  useScreenScrollStart(selectedSchool ? `school:${selectedSchool.code}` : 'welcome');
   const mobileSchoolSelectionPending = useRef(false);
   const returningToSchools = useRef(false);
   const selectSchool = useCallback((school: SchoolConfig) => {

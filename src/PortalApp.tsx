@@ -10,6 +10,7 @@ import { TeacherUser, ScientificProduct, UserNotification, ProductStatus } from 
 
 // Componentes de Layout
 import { Header, type ActiveTab } from './components/layout/Header';
+import { ScreenScrollStart, useScreenScrollStart } from './components/layout/ScreenScrollStart';
 
 // Componentes de Vistas
 import { AccessScreen } from './components/auth/AccessScreen';
@@ -72,6 +73,8 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
     // Si ya existe sesión previa o el usuario ya interactuó, puede iniciar en dashboard
     return !authService.getCurrentUser();
   });
+  const screenKey = `${selectedSchool?.code || 'welcome'}:${currentUser?.id || 'guest'}:${showAccessScreen ? 'access' : activeTab}`;
+  useScreenScrollStart(screenKey);
 
   // Modales
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -126,16 +129,12 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       setCatalogTeacherFilter(next.catalogTeacherFilter);
       setDirectorySelectedTeacherId(next.directorySelectedTeacherId);
       setNotice('');
-      window.scrollTo(0, 0);
     };
     window.addEventListener('popstate', onBack);
     return () => window.removeEventListener('popstate', onBack);
   }, []);
 
   useEffect(()=>{if((activeTab==='mine'&&currentUser?.role==='reviewer_demo')||(activeTab==='reviewer'&&!canReview(currentUser))||(activeTab==='traceability'&&!canDevelop(currentUser))||(activeTab==='roles'&&!canDevelop(currentUser))||(activeTab==='settings'&&currentUser?.role!=='teacher'&&currentUser?.role!=='student')) setActiveTab('dashboard');},[activeTab,currentUser]);
-
-  // Cada vista empieza desde arriba; el foco del contenido no debe desplazarlo bajo el encabezado fijo.
-  useEffect(()=>{window.scrollTo(0,0);},[activeTab]);
 
   // Notificaciones del usuario actual
   const userNotifications = useMemo(() => {
@@ -333,6 +332,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       <main id="main-content" tabIndex={-1} className={`portal-main ${activeTab === 'dashboard' && !currentUser ? 'portal-main-public-dashboard' : ''}`}>
         {notice && <div role="status" className="save-notice"><span>{notice}</span><button onClick={()=>{setNotice('');setActiveTab('mine');}}>{currentUser?.role==='student'?'Ver mis colaboraciones':'Ver mis registros'}</button><button onClick={()=>setNotice('')} aria-label="Cerrar confirmación">×</button></div>}
         <Suspense fallback={<PortalEntryFallback />}>
+        <ScreenScrollStart screenKey={screenKey} />
         {/* Pestaña: Dashboard ECMC (HU09 y HU10) */}
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">

@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   {id:'directory',label:'Docentes',icon:Users}];
  if(p.currentUser && p.currentUser.role!=='reviewer_demo') tabs.push({id:'mine',label:p.currentUser.role==='student'?'Mis colaboraciones':'Mis registros',icon:FolderOpen});
  if(p.currentUser?.role==='reviewer_demo') tabs.push({id:'reviewer',label:'Comité Científico',icon:ShieldCheck});
- const navigate=(id:ActiveTab)=>{setMobileOpen(false);setNotificationsOpen(false); if(id==='mine'&&!p.currentUser)p.onLoginClick();else p.onTabChange(id);window.scrollTo(0,0);requestAnimationFrame(()=>document.getElementById('main-content')?.focus({preventScroll:true}));};
+ const navigate=(id:ActiveTab)=>{setMobileOpen(false);setNotificationsOpen(false); if(id==='mine'&&!p.currentUser)p.onLoginClick();else p.onTabChange(id);window.scrollTo({top:0,left:0,behavior:'instant'});requestAnimationFrame(()=>document.getElementById('main-content')?.focus({preventScroll:true}));};
  const unread=p.notifications.filter(n=>!n.read).length;
  return <>
   <a href="#main-content" className="skip-link">Ir al contenido</a>
