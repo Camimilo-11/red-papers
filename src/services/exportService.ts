@@ -178,7 +178,7 @@ export const exportService = {
       .map(
         (p) => `
       <tr style="border-bottom: 1px solid #E5E7EB; font-size: 11px;">
-        <td style="padding: 8px 6px; font-weight: bold; color: #111827;">${p.id}</td>
+        <td style="padding: 8px 6px; font-weight: bold; color: #111827;">${escapeHtml(p.id)}</td>
         <td style="padding: 8px 6px;">
           <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${
             p.type === 'publicacion' ? '#EFF6FF; color: #1D4ED8' : '#F0FDF4; color: #15803D'
@@ -187,14 +187,14 @@ export const exportService = {
           </span>
         </td>
         <td style="padding: 8px 6px; max-width: 320px;">
-          <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${p.title}</div>
-          <div style="color: #6B7280; font-size: 10px;">${p.authors.join(', ')}</div>
-          <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${p.venue || p.fundingVenue || ''}</div>
+          <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${escapeHtml(p.title)}</div>
+          <div style="color: #6B7280; font-size: 10px;">${escapeHtml(p.authors.join(', '))}</div>
+          <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${escapeHtml(p.venue || p.fundingVenue || '')}</div>
         </td>
-        <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${p.researchLine}</td>
-        <td style="padding: 8px 6px; text-align: center; color: #374151;">${productDateValue(p)}</td>
+        <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${escapeHtml(p.researchLine)}</td>
+        <td style="padding: 8px 6px; text-align: center; color: #374151;">${escapeHtml(productDateValue(p))}</td>
         <td style="padding: 8px 6px; font-family: monospace; font-size: 10px; color: #4B5563;">
-          ${doiForDisplay(p) ? `DOI: ${doiForDisplay(p)}` : p.projectCode ? `Cód: ${p.projectCode}` : '—'}
+          ${doiForDisplay(p) ? `DOI: ${escapeHtml(doiForDisplay(p))}` : p.projectCode ? `Cód: ${escapeHtml(p.projectCode)}` : '—'}
         </td>
         <td style="padding: 8px 6px; text-align: center;">
           <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; ${
