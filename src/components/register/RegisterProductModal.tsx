@@ -246,6 +246,7 @@ export const RegisterProductModal: React.FC<RegisterProductModalProps> = ({
       if (!lockType) setProductType('proyecto');
       setTitle(result.data.title);
       setProjectCode(result.data.projectCode || '');
+      setProjectDirector(result.data.director || '');
       setAuthorsText(result.data.participants.join(', '));
       setProductDate('');
       setResearchLine(result.data.researchLine);
