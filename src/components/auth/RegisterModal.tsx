@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RegisterFormData, RegisterValidationErrors } from '../../services/authService';
 import { TeacherUser } from '../../types';
 import { X, UserPlus, CheckCircle2 } from 'lucide-react';
+import { SCHOOLS } from '../../constants/schools';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
     name: '',
     email: '',
     password: '',
+    school: '',
     orcid: '',
     bio: '',
   });
@@ -121,6 +123,29 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
               {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
             </div>
 
+            <div>
+              <label htmlFor="register-school" className="block font-semibold text-neutral-700 mb-1">
+                Escuela *
+              </label>
+              <select
+                id="register-school"
+                value={formData.school}
+                onChange={(e) => setFormData({ ...formData, school: e.target.value as RegisterFormData['school'] })}
+                required
+                aria-invalid={!!errors.school}
+                aria-describedby={errors.school ? 'register-school-error' : undefined}
+                className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
+                  errors.school
+                    ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
+                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                }`}
+              >
+                <option value="" disabled>Seleccione una escuela</option>
+                {SCHOOLS.map((school) => <option key={school.code} value={school.code}>{school.name}</option>)}
+              </select>
+              {errors.school && <p id="register-school-error" className="text-[11px] text-red-600 mt-1">{errors.school}</p>}
+            </div>
+
             {/* 3. Contraseña */}
             <div>
               <label className="block font-semibold text-neutral-700 mb-1">
@@ -169,7 +194,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                 rows={2}
-                placeholder="Especialidad o área de investigación en la ECMC..."
+                placeholder="Especialidad o área de investigación..."
                 className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] resize-none"
               />
             </div>

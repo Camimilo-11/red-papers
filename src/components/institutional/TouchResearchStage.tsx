@@ -143,6 +143,11 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
   const lockedScrollY = useRef(0);
   const transitionControl = useRef<ReturnType<typeof animate> | null>(null);
   const transitionGeneration = useRef(0);
+  const completionFrame = useRef(0);
+  const completionTimer = useRef(0);
+  const mounted = useRef(true);
+  const interactionReady = useRef(interactionEnabled);
+  interactionReady.current = interactionEnabled;
   const slideControls = useRef<ReturnType<typeof animate>[]>([]);
   const displaySwitchRunning = useRef(false);
   const displayPrepareRunning = useRef(false);
@@ -179,7 +184,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
   const legacyBaseOpacity = useTransform(handoff.progress, [0, .72, .84, 1], [0, 0, 1, 0]);
   const legacyBaseScale = useTransform(handoff.progress, [.72, 1], [.9, 1]);
   const executeIntentRef = useRef<(index: number) => void>(() => {});
-  const finishTransitionRef = useRef<() => void>(() => {});
+  const finishTransitionRef = useRef<(immediate?: boolean) => void>(() => {});
   const retargetRef = useRef<(to: number) => void>(() => {});
   useEffect(() => {
     const unsubscribe = handoff.progress.on('change', (progress) => {
@@ -256,6 +261,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     }
     displayPrepareRunning.current = true;
     void ensureSchoolMascotDecoded(SCHOOLS[next].code).then(() => {
+      if (!mounted.current) return;
       displayPrepareRunning.current = false;
       if (queuedDisplayIndex.current !== null) {
         processDisplayRef.current();
@@ -281,6 +287,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       duration: reducedMotion ? .2 : .3,
       ease: 'linear',
       onComplete: () => {
+        if (!mounted.current) return;
         setPreviousDisplayIndex(null);
         displaySwitchRunning.current = false;
         if (queuedDisplayIndex.current !== null) processDisplayRef.current();
@@ -302,9 +309,21 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     processDisplayRef.current();
   }, [mobileTransitionEnabled]);
 
-  const finishTransition = useCallback(() => {
-    if (!transitionAnimating.current) return;
+  const cancelCompletion = useCallback(() => {
+    cancelAnimationFrame(completionFrame.current);
+    window.clearTimeout(completionTimer.current);
+    completionFrame.current = 0;
+    completionTimer.current = 0;
+  }, []);
+
+  const finishTransition = useCallback((immediate = false) => {
+    if (!mounted.current || !transitionAnimating.current) return;
+    cancelCompletion();
+    const generation = transitionGeneration.current;
     const destinationAtFinish = destination.current;
+    // A near-end reversal or a suspended animation must still reach an exact
+    // endpoint. Leaving progress at .998 keeps both screens translucent.
+    handoff.progress.set(destinationAtFinish === 'schools' ? 1 : 0);
     entered.current = destinationAtFinish === 'schools';
     const y = destinationAtFinish === 'schools'
       ? geometry.current.start + active.current * geometry.current.height
@@ -314,18 +333,10 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     scrollY.set(window.scrollY);
     let alignedFrames = 0;
     let attempts = 0;
-    const releaseWhenAligned = () => requestAnimationFrame(() => {
-      if (Math.abs(window.scrollY - y) > 1) {
-        window.scrollTo({ top: y, behavior: 'instant' });
-        alignedFrames = 0;
-        attempts += 1;
-      } else {
-        alignedFrames += 1;
-      }
-      if (alignedFrames < 2 && attempts < 8) {
-        releaseWhenAligned();
-        return;
-      }
+    const isCurrent = () => mounted.current && transitionAnimating.current && generation === transitionGeneration.current;
+    const release = () => {
+      if (!isCurrent()) return;
+      completionFrame.current = 0;
       const landing = track.current?.closest<HTMLElement>('.institutional-landing');
       landing?.classList.remove('is-mobile-school-transitioning');
       document.documentElement.classList.remove('simapc-mobile-transition-lock');
@@ -337,15 +348,34 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       if (lastIntent === null) return;
       const remainsOnSameSide = destinationAtFinish === 'schools' ? lastIntent >= 0 : lastIntent < 0;
       if (!remainsOnSameSide || (destinationAtFinish === 'schools' && lastIntent !== active.current)) executeIntentRef.current(lastIntent);
-    });
-    releaseWhenAligned();
-  }, [scrollY]);
+    };
+    const releaseWhenAligned = () => {
+      completionFrame.current = requestAnimationFrame(() => {
+        if (!isCurrent()) return;
+        if (Math.abs(window.scrollY - y) > 1) {
+          window.scrollTo({ top: y, behavior: 'instant' });
+          alignedFrames = 0;
+          attempts += 1;
+        } else {
+          alignedFrames += 1;
+        }
+        if (alignedFrames < 2 && attempts < 8) {
+          releaseWhenAligned();
+          return;
+        }
+        release();
+      });
+    };
+    if (immediate) release();
+    else releaseWhenAligned();
+  }, [cancelCompletion, handoff.progress, scrollY]);
   finishTransitionRef.current = finishTransition;
 
   const retargetTransition = useCallback((target: number) => {
     const destinationSide = target === 1 ? 'schools' : 'welcome';
     destination.current = destinationSide;
     const generation = ++transitionGeneration.current;
+    cancelCompletion();
     transitionControl.current?.stop();
     const current = handoff.progress.get();
     const distance = Math.abs(target - current);
@@ -354,6 +384,13 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       return;
     }
     const duration = reducedMotion ? .2 * distance : (target === 1 ? .9 : .6) * distance;
+    // Android can suspend Motion's completion callback. The visible page must
+    // never stay scroll-locked at a partial handoff if that callback is lost.
+    completionTimer.current = window.setTimeout(() => {
+      if (generation !== transitionGeneration.current || document.visibilityState === 'hidden') return;
+      transitionControl.current?.stop();
+      finishTransitionRef.current(true);
+    }, duration * 1000 + 250);
     transitionControl.current = animate(handoff.progress, target, {
       duration,
       ease: 'linear',
@@ -361,7 +398,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
         if (generation === transitionGeneration.current) finishTransitionRef.current();
       },
     });
-  }, [handoff.progress, reducedMotion]);
+  }, [cancelCompletion, handoff.progress, reducedMotion]);
   retargetRef.current = retargetTransition;
 
   const setTransitionLock = useCallback((locked: boolean) => {
@@ -374,7 +411,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
   }, []);
 
   const beginTransition = useCallback((side: 'schools' | 'welcome') => {
-    if (!mobileTransitionEnabled) return false;
+    if (!mobileTransitionEnabled || !interactionReady.current || document.visibilityState === 'hidden') return false;
     if (transitionAnimating.current) {
       queuedIntent.current = side === 'schools' ? Math.max(0, active.current) : -1;
       retargetRef.current(side === 'schools' ? 1 : 0);
@@ -390,6 +427,47 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     retargetRef.current(side === 'schools' ? 1 : 0);
     return true;
   }, [activeIndexMotion, handoff.progress, measureHandoff, mobileTransitionEnabled, setTransitionLock]);
+
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      transitionGeneration.current += 1;
+      cancelCompletion();
+      entry.current?.stop();
+      transitionControl.current?.stop();
+      slideControls.current.forEach((control) => control.stop());
+      queuedIntent.current = null;
+      queuedDisplayIndex.current = null;
+      transitionAnimating.current = false;
+      const landing = track.current?.closest<HTMLElement>('.institutional-landing');
+      landing?.classList.remove('is-mobile-school-transitioning');
+      document.documentElement.classList.remove('simapc-mobile-transition-lock');
+    };
+  }, [cancelCompletion]);
+
+  useEffect(() => {
+    if (!mobileTransitionEnabled) return;
+    const suspend = () => {
+      if (!transitionAnimating.current) return;
+      transitionGeneration.current += 1;
+      cancelCompletion();
+      transitionControl.current?.stop();
+    };
+    const restore = () => {
+      if (!mounted.current || document.visibilityState === 'hidden') return;
+      if (transitionAnimating.current) finishTransitionRef.current(true);
+    };
+    const visibility = () => document.visibilityState === 'hidden' ? suspend() : restore();
+    window.addEventListener('pagehide', suspend);
+    window.addEventListener('pageshow', restore);
+    document.addEventListener('visibilitychange', visibility);
+    return () => {
+      window.removeEventListener('pagehide', suspend);
+      window.removeEventListener('pageshow', restore);
+      document.removeEventListener('visibilitychange', visibility);
+    };
+  }, [cancelCompletion, mobileTransitionEnabled]);
 
   const queueTransitionIntent = useCallback((index: number) => {
     queuedIntent.current = Math.max(-1, Math.min(SCHOOLS.length - 1, index));
@@ -446,9 +524,8 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
   useEffect(() => {
     if (!mobileTransitionEnabled) return;
     const enterSchools = () => {
-      if (!ready.current) return;
-      if (interactionEnabled) go(0);
-      else beginTransition('schools');
+      if (!ready.current || !interactionEnabled) return;
+      go(0);
     };
     document.addEventListener('simapc-enter-schools', enterSchools);
     return () => document.removeEventListener('simapc-enter-schools', enterSchools);
@@ -478,13 +555,6 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       root.classList.remove('has-touch-school-tour');
       cancelAnimationFrame(orientationFrame);
       window.removeEventListener('orientationchange', onOrientationChange);
-      entry.current?.stop();
-      transitionGeneration.current += 1;
-      transitionControl.current?.stop();
-      slideControls.current.forEach((control) => control.stop());
-      const landing = track.current?.closest<HTMLElement>('.institutional-landing');
-      landing?.classList.remove('is-mobile-school-transitioning');
-      document.documentElement.classList.remove('simapc-mobile-transition-lock');
     };
   }, [interactionEnabled, measureHandoff]);
 

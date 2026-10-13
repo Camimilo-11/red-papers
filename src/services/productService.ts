@@ -1,7 +1,8 @@
 import { authService } from './authService';
 import { ScientificProduct, ProductStatus, FilterState, UserNotification, ProjectProgressReport, ProjectClosureReport } from '../types';
-import { storageService } from './storage';
+import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { normalizeDoi, normalizeProjectCode } from './doiService';
+import { canReview } from '../constants/demoAccounts';
 
 export interface DuplicateCheckResult {
   hasDuplicate: boolean;
@@ -19,6 +20,26 @@ const validIsoDate = (value: string) => {
 };
 
 const cleanList = (values: string[]) => values.map(value => value.trim()).filter(Boolean);
+
+function normalizeAuthorName(name: string): string {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function todayLocalIso(): string {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
+const SAVE_ERROR = 'No se pudieron guardar los cambios en este dispositivo. Revise el espacio disponible e inténtelo de nuevo.';
+type SaveResult = { success: boolean; error?: string };
+
+function saveProductWithNotification(products: ScientificProduct[], notification: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): SaveResult {
+  const saved = withStorageRollback([STORAGE_KEYS.PRODUCTS, STORAGE_KEYS.NOTIFICATIONS], () => {
+    if (!storageService.saveProducts(products)) return false;
+    return productService.createNotification(notification).success;
+  });
+  return saved ? { success: true } : { success: false, error: SAVE_ERROR };
+}
 
 export const productService = {
   /**
@@ -121,14 +142,14 @@ export const productService = {
     ownerId: string
   ): { success: boolean; product?: ScientificProduct; error?: string; warning?: string } {
     const actor=authService.getCurrentUser();
-    if (!actor || actor.role==='reviewer_demo' || actor.id!==ownerId) return {success:false,error:'Su perfil no permite registrar publicaciones ni proyectos.'};
+    if (!actor || !['teacher', 'developer'].includes(actor.role) || actor.id!==ownerId) return {success:false,error:'Su perfil no permite registrar publicaciones ni proyectos.'};
     const dupCheck = this.checkDuplicates(productData);
     if (dupCheck.hasDuplicate) {
       return { success: false, error: dupCheck.message };
     }
 
-    const products = storageService.getProducts();
-    const newId = `prod-${String(products.length + 1).padStart(3, '0')}`;
+    const products = [...storageService.getProducts()];
+    const newId = `prod-${crypto.randomUUID()}`;
     const now = new Date().toISOString();
 
     const newProduct: ScientificProduct = {
@@ -143,16 +164,15 @@ export const productService = {
     };
 
     products.unshift(newProduct);
-    storageService.saveProducts(products);
-
     // Generar notificación al propietario (HU08 / CA22)
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: ownerId,
       productId: newId,
       productTitle: newProduct.title,
       status: 'cargado',
       message: `Tu ${newProduct.type === 'publicacion' ? 'publicación científica' : 'proyecto de investigación'} "${newProduct.title}" ha sido cargado exitosamente. Estado: cargado.`,
     });
+    if (!saved.success) return saved;
 
     return {
       success: true,
@@ -169,7 +189,7 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para corregir el producto.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el producto.' };
 
@@ -197,14 +217,14 @@ export const productService = {
     };
 
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: 'cargado',
       message: `Se corrigió y volvió a enviar "${updated.title}" al Comité Científico para verificación.`,
     });
+    if (!saved.success) return saved;
 
     return { success: true, product: updated, warning: duplicate.warning };
   },
@@ -216,14 +236,14 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para registrar avances.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
     const product = products[index];
     if (product.type !== 'proyecto') return { success: false, error: 'El seguimiento solo está disponible para proyectos.' };
     if (product.ownerId !== actor.id) return { success: false, error: 'Solo el docente responsable puede registrar avances.' };
     if (product.projectStatus === 'finalizado' || product.projectStatus === 'cancelado') return { success: false, error: 'El proyecto ya tiene un informe de cierre y no admite nuevos avances.' };
-    if (!validIsoDate(reportData.periodStart) || !validIsoDate(reportData.periodEnd) || reportData.periodStart > reportData.periodEnd || reportData.periodEnd > new Date().toISOString().slice(0, 10)) {
+    if (!validIsoDate(reportData.periodStart) || !validIsoDate(reportData.periodEnd) || reportData.periodStart > reportData.periodEnd || reportData.periodEnd > todayLocalIso()) {
       return { success: false, error: 'Revise las fechas del periodo informado.' };
     }
     if (!Number.isInteger(reportData.progressPercent) || reportData.progressPercent < 0 || reportData.progressPercent > 100) {
@@ -252,14 +272,14 @@ export const productService = {
       updatedAt: now,
     };
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: updated.status,
       message: `Se guardó el informe de avance de "${updated.title}" (${report.progressPercent}%).`,
     });
+    if (!saved.success) return saved;
     return { success: true, product: updated };
   },
 
@@ -270,7 +290,7 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para cerrar el proyecto.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
     const product = products[index];
@@ -279,7 +299,7 @@ export const productService = {
     if (product.projectClosureReport) {
       return { success: false, error: 'El proyecto ya cuenta con un informe de cierre.' };
     }
-    if (!validIsoDate(closureData.closedAt) || closureData.closedAt > new Date().toISOString().slice(0, 10)) return { success: false, error: 'Indique una fecha de cierre válida.' };
+    if (!validIsoDate(closureData.closedAt) || closureData.closedAt > todayLocalIso()) return { success: false, error: 'Indique una fecha de cierre válida.' };
     if (closureData.summary.trim().length < 30) return { success: false, error: 'El resumen de cierre debe tener al menos 30 caracteres.' };
     const deliveredProducts = cleanList(closureData.deliveredProducts);
     if (closureData.finalStatus === 'finalizado' && !deliveredProducts.length) {
@@ -301,14 +321,14 @@ export const productService = {
       updatedAt: new Date().toISOString(),
     };
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: updated.status,
       message: `Se registró el cierre del proyecto "${updated.title}" como ${closure.finalStatus === 'finalizado' ? 'finalizado' : 'cancelado'}.`,
     });
+    if (!saved.success) return saved;
     return { success: true, product: updated };
   },
 
@@ -321,6 +341,10 @@ export const productService = {
     newStatus: ProductStatus,
     rejectionReason?: string
   ): { success: boolean; product?: ScientificProduct; error?: string } {
+    const actor = authService.getCurrentUser();
+    if (!actor || !canReview(actor)) {
+      return { success: false, error: 'Su perfil no permite revisar publicaciones ni proyectos.' };
+    }
     if (newStatus === 'rechazado' && (!rejectionReason || !rejectionReason.trim())) {
       return {
         success: false,
@@ -328,14 +352,17 @@ export const productService = {
       };
     }
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex((p) => p.id === productId);
     if (index === -1) {
       return { success: false, error: 'Producto no encontrado.' };
     }
 
     const now = new Date().toISOString();
-    const product = products[index];
+    const product = { ...products[index] };
+    if (newStatus === 'verificado' && product.ownerId === actor.id) {
+      return { success: false, error: 'No puede verificar un producto propio.' };
+    }
     const prevStatus = product.status;
 
     // Solo emitir notificación si hubo transición efectiva (evitar duplicados)
@@ -354,15 +381,13 @@ export const productService = {
     }
 
     products[index] = product;
-    storageService.saveProducts(products);
-
     // Notificación al autor (HU08 / CA23)
     const notifMessage =
       newStatus === 'verificado'
         ? `El Comité Científico ha verificado y certificado tu producto "${product.title}".`
         : `El Comité Científico dejó el producto "${product.title}" en observación. Información solicitada: ${product.rejectionReason}`;
 
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: product.ownerId,
       productId: product.id,
       productTitle: product.title,
@@ -370,6 +395,7 @@ export const productService = {
       reason: product.rejectionReason,
       message: notifMessage,
     });
+    if (!saved.success) return saved;
 
     return { success: true, product };
   },
@@ -377,8 +403,8 @@ export const productService = {
   /**
    * Notificaciones para un usuario con control de duplicados
    */
-  createNotification(data: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): void {
-    const notifs = storageService.getNotifications();
+  createNotification(data: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): SaveResult {
+    const notifs = [...storageService.getNotifications()];
     const newId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const newNotif: UserNotification = {
@@ -389,7 +415,7 @@ export const productService = {
     };
 
     notifs.unshift(newNotif);
-    storageService.saveNotifications(notifs);
+    return storageService.saveNotifications(notifs) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
   getUserNotifications(userId: string): UserNotification[] {
@@ -397,16 +423,16 @@ export const productService = {
     return notifs.filter((n) => n.userId === userId);
   },
 
-  markNotificationAsRead(notifId: string): void {
+  markNotificationAsRead(notifId: string): SaveResult {
     const notifs = storageService.getNotifications();
     const updated = notifs.map((n) => (n.id === notifId ? { ...n, read: true } : n));
-    storageService.saveNotifications(updated);
+    return storageService.saveNotifications(updated) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
-  markAllNotificationsAsRead(userId: string): void {
+  markAllNotificationsAsRead(userId: string): SaveResult {
     const notifs = storageService.getNotifications();
     const updated = notifs.map((n) => (n.userId === userId ? { ...n, read: true } : n));
-    storageService.saveNotifications(updated);
+    return storageService.saveNotifications(updated) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
   /**
@@ -414,12 +440,13 @@ export const productService = {
    */
   filterProducts(products: ScientificProduct[], filters: FilterState): ScientificProduct[] {
     const query = filters.searchQuery.trim().toLowerCase();
+    const authorQuery = normalizeAuthorName(filters.searchQuery);
 
     return products.filter((p) => {
       // 1. Búsqueda de texto (título, autores, DOI, medio/venue, código)
       if (query) {
         const matchesTitle = p.title.toLowerCase().includes(query);
-        const matchesAuthor = p.authors.some((a) => a.toLowerCase().includes(query));
+        const matchesAuthor = !!authorQuery && p.authors.some((a) => normalizeAuthorName(a) === authorQuery);
         const matchesDoi = p.doi ? p.doi.toLowerCase().includes(query) : false;
         const matchesVenue = p.venue ? p.venue.toLowerCase().includes(query) : false;
         const matchesCode = p.projectCode ? p.projectCode.toLowerCase().includes(query) : false;
@@ -440,7 +467,8 @@ export const productService = {
         if (teacher) {
           // Coincidencia por ID de propietario o autor en la lista
           const isOwner = p.ownerId === teacher.id;
-          const isCoauthor = p.authors.some((a) => a.toLowerCase().includes(teacher.name.toLowerCase()));
+          const teacherName = normalizeAuthorName(teacher.name);
+          const isCoauthor = !!teacherName && p.authors.some((a) => normalizeAuthorName(a) === teacherName);
           if (!isOwner && !isCoauthor) return false;
         }
       }

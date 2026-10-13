@@ -20,6 +20,12 @@ function escapeHtml(value: unknown): string {
   })[character] || character);
 }
 
+function csvCell(value: unknown): string {
+  const text = String(value ?? '');
+  const safeText = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${safeText.replace(/"/g, '""')}"`;
+}
+
 export const exportService = {
   /**
    * Genera y descarga archivo CSV con codificación UTF-8 y BOM
@@ -49,23 +55,23 @@ export const exportService = {
     ];
 
     const rows = products.map((p) => [
-      `"${p.id}"`,
-      `"${p.type === 'publicacion' ? 'Publicación Científica' : 'Proyecto de Investigación'}"`,
-      `"${p.title.replace(/"/g, '""')}"`,
-      `"${p.authors.join('; ').replace(/"/g, '""')}"`,
+      p.id,
+      p.type === 'publicacion' ? 'Publicación Científica' : 'Proyecto de Investigación',
+      p.title,
+      p.authors.join('; '),
       p.year,
-      `"${productDateValue(p)}"`,
-      `"${p.researchLine}"`,
-      `"${PRODUCT_STATUS_LABELS[p.status]}"`,
-      `"${(doiForDisplay(p) || p.projectCode || 'N/A').replace(/"/g, '""')}"`,
-      `"${(p.venue || p.fundingVenue || 'N/A').replace(/"/g, '""')}"`,
-      `"${p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A'}"`,
-      `"${(p.projectParticipants || []).join('; ').replace(/"/g, '""')}"`,
+      productDateValue(p),
+      p.researchLine,
+      PRODUCT_STATUS_LABELS[p.status],
+      doiForDisplay(p) || p.projectCode || 'N/A',
+      p.venue || p.fundingVenue || 'N/A',
+      p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
+      (p.projectParticipants || []).join('; '),
       p.projectDurationMonths ?? '',
-      `"${(p.expectedProducts || []).join('; ').replace(/"/g, '""')}"`,
+      (p.expectedProducts || []).join('; '),
       p.citations || 0,
-      `"${new Date(p.createdAt).toLocaleDateString('es-EC')}"`,
-    ]);
+      new Date(p.createdAt).toLocaleDateString('es-EC'),
+    ].map(csvCell));
 
     // Encabezado de metadatos institucionales
     const metaHeader = [
@@ -74,10 +80,9 @@ export const exportService = {
       `# Fecha de Generación: ${meta.generatedAt}`,
       `# Total Registros Exportados: ${meta.totalRecords}`,
       `# Filtros Aplicados: Tipo=${meta.filters.productType}; Línea=${meta.filters.researchLine}; Periodo=${meta.filters.periodYear}`,
-      '',
-    ].join('\r\n');
+    ].map(csvCell).join('\r\n') + '\r\n';
 
-    const csvContent = '\uFEFF' + metaHeader + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const csvContent = '\uFEFF' + metaHeader + [headers.map(csvCell).join(','), ...rows.map((r) => r.join(','))].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -178,7 +183,7 @@ export const exportService = {
       .map(
         (p) => `
       <tr style="border-bottom: 1px solid #E5E7EB; font-size: 11px;">
-        <td style="padding: 8px 6px; font-weight: bold; color: #111827;">${p.id}</td>
+        <td style="padding: 8px 6px; font-weight: bold; color: #111827;">${escapeHtml(p.id)}</td>
         <td style="padding: 8px 6px;">
           <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${
             p.type === 'publicacion' ? '#EFF6FF; color: #1D4ED8' : '#F0FDF4; color: #15803D'
@@ -187,14 +192,14 @@ export const exportService = {
           </span>
         </td>
         <td style="padding: 8px 6px; max-width: 320px;">
-          <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${p.title}</div>
-          <div style="color: #6B7280; font-size: 10px;">${p.authors.join(', ')}</div>
-          <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${p.venue || p.fundingVenue || ''}</div>
+          <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${escapeHtml(p.title)}</div>
+          <div style="color: #6B7280; font-size: 10px;">${escapeHtml(p.authors.join(', '))}</div>
+          <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${escapeHtml(p.venue || p.fundingVenue || '')}</div>
         </td>
-        <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${p.researchLine}</td>
-        <td style="padding: 8px 6px; text-align: center; color: #374151;">${productDateValue(p)}</td>
+        <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${escapeHtml(p.researchLine)}</td>
+        <td style="padding: 8px 6px; text-align: center; color: #374151;">${escapeHtml(productDateValue(p))}</td>
         <td style="padding: 8px 6px; font-family: monospace; font-size: 10px; color: #4B5563;">
-          ${doiForDisplay(p) ? `DOI: ${doiForDisplay(p)}` : p.projectCode ? `Cód: ${p.projectCode}` : '—'}
+          ${doiForDisplay(p) ? `DOI: ${escapeHtml(doiForDisplay(p))}` : p.projectCode ? `Cód: ${escapeHtml(p.projectCode)}` : '—'}
         </td>
         <td style="padding: 8px 6px; text-align: center;">
           <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; ${

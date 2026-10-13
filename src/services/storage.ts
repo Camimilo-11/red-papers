@@ -125,13 +125,34 @@ function completeSyntheticProduct(product: ScientificProduct): ScientificProduct
   return updated;
 }
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   PRODUCTS: 'red_papers_products_v1',
   TEACHERS: 'red_papers_teachers_v1',
   NOTIFICATIONS: 'red_papers_notifications_v1',
   CURRENT_USER: 'red_papers_current_user_v1',
   PUBLIC_VISIBILITY_CONFIG: 'red_papers_public_config_v1',
 };
+
+/** Restore the original values if any part of a multi-key save fails. */
+export function withStorageRollback(keys: readonly string[], save: () => boolean): boolean {
+  let previous: Array<[string, string | null]> = [];
+  try {
+    previous = keys.map(key => [key, localStorage.getItem(key)]);
+    if (save()) return true;
+  } catch (err) {
+    console.error('Error guardando cambios en almacenamiento local:', err);
+  }
+  for (const [key, value] of previous.reverse()) {
+    try {
+      if (localStorage.getItem(key) === value) continue;
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    } catch (err) {
+      console.error('Error revirtiendo el guardado local:', err);
+    }
+  }
+  return false;
+}
 
 // Configuración de visibilidad pública
 // Por defecto: Solo productos 'verificados' para visitantes; el propietario ve todos los suyos.
@@ -194,11 +215,13 @@ export const storageService = {
     }
   },
 
-  saveProducts(products: ScientificProduct[]): void {
+  saveProducts(products: ScientificProduct[]): boolean {
     try {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+      return true;
     } catch (err) {
       console.error('Error guardando productos en almacenamiento local:', err);
+      return false;
     }
   },
 
@@ -221,11 +244,13 @@ export const storageService = {
     }
   },
 
-  saveTeachers(teachers: TeacherUser[]): void {
+  saveTeachers(teachers: TeacherUser[]): boolean {
     try {
       localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(teachers));
+      return true;
     } catch (err) {
       console.error('Error guardando docentes:', err);
+      return false;
     }
   },
 
@@ -247,11 +272,13 @@ export const storageService = {
     }
   },
 
-  saveNotifications(notifs: UserNotification[]): void {
+  saveNotifications(notifs: UserNotification[]): boolean {
     try {
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifs));
+      return true;
     } catch (err) {
       console.error('Error guardando notificaciones:', err);
+      return false;
     }
   },
 
@@ -268,15 +295,17 @@ export const storageService = {
     }
   },
 
-  setCurrentUser(user: TeacherUser | null): void {
+  setCurrentUser(user: TeacherUser | null): boolean {
     try {
       if (user) {
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
       } else {
         localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       }
+      return true;
     } catch (err) {
       console.error('Error guardando usuario actual:', err);
+      return false;
     }
   },
 

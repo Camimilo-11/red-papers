@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ensurePrioritySchoolMascotsDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
@@ -362,7 +362,10 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
   const emblemsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const introTimersRef = useRef<number[]>([]);
+  const introStartFrame = useRef(0);
   const introActiveRef = useRef(phase === 'intro');
+  const introPhaseRef = useRef(phase);
+  introPhaseRef.current = phase;
 
   useLayoutEffect(() => {
     if (!replayIntro) return;
@@ -514,14 +517,41 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
     return () => observer.disconnect();
   }, []);
 
-  const completeIntro = () => {
+  const completeIntro = useCallback(() => {
     introActiveRef.current = false;
+    cancelAnimationFrame(introStartFrame.current);
     introTimersRef.current.forEach(window.clearTimeout);
     introTimersRef.current = [];
     setPhase('done');
     setContentVisible(true);
     setVisibleEmblems(SCHOOLS.map(() => true));
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!mobileTransition || !replayIntro) return;
+    let suspended = document.visibilityState === 'hidden';
+    const suspend = () => { suspended = true; };
+    const restore = () => {
+      if (!suspended || document.visibilityState === 'hidden') return;
+      suspended = false;
+      if (introPhaseRef.current === 'done') return;
+      // Timers and CSS animations can resume in a different order on Android.
+      // A return intro that was backgrounded must reveal one complete welcome.
+      completeIntro();
+      handoff.progress.set(0);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      scrollY.set(0);
+    };
+    const visibility = () => document.visibilityState === 'hidden' ? suspend() : restore();
+    window.addEventListener('pagehide', suspend);
+    window.addEventListener('pageshow', restore);
+    document.addEventListener('visibilitychange', visibility);
+    return () => {
+      window.removeEventListener('pagehide', suspend);
+      window.removeEventListener('pageshow', restore);
+      document.removeEventListener('visibilitychange', visibility);
+    };
+  }, [completeIntro, handoff.progress, mobileTransition, replayIntro, scrollY]);
 
   useLayoutEffect(() => {
     if (phase === 'reduced') {
@@ -534,20 +564,22 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
     const timers: number[] = [];
     // Start with the first painted frame, not during a potentially slow initial commit.
     const firstFrame = requestAnimationFrame(() => {
-    timers.push(window.setTimeout(() => setPhase('logo'), INTRO_TIMING_MS.words));
-    timers.push(window.setTimeout(() => setPhase('transition'), INTRO_TIMING_MS.intro));
-    timers.push(window.setTimeout(() => setContentVisible(true), INTRO_TIMING_MS.contentStart));
-    timers.push(window.setTimeout(() => {
-      introActiveRef.current = false;
-      setPhase('done');
-    }, INTRO_TIMING_MS.total));
-
-    SCHOOLS.forEach((_, index) => {
+      if (!introActiveRef.current) return;
+      timers.push(window.setTimeout(() => setPhase('logo'), INTRO_TIMING_MS.words));
+      timers.push(window.setTimeout(() => setPhase('transition'), INTRO_TIMING_MS.intro));
+      timers.push(window.setTimeout(() => setContentVisible(true), INTRO_TIMING_MS.contentStart));
       timers.push(window.setTimeout(() => {
-        setVisibleEmblems((current) => current.map((visible, itemIndex) => itemIndex === index || visible));
-      }, INTRO_TIMING_MS.emblemsStart + index * INTRO_TIMING_MS.emblemStagger));
+        introActiveRef.current = false;
+        setPhase('done');
+      }, INTRO_TIMING_MS.total));
+
+      SCHOOLS.forEach((_, index) => {
+        timers.push(window.setTimeout(() => {
+          setVisibleEmblems((current) => current.map((visible, itemIndex) => itemIndex === index || visible));
+        }, INTRO_TIMING_MS.emblemsStart + index * INTRO_TIMING_MS.emblemStagger));
+      });
     });
-    });
+    introStartFrame.current = firstFrame;
 
     introTimersRef.current = timers;
     const onKeyDown = (event: KeyboardEvent) => {
