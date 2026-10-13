@@ -116,7 +116,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   });
 
   // Exportaciones de este docente
-  const handleTeacherExport = (format: 'csv' | 'xlsx' | 'pdf') => {
+  const handleTeacherExport = async (format: 'csv' | 'xlsx' | 'pdf') => {
     if (!activeTeacher || (format !== 'pdf' && teacherProducts.length === 0)) {
       setExportNotice('No hay productos para exportar en este formato.');
       setTimeout(() => setExportNotice(null), 3000);
@@ -146,11 +146,13 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     } else if (format === 'xlsx') {
       success = exportService.exportToExcel(teacherProducts, meta, `${fileName}.xlsx`);
     } else if (format === 'pdf') {
-      success = exportService.exportTeacherCv(activeTeacher, teacherProducts, activeTeacherMetrics!, meta.generatedAt);
+      success = await exportService.exportTeacherCv(activeTeacher, teacherProducts, activeTeacherMetrics!, meta.generatedAt);
     }
 
     if (success) {
       setExportNotice(format === 'pdf' ? 'Currículum del docente listo para imprimir o guardar en PDF.' : `Historial exportado en formato ${format.toUpperCase()}.`);
+    } else {
+      setExportNotice('Hubo un error al generar la exportación.');
     }
     setTimeout(() => setExportNotice(null), 3000);
   };
