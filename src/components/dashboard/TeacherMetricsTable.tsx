@@ -31,11 +31,11 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
   });
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 shadow-xs overflow-hidden">
+    <div className="overflow-hidden">
       {/* Encabezado y buscador */}
-      <div className="p-6 border-b border-neutral-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="school-accent-icon p-1.5 rounded-lg">
+          <div className="school-accent-icon p-1.5">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -98,19 +98,19 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                         {tm.teacher.name}
                       </div>
                       <div className="text-[11px] text-neutral-500">
-                        {tm.teacher.rank}{tm.teacher.academicDegree?` · ${tm.teacher.academicDegree}${tm.teacher.academicField?` en ${tm.teacher.academicField}`:''}`:''} • <span className="font-mono text-[10px]">{tm.teacher.email}</span>
+                        {tm.teacher.rank}{tm.teacher.academicDegree?` · ${tm.teacher.academicDegree}${tm.teacher.academicField?` en ${tm.teacher.academicField}`:''}`:''} • <span className="tabular-nums text-[10px]">{tm.teacher.email}</span>
                       </div>
                     </button>
                   </td>
 
                   {/* ORCID */}
-                  <td className="py-4 px-4 font-mono text-[11px]">
+                  <td className="py-4 px-4 tabular-nums text-[11px]">
                     {tm.teacher.orcid ? (
                       <a
                         href={`https://orcid.org/${tm.teacher.orcid}`}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="teacher-orcid-link inline-flex items-center gap-1 px-2 py-0.5 rounded border"
+                        className="teacher-orcid-link inline-flex items-center gap-1 px-2 py-0.5 rounded"
                       >
                         <span>{tm.teacher.orcid}</span>
                         <ExternalLink className="w-3 h-3 shrink-0" />

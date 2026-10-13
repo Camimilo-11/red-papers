@@ -3,9 +3,14 @@
 .institutional-landing > .institutional-landing-hero { z-index: auto; }
 .institutional-landing > .mascot-handoff-logos {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100svh;
   z-index: 1;
   right: auto;
   bottom: auto;
+  transform-origin: top left;
   pointer-events: none;
   overflow: visible;
   mix-blend-mode: multiply;

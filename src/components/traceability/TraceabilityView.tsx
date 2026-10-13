@@ -86,7 +86,7 @@ export const TraceabilityView: React.FC = () => {
             <h2 className="text-2xl font-black text-neutral-900 tracking-tight">
               Matriz de Trazabilidad Ágil
             </h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-[#991B1B]">
+            <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 text-[#991B1B]">
               RF → Épica → HU
             </span>
           </div>
@@ -98,7 +98,7 @@ export const TraceabilityView: React.FC = () => {
         {/* Botón de Ejecución de Pruebas */}
         <button
           onClick={runLiveTestSuite}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-bold shadow-md transition-all self-start md:self-auto"
+          className="flex items-center gap-2 px-4 py-2.5 bg-neutral-900 hover:bg-black text-white text-xs font-bold transition-all self-start md:self-auto"
         >
           <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
           <span>Ejecutar Validación Técnica en Vivo</span>
@@ -107,7 +107,7 @@ export const TraceabilityView: React.FC = () => {
 
       {/* 2. Tarjetas de Resumen de Cobertura */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-xs">
+        <div className="p-4">
           <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
             Historias de Usuario
           </span>
@@ -115,7 +115,7 @@ export const TraceabilityView: React.FC = () => {
           <span className="text-[11px] text-neutral-500 block mt-0.5">HU01 a HU11</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-xs">
+        <div className="p-4">
           <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
             Criterios de Aceptación
           </span>
@@ -123,7 +123,7 @@ export const TraceabilityView: React.FC = () => {
           <span className="text-[11px] text-neutral-500 block mt-0.5">CA01 a CA33</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-xs">
+        <div className="p-4">
           <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
             Tareas Técnicas
           </span>
@@ -131,7 +131,7 @@ export const TraceabilityView: React.FC = () => {
           <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">100% Implementadas</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-xs">
+        <div className="p-4">
           <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
             Pruebas Verificadas
           </span>
@@ -141,7 +141,7 @@ export const TraceabilityView: React.FC = () => {
       </div>
 
       {/* 3. Filtro por Prioridad */}
-      <div className="flex items-center justify-between gap-4 bg-white p-3.5 rounded-xl border border-neutral-200 text-xs">
+      <div className="flex items-center justify-between gap-4 p-3.5 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-neutral-600">Filtrar por prioridad:</span>
           <div className="flex items-center gap-1">
@@ -159,7 +159,7 @@ export const TraceabilityView: React.FC = () => {
               onClick={() => setFilterPriority('must')}
               className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                 filterPriority === 'must'
-                  ? 'bg-[#EF4035] text-white'
+                  ? 'bg-[var(--school-ink)] text-white'
                   : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
@@ -201,22 +201,22 @@ export const TraceabilityView: React.FC = () => {
           return (
             <div
               key={item.hu}
-              className="bg-white rounded-xl border border-neutral-200 shadow-xs overflow-hidden transition-all"
+              className="overflow-hidden transition-all"
             >
               {/* Encabezado de la Tarjeta HU (Captura 11) */}
               <div className="p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* Código RF y HU */}
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 text-white font-mono font-bold text-xs">
+                    <span className="px-2 py-0.5 bg-neutral-900 text-white tabular-nums font-bold text-xs">
                       {item.rf}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-red-100 text-[#991B1B] font-mono font-bold text-xs">
+                    <span className="px-2 py-0.5 bg-red-100 text-[#991B1B] tabular-nums font-bold text-xs">
                       {item.hu}
                     </span>
 
                     {/* Épica */}
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/60">
+                    <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold">
                       {item.epic}
                     </span>
 
@@ -234,7 +234,7 @@ export const TraceabilityView: React.FC = () => {
                     </span>
 
                     {/* Estado de Verificación */}
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700">
                       <CheckCircle2 className="w-3 h-3" />
                       <span>{item.status}</span>
                     </span>
@@ -262,7 +262,7 @@ export const TraceabilityView: React.FC = () => {
                 </p>
 
                 {/* Resumen rápido de dependencias y pruebas */}
-                <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3 pt-2 border-t border-neutral-100 flex-wrap">
+                <div className="flex items-center gap-4 text-xs text-neutral-500 mt-3 pt-2 flex-wrap">
                   <div>
                     <span className="text-neutral-400">Requisitos No Funcionales:</span>{' '}
                     <span className="font-semibold text-neutral-700">
@@ -286,20 +286,20 @@ export const TraceabilityView: React.FC = () => {
 
               {/* Detalle 360° Expandido */}
               {isExpanded && (
-                <div className="p-5 bg-neutral-50/80 border-t border-neutral-200 space-y-5 text-xs">
+                <div className="p-5 space-y-5 text-xs">
                   {/* Criterios de Aceptación (GIVEN-WHEN-THEN) */}
                   <div className="space-y-2">
                     <h4 className="font-bold text-neutral-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                      <FileCheck className="w-4 h-4 text-[#EF4035]" />
+                      <FileCheck className="w-4 h-4 text-[var(--school-ink)]" />
                       <span>Criterios de Aceptación (Given-When-Then)</span>
                     </h4>
                     <div className="space-y-2">
                       {item.acceptanceCriteria.map((ca) => (
                         <div
                           key={ca.id}
-                          className="p-3 bg-white rounded-lg border border-neutral-200 text-neutral-700 flex items-start gap-2.5"
+                          className="p-3 text-neutral-700 flex items-start gap-2.5"
                         >
-                          <span className="px-2 py-0.5 rounded bg-red-100 text-[#991B1B] font-mono font-bold text-xs shrink-0">
+                          <span className="px-2 py-0.5 bg-red-100 text-[#991B1B] tabular-nums font-bold text-xs shrink-0">
                             {ca.id}
                           </span>
                           <span className="leading-relaxed">{ca.description}</span>
@@ -317,15 +317,15 @@ export const TraceabilityView: React.FC = () => {
                       {item.tasks.map((task) => (
                         <div
                           key={task.id}
-                          className="p-2.5 bg-white rounded-lg border border-neutral-200 flex items-start gap-2"
+                          className="p-2.5 flex items-start gap-2"
                         >
                           <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-bold text-[10px] text-neutral-500">
+                              <span className="tabular-nums font-bold text-[10px] text-neutral-500">
                                 {task.id}
                               </span>
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-600">
+                              <span className="text-[10px] px-1.5 py-0.2 text-neutral-600">
                                 {task.type}
                               </span>
                             </div>
@@ -348,17 +348,17 @@ export const TraceabilityView: React.FC = () => {
                       {item.testCases.map((tc) => (
                         <div
                           key={tc.id}
-                          className="p-3 bg-white rounded-lg border border-neutral-200 space-y-1.5"
+                          className="p-3 space-y-1.5"
                         >
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-[#EF4035]">{tc.id}</span>
+                              <span className="tabular-nums font-bold text-[var(--school-ink)]">{tc.id}</span>
                               <span className="text-neutral-400">({tc.type})</span>
                               <span className="text-[10px] text-neutral-500">
                                 CA: {tc.relatedCA}
                               </span>
                             </div>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5">
                               <CheckCircle2 className="w-3 h-3" />
                               Aprobado
                             </span>
@@ -366,7 +366,7 @@ export const TraceabilityView: React.FC = () => {
                           <p className="text-neutral-600 text-[11px] font-medium">
                             <strong>Procedimiento:</strong> {tc.summary}
                           </p>
-                          <div className="p-2 rounded bg-neutral-50 border border-neutral-100 text-[11px] font-mono text-neutral-700">
+                          <div className="p-2 text-[11px] tabular-nums text-neutral-700">
                             <strong>Evidencia registrada:</strong> {tc.evidenceText}
                           </div>
                         </div>
@@ -383,8 +383,8 @@ export const TraceabilityView: React.FC = () => {
       {/* Modal de Ejecución de Pruebas en Vivo */}
       {showLiveSuiteModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-neutral-900 rounded-2xl max-w-2xl w-full p-6 text-white shadow-2xl border border-neutral-700 space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+          <div className="bg-neutral-900 max-w-2xl w-full p-6 text-white space-y-4">
+            <div className="flex items-center justify-between pb-3">
               <div className="flex items-center gap-2">
                 <Terminal className="w-5 h-5 text-emerald-400" />
                 <h3 className="font-bold text-sm">Ejecutor de Suite de Validación (CA01 - CA33)</h3>
@@ -397,7 +397,7 @@ export const TraceabilityView: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-black rounded-xl p-4 font-mono text-xs text-neutral-300 h-80 overflow-y-auto space-y-1.5 scrollbar-thin">
+            <div className="bg-black p-4 tabular-nums text-xs text-neutral-300 h-80 overflow-y-auto space-y-1.5 scrollbar-thin">
               {suiteLog.map((line, idx) => (
                 <div
                   key={idx}

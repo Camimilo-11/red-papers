@@ -49,11 +49,11 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
 
   return (
     <div className="account-register-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-xs">
-      <div role="dialog" aria-modal="true" aria-labelledby="account-register-title" className="account-register-dialog bg-white rounded-2xl shadow-2xl border border-neutral-200">
+      <div role="dialog" aria-modal="true" aria-labelledby="account-register-title" className="account-register-dialog bg-white shadow-2xl border border-neutral-200">
         {/* Encabezado */}
-        <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
+        <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-red-50 text-[#EF4035]">
+            <div className="p-2 bg-red-50 text-[var(--school-ink)]">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
@@ -97,7 +97,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
                   errors.name
                     ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                    : 'border-neutral-300 focus:ring-[var(--school-accent)]'
                 }`}
               />
               {errors.name && <p className="text-[11px] text-red-600 mt-1">{errors.name}</p>}
@@ -117,7 +117,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
                   errors.email
                     ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                    : 'border-neutral-300 focus:ring-[var(--school-accent)]'
                 }`}
               />
               {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
@@ -137,7 +137,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
                   errors.school
                     ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                    : 'border-neutral-300 focus:ring-[var(--school-accent)]'
                 }`}
               >
                 <option value="" disabled>Seleccione una escuela</option>
@@ -160,7 +160,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
                   errors.password
                     ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                    : 'border-neutral-300 focus:ring-[var(--school-accent)]'
                 }`}
               />
               {errors.password && <p className="text-[11px] text-red-600 mt-1">{errors.password}</p>}
@@ -179,7 +179,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 className={`w-full px-3 py-2 rounded-lg border text-xs focus:outline-hidden focus:ring-1 ${
                   errors.orcid
                     ? 'border-red-500 focus:ring-red-500 bg-red-50/20'
-                    : 'border-neutral-300 focus:ring-[#EF4035]'
+                    : 'border-neutral-300 focus:ring-[var(--school-accent)]'
                 }`}
               />
               {errors.orcid && <p className="text-[11px] text-red-600 mt-1">{errors.orcid}</p>}
@@ -195,11 +195,11 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                 rows={2}
                 placeholder="Especialidad o área de investigación..."
-                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[#EF4035] resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-neutral-300 text-xs focus:ring-1 focus:ring-[var(--school-accent)] resize-none"
               />
             </div>
 
-            <div className="account-register-actions flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+            <div className="account-register-actions flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={onClose}
@@ -209,7 +209,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-lg bg-[#EF4035] hover:bg-[#D02B20] text-white font-bold transition-colors shadow-sm"
+                className="px-5 py-2 bg-[var(--school-ink)] hover:bg-[var(--school-ink)] text-white font-bold transition-colors"
               >
                 Confirmar Registro
               </button>

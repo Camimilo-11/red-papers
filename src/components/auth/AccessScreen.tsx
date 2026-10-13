@@ -20,7 +20,7 @@ export const AccessScreen:React.FC<AccessScreenProps>=(p)=>{
  },[]);
  const artLayers=compactArt?13:49;
  const artLayerSpacing=compactArt?4:1;
- return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--accent':`color-mix(in srgb, ${p.school.accent} 45%, #292522)`} as React.CSSProperties}>
+ return <div className="welcome-access" style={{'--school-accent':p.school.accent,'--school-ink':`color-mix(in srgb, ${p.school.accent} 46%, #252321)`,'--accent':`color-mix(in srgb, ${p.school.accent} 46%, #252321)`} as React.CSSProperties}>
   <header className="welcome-access-header">
    <div className="welcome-access-brand"><YachayLogo width={130}/><span>SIMAPC<small>{p.school.shortName}</small></span></div>
    <nav aria-label="Acceso a la plataforma"><button type="button" className="welcome-school-switch" onClick={p.onChangeSchool}><ArrowLeft size={17} aria-hidden="true"/>Cambiar escuela</button><button type="button" className="welcome-login-trigger" onClick={()=>setLoginOpen(true)}><LogIn size={20} aria-hidden="true"/>Iniciar sesión</button></nav>

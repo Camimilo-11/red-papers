@@ -36,7 +36,7 @@ const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'E
 const RESEARCH_ENTRY_LABEL = 'Ver investigaciones y proyectos';
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
-  '--school-ink': `color-mix(in srgb, ${school.accent} 42%, #111820)`,
+  '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`,
 } as React.CSSProperties);
 
 function Emblem({ school }: { school: SchoolConfig }) {
@@ -303,7 +303,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
     if (scene.current) {
       scene.current.dataset.school = activeSlide.current.school.code;
       scene.current.style.setProperty('--school-accent', activeSlide.current.school.accent);
-      scene.current.style.setProperty('--school-ink', `color-mix(in srgb, ${activeSlide.current.school.accent} 42%, #111820)`);
+      scene.current.style.setProperty('--school-ink', `color-mix(in srgb, ${activeSlide.current.school.accent} 46%, #252321)`);
     }
     const focusedSlide = document.activeElement?.closest('[data-slide-index]');
     const focusedLine = document.activeElement?.closest('.research-stage-line-selector');

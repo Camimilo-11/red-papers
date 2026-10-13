@@ -118,7 +118,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
           {/* Columna Izquierda: Bandeja de Entrada */}
           <div className="reviewer-inbox">
             {/* Pestañas de la Bandeja */}
-            <div className="p-3 border-b border-neutral-200 flex items-center gap-1 text-xs font-semibold">
+            <div className="p-3 flex items-center gap-1 text-xs font-semibold">
               <button
                 onClick={() => setFilterMode('pendientes')}
                 className={`flex-1 py-1.5 px-2 rounded-md transition-all text-center ${
@@ -219,7 +219,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
             {selectedProduct ? (
               <div className="space-y-5">
                 {/* Metadatos superiores */}
-                <div className="flex items-center justify-between text-xs text-neutral-500 pb-2 border-b border-neutral-100">
+                <div className="flex items-center justify-between text-xs text-neutral-500 pb-2">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-neutral-700 uppercase">
                       {selectedProduct.type === 'publicacion'
@@ -229,7 +229,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                     <span>·</span>
                     <span>{selectedProduct.year}</span>
                   </div>
-                  <span className="font-mono text-[11px] text-neutral-400">
+                  <span className="tabular-nums text-[11px] text-neutral-400">
                     ID: {selectedProduct.id}
                   </span>
                 </div>
@@ -283,18 +283,18 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                   <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
                     Resumen del Documento
                   </h4>
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-700 leading-relaxed">
+                  <div className="p-3.5 text-xs text-neutral-700 leading-relaxed">
                     {selectedProduct.abstract}
                   </div>
                 </div>
 
                 {/* Identificador y Línea de Investigación */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200">
+                  <div className="p-3">
                     <span className="text-[10px] font-bold text-neutral-400 uppercase block mb-1">
                       Identificador
                     </span>
-                    <span className="font-mono font-bold text-neutral-800">
+                    <span className="tabular-nums font-bold text-neutral-800">
                       {selectedProduct.status === 'verificado' && selectedProduct.doi
                         ? `DOI: ${selectedProduct.doi}`
                         : selectedProduct.projectCode
@@ -303,7 +303,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200">
+                  <div className="p-3">
                     <span className="text-[10px] font-bold text-neutral-400 uppercase block mb-1">
                       Línea de Investigación
                     </span>
@@ -314,7 +314,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                 </div>
 
                 {selectedProduct.type === 'publicacion' && selectedProduct.articleAttachment && (
-                  <section className="rounded-xl border border-[#e6d8d0] bg-[#fffaf7] p-3.5" aria-label="Artículo adjunto para revisión privada">
+                  <section className="bg-[#fffaf7] p-3.5" aria-label="Artículo adjunto para revisión privada">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-2">
                         <FileText className="mt-0.5 h-4 w-4 shrink-0 school-accent-text" aria-hidden="true" />
@@ -333,14 +333,14 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                 )}
 
                 {/* Sección de Dictamen */}
-                <div className="pt-4 border-t border-neutral-200 space-y-3">
+                <div className="pt-4 space-y-3">
                   <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
                     Verificar información del producto
                   </h4>
 
                   {/* Formulario de observación */}
                   {showRejectForm ? (
-                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3 text-xs animate-in fade-in">
+                    <div className="p-4 bg-amber-50 space-y-3 text-xs animate-in fade-in">
                       <div className="flex items-center gap-1.5 font-bold text-amber-900">
                         <AlertTriangle className="w-4 h-4 text-red-600" />
                         <span>Información por completar o corregir (obligatoria)</span>
@@ -374,7 +374,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
                       {/* Botón de verificación */}
                       <button
                         onClick={handleVerify}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors"
                       >
                         <Check className="w-4 h-4 stroke-[3]" />
                         <span>Verificar Información</span>
@@ -408,7 +408,7 @@ export const ReviewerConsoleModal: React.FC<ReviewerConsoleModalProps> = ({
             )}
 
             {/* Pie institucional */}
-            <div className="mt-8 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
+            <div className="mt-8 pt-3 flex items-center justify-between text-xs text-neutral-400">
               <span className="text-[11px]">
                 La verificación actualiza los indicadores institucionales y el historial de
                 cargo docente.
