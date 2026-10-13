@@ -18,6 +18,8 @@ En producción solo el valor exacto `'true'` habilita la demo (o la ausencia del
 
 En el servidor de desarrollo (`import.meta.env.DEV`) la demo permanece habilitada aunque el flag sea `false`, conforme a la condición `DEV || VITE_ENABLE_DEMO === 'true'`. Para verificar el bloqueo usa una compilación de producción (`npm run build` y `npm run preview`). El flag se resuelve al compilar; cambiarlo requiere recompilar.
 
+El hash de contraseñas actual es una simulación no criptográfica con sal fija, solo para esta demo local. Su prefijo `sha256_sim_` no significa SHA-256 y desactivar las cuentas demo no lo convierte en un sistema de autenticación de producción. Se conserva porque PBKDF2 de WebCrypto con sal aleatoria exige migrar las credenciales guardadas y convertir en asíncronos los contratos de login, registro, cambio de contraseña y sus formularios, fuera del alcance de este módulo.
+
 ---
 
 ## 1. Identidad Visual y Lineamientos de Marca

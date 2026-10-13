@@ -138,8 +138,11 @@ export function isValidOrcid(orcid?: string): boolean {
 }
 
 /**
- * Simulación de hash criptográfico seguro para credenciales (RNF01 / CA03)
- * Evita persistir contraseñas en texto plano.
+ * SOLO DEMO: hash no criptográfico con sal fija; no protege contraseñas reales.
+ * El prefijo sha256_sim_ es histórico y no representa SHA-256 ni PBKDF2.
+ * WebCrypto PBKDF2 con sal aleatoria por usuario requiere migrar credenciales
+ * y hacer asíncronos login/register/changePassword y sus formularios consumidores.
+ * Se conserva el contrato síncrono de esta demo; no usar como seguridad de producción.
  */
 function hashPassword(password: string): string {
   let hash = 0;
@@ -267,7 +270,7 @@ export const authService = {
       return { success: false, errors };
     }
 
-    // Guardado seguro del usuario
+    // Guardado del usuario
     const teachers = storageService.getTeachers();
     const newId = `doc-${crypto.randomUUID()}`;
     const newUser: TeacherUser = {
@@ -282,7 +285,7 @@ export const authService = {
       createdAt: new Date().toISOString(),
     };
 
-    // Almacenamiento seguro: la contraseña queda hasheada y no en texto plano (CA03)
+    // Solo demo: se guarda el hash simulado, no la contraseña en texto plano.
     const secureAuthStore = readCredentials();
     secureAuthStore[newId] = {
       passwordHash: hashPassword(formData.password),
