@@ -3,6 +3,7 @@ import { ScientificProduct, ProductStatus, FilterState, UserNotification, Projec
 import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { normalizeDoi, normalizeProjectCode } from './doiService';
 import { canReview } from '../constants/demoAccounts';
+import { productMatchesTeacher } from './productPresentation';
 
 export interface DuplicateCheckResult {
   hasDuplicate: boolean;
@@ -466,10 +467,7 @@ export const productService = {
         const teacher = teachers.find((t) => t.id === filters.teacherId);
         if (teacher) {
           // Coincidencia por ID de propietario o autor en la lista
-          const isOwner = p.ownerId === teacher.id;
-          const teacherName = normalizeAuthorName(teacher.name);
-          const isCoauthor = !!teacherName && p.authors.some((a) => normalizeAuthorName(a) === teacherName);
-          if (!isOwner && !isCoauthor) return false;
+          if (!productMatchesTeacher(p, teacher)) return false;
         }
       }
 

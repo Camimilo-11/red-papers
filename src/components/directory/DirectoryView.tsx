@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AcademicDegree, SyntheticAcademicProfileField, TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
-import { productDateLabel } from '../../services/productPresentation';
+import { productDateLabel, productMatchesTeacher, productCitationValue } from '../../services/productPresentation';
 import { ProductDetailModal } from '../catalog/ProductDetailModal';
 import { Search, ExternalLink, Mail, Download, BarChart3, ArrowLeft, ChevronRight } from 'lucide-react';
 import { getSchoolByCode } from '../../constants/schools';
@@ -82,18 +82,19 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   const teacherProducts = allProducts.filter((p) => {
     if (p.status !== 'verificado') return false;
     if (!activeTeacher) return false;
-    if (p.ownerId === activeTeacher.id) return true;
-    return p.authors.some((a) => a.toLowerCase().includes(activeTeacher.name.toLowerCase()));
+    return productMatchesTeacher(p, activeTeacher);
   });
+  const importedProfile = activeTeacher?.id.startsWith('ecmc-orcid-researcher-') || teacherProducts.some(product => product.bibliographicSource);
+  const citationsAvailable = !teacherProducts.length || teacherProducts.some(product => productCitationValue(product) !== null);
   const teacherResearchLines = activeTeacher
     ? activeTeacher.researchLines?.length
       ? activeTeacher.researchLines
       : activeTeacher.researchLine
       ? [activeTeacher.researchLine]
-      : [...new Set(teacherProducts.map(product=>product.researchLine))]
+      : [...new Set(teacherProducts.map(product=>product.researchLine).filter(line => line !== ''))]
     : [];
   const annualResearchCounts = (()=>{
-    const lastYear=new Date().getFullYear();
+    const lastYear=importedProfile && teacherProducts.length ? Math.max(...teacherProducts.map(product => product.year)) : new Date().getFullYear();
     return Array.from({length:5},(_,index)=>{
       const year=lastYear-4+index;
       return {year,count:teacherProducts.filter(product=>product.year===year).length};
@@ -165,14 +166,14 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
     <div className="academic-directory-layout" data-mobile-profile-open={mobileProfileOpen}>
       <nav className="academic-people" aria-label="Seleccionar docente">
-        {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank}{academicTitle(t)?` · ${academicTitle(t)}`:''}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
+        {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank || (t.id.startsWith('ecmc-orcid-researcher-') ? 'Perfil importado de ORCID' : '')}{academicTitle(t)?`${t.rank ? ' · ' : ''}${academicTitle(t)}`:''}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
         {!filteredTeachers.length&&<p className="academic-empty">No se encontraron docentes.</p>}
       </nav>
       {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id} ref={profileRef}>
         <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
-          <div><h3>{activeTeacher.name}</h3><p>{activeTeacher.rank}</p>{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">{schoolName}</p>{activeTeacher.yachayEntryYear&&<p className="academic-entry-year">En Yachay Tech desde {activeTeacher.yachayEntryYear}</p>}</div>
+          <div><h3>{activeTeacher.name}</h3>{activeTeacher.rank&&<p>{activeTeacher.rank}</p>}{academicTitle(activeTeacher)&&<p className="academic-degree">{academicTitle(activeTeacher)}</p>}<p className="academic-school">{importedProfile ? 'Perfil importado de ORCID' : schoolName}</p>{activeTeacher.yachayEntryYear&&<p className="academic-entry-year">En Yachay Tech desde {activeTeacher.yachayEntryYear}</p>}</div>
         </header>
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">
@@ -191,10 +192,10 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         </div>
         <section className="academic-profile-section academic-description-section" aria-labelledby="academic-description-title">
           <h4 id="academic-description-title">Descripción del docente</h4>
-          {activeTeacher.bio?<p className="academic-bio">{activeTeacher.bio}</p>:<p className="academic-section-empty">Este docente aún no ha añadido una descripción.</p>}
+          {activeTeacher.bio?<p className="academic-bio">{activeTeacher.bio}</p>:<p className="academic-section-empty">{importedProfile ? 'Descripción no disponible en la fuente ORCID.' : 'Este docente aún no ha añadido una descripción.'}</p>}
         </section>
         <div className="academic-contact">
-          <a href={`mailto:${activeTeacher.email}`}><Mail size={18} aria-hidden="true"/>{activeTeacher.email}</a>
+          {activeTeacher.email&&<a href={`mailto:${activeTeacher.email}`}><Mail size={18} aria-hidden="true"/>{activeTeacher.email}</a>}
           {activeTeacher.orcid?activeTeacher.syntheticAcademicProfileFields?.includes('orcid')?<span className="academic-profile-unlinked">ORCID · {activeTeacher.orcid}</span>:<a href={`https://orcid.org/${activeTeacher.orcid}`} target="_blank" rel="noopener noreferrer">ORCID · {activeTeacher.orcid}<ExternalLink size={15} aria-hidden="true"/></a>:<span>ORCID no registrado</span>}
           {academicProfileLink(activeTeacher,'githubUrl','GitHub',activeTeacher.githubUrl||'')}
           {academicProfileLink(activeTeacher,'googleScholarId','Google Scholar',`https://scholar.google.com/citations?user=${encodeURIComponent(activeTeacher.googleScholarId||'')}`)}
@@ -204,7 +205,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <dl className="academic-metrics">
           <div><dt>Publicaciones</dt><dd>{activeTeacherMetrics.publicationsCount}</dd></div>
           <div><dt>Proyectos</dt><dd>{activeTeacherMetrics.projectsCount}</dd></div>
-          <div><dt>Citas</dt><dd>{activeTeacherMetrics.citationsTotal}</dd></div>
+          <div><dt>Citas</dt><dd>{citationsAvailable ? activeTeacherMetrics.citationsTotal : 'No disponible'}</dd></div>
           <div className="academic-index-metric"><dt>Índices h externos</dt><dd><span>Google Scholar <strong>{activeTeacher.googleScholarHIndex??'—'}</strong></span><span>Scopus <strong>{activeTeacher.scopusHIndex??'—'}</strong></span></dd></div>
         </dl>
         <div className="academic-actions">

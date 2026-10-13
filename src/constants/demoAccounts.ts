@@ -1,5 +1,4 @@
 import { TeacherUser } from '../types';
-import { INITIAL_TEACHERS } from './seedData';
 import { SCHOOLS, type SchoolConfig } from './schools';
 
 // Default to the current public demo; production builds can explicitly disable it.
@@ -15,11 +14,9 @@ interface DemoAccount {
 
 function accountsForSchool(school: SchoolConfig): DemoAccount[] {
   const suffix = school.code.toLowerCase();
-  const teacher: TeacherUser = school.code === 'ECMC'
-    ? {...INITIAL_TEACHERS[0], email:'profesor@yachaytech.edu.ec', role:'teacher'}
-    : {id:`demo-teacher-${suffix}`, name:'Profesor de prueba', email:'profesor@yachaytech.edu.ec', role:'teacher', rank:'Profesor', school:school.code, researchLines:[], createdAt:'2026-10-13'};
+  const teacher: TeacherUser = {id:school.code === 'ECMC' ? 'doc-001' : `demo-teacher-${suffix}`, name:'Profesor de prueba', email:'profesor@yachaytech.edu.ec', role:'teacher', rank:'Profesor', school:school.code, researchLines:[], createdAt:'2026-10-13'};
   return [
-    {user:teacher, password:'Profesor2026!', credentialId:INITIAL_TEACHERS[0].id},
+    {user:teacher, password:'Profesor2026!', credentialId:'doc-001'},
     {user:{id:`demo-student-${suffix}`, name:'Estudiante de prueba', email:'estudiante@yachaytech.edu.ec', role:'student', rank:'Estudiante colaborador', school:school.code, bio:`Estudiante colaborador de ${school.name}.`, createdAt:'2026-10-10'}, password:'Estudiante2026!', credentialId:'demo-student-ecmc', aliases:['estudiante.ecmc@yachaytech.edu.ec']},
     {user:{id:school.code === 'ECMC' ? 'demo-reviewer' : `demo-reviewer-${suffix}`, name:'Comité Científico', email:'comite@yachaytech.edu.ec', role:'reviewer_demo', rank:'Miembro del Comité', school:school.code, createdAt:'2026-09-30'}, password:'Comite2026!', credentialId:'demo-reviewer'},
   ];

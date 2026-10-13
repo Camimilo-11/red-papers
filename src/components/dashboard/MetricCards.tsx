@@ -6,13 +6,13 @@ import './MetricCards.css';
 
 const numberFormat = new Intl.NumberFormat('es-EC');
 
-export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfig; secondary?: boolean }> = ({ metrics, school, secondary = false }) => {
+export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfig; secondary?: boolean; researchLinesAvailable?: boolean }> = ({ metrics, school, secondary = false, researchLinesAvailable = true }) => {
   const Heading = secondary ? 'h2' : 'h1';
   const summary = [
     { id: 'publications', value: metrics.totalPublications, label: 'Publicaciones' },
     { id: 'projects', value: metrics.totalProjects, label: 'Proyectos' },
     { id: 'citations', value: metrics.totalCitations, label: 'Citas registradas' },
-    { id: 'research-lines', value: metrics.researchLinesWithProduction, label: 'Líneas con producción' },
+    { id: 'research-lines', value: researchLinesAvailable ? metrics.researchLinesWithProduction : null, label: 'Líneas con producción' },
   ];
 
   return (
@@ -29,7 +29,7 @@ export const MetricCards: React.FC<{ metrics: SchoolMetrics; school: SchoolConfi
         {summary.map(({ id, value, label }) => (
           <div key={id} className="school-metric" data-metric={id}>
             <dt>{label}</dt>
-            <dd>{numberFormat.format(value)}</dd>
+            <dd>{value === null ? <span title="El archivo importado no incluye líneas de investigación" aria-label="No disponible">—</span> : numberFormat.format(value)}</dd>
           </div>
         ))}
       </dl>

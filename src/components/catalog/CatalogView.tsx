@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ScientificProduct, TeacherUser, FilterState, ProductType, OfficialResearchLine, ProductStatus } from '../../types';
 import { ACADEMIC_SEMESTERS } from '../../constants/researchLines';
 import { productService } from '../../services/productService';
+import { productCitationValue } from '../../services/productPresentation';
 import { exportService, ExportMetadata } from '../../services/exportService';
 import { ProductCard } from './ProductCard';
 import { ProductDetailModal } from './ProductDetailModal';
@@ -71,6 +72,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     return onlyMine ? visible.filter(p=>p.ownerId===currentUserId) : visible;
   }, [allProducts, currentUserId, onlyMine]);
 
+  const hasImportedCorpus = allProducts.some(product => !!product.bibliographicSource);
+  const periodYears = useMemo(() => hasImportedCorpus
+    ? [...new Set(allProducts.map(product => product.year))].filter(Number.isFinite).sort((a, b) => b - a)
+    : [2026, 2025, 2024, 2023, 2022, 2021], [allProducts, hasImportedCorpus]);
+  const periodSemesters = useMemo(() => hasImportedCorpus
+    ? [...new Set(allProducts.flatMap(product => product.semester ? [product.semester] : []))].sort().reverse()
+    : ACADEMIC_SEMESTERS, [allProducts, hasImportedCorpus]);
+
   // Aplicar filtros combinados
   const filteredProducts = useMemo(() => {
     let result = productService.filterProducts(visibleProducts, filters);
@@ -79,7 +88,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     if (sortOption === 'recent') {
       result = [...result].sort((a, b) => b.year - a.year || (b.semester||'').localeCompare(a.semester||''));
     } else if (sortOption === 'citations') {
-      result = [...result].sort((a, b) => (b.citations || 0) - (a.citations || 0));
+      result = [...result].sort((a, b) => (productCitationValue(b) ?? -1) - (productCitationValue(a) ?? -1));
     } else if (sortOption === 'title') {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
     }
@@ -304,19 +313,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               className="school-accent-focus w-full px-2.5 py-2 rounded-lg border border-neutral-200 text-xs bg-white text-neutral-800"
             >
               <option value="todos">Todos los años</option>
-              <option value="2026">2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-              <optgroup label="Por semestre específico">
-                {ACADEMIC_SEMESTERS.map((s) => (
+              {periodYears.map(year => <option key={year} value={String(year)}>{year}</option>)}
+              {periodSemesters.length > 0 && <optgroup label="Por semestre específico">
+                {periodSemesters.map((s) => (
                   <option key={s} value={s}>
                     {s}
                   </option>
                 ))}
-              </optgroup>
+              </optgroup>}
             </select>
           </div>
 

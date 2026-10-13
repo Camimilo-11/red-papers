@@ -5,6 +5,7 @@ import {metricsService} from '../../services/metricsService';
 import type {TemporalDataPoint} from '../../services/metricsService';
 import {TemporalEvolutionChart} from './TemporalEvolutionChart';
 import {SchoolConfig} from '../../constants/schools';
+import {productCitationValue, productMatchesTeacher} from '../../services/productPresentation';
 
 type RankingMetric='citations'|'publications'|'scholarHIndex'|'scopusHIndex';
 const rankingOptions:{id:RankingMetric;label:string}[]=[
@@ -28,6 +29,10 @@ function TeacherRankingChart({teachers,products,accent}:{teachers:TeacherUser[];
  const circumference=2*Math.PI*67;
  let offset=0;
  const metricLabel=rankingOptions.find(option=>option.id===metric)?.label||'Citas';
+ const metricAvailable=(teacher:TeacherMetrics)=>metric==='citations'
+  ? verified.filter(product=>product.type==='publicacion'&&productMatchesTeacher(product,teacher.teacher)).some(product=>productCitationValue(product)!==null)
+  : metric==='scholarHIndex'?teacher.teacher.googleScholarHIndex!==undefined
+  : metric==='scopusHIndex'?teacher.teacher.scopusHIndex!==undefined:true;
 
  return <section className="research-chart-card teacher-ranking-card" aria-labelledby="teacher-ranking-title">
   <header className="research-chart-heading">
@@ -51,7 +56,7 @@ function TeacherRankingChart({teachers,products,accent}:{teachers:TeacherUser[];
     <text x="100" y="94" textAnchor="middle" className="donut-center-label">Top {top.length}</text>
     <text x="100" y="116" textAnchor="middle" className="donut-center-caption">profesores</text>
    </svg>
-   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:rankingColors[index%rankingColors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{numberFormat.format(metricValue(teacher,metric))}</strong></li>)}</ol>
+   <ol className="teacher-ranking-legend">{top.map((teacher,index)=><li key={teacher.teacher.id}><span className="ranking-swatch" style={{backgroundColor:rankingColors[index%rankingColors.length]}}/><span className="ranking-teacher-name" title={teacher.teacher.name}>{teacher.teacher.name}</span><strong>{metricAvailable(teacher)?numberFormat.format(metricValue(teacher,metric)):'—'}</strong></li>)}</ol>
   </div>:<div className="teacher-ranking-empty"><Quote size={22}/><p>No hay datos disponibles para comparar con esta métrica.</p></div>}
  </section>;
 }
@@ -61,16 +66,18 @@ function ResearchLineChart({products,school}:{products:ScientificProduct[];schoo
  const values=school.researchLines.map((line,index)=>({line,index,count:verified.filter(product=>product.researchLine===line).length}))
   .sort((a,b)=>b.count-a.count||a.index-b.index);
  const max=Math.max(1,...values.map(item=>item.count));
+ const unassigned=verified.filter(product=>!product.researchLine).length;
  return <section className="research-chart-card research-line-chart" aria-labelledby="research-lines-chart-title">
   <header className="research-chart-heading">
    <div><p className="eyebrow">ÁREAS · {school.code}</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
    <BarChart3 size={21} aria-hidden="true"/>
   </header>
-  <ol className="research-line-bars">{values.map(item=><li key={item.line}>
+  {unassigned>0&&<p className="academic-section-empty">{unassigned} {unassigned===1?'producto sin línea asignada':'productos sin línea asignada'}. La fuente ORCID no proporciona esta clasificación.</p>}
+  {values.some(item=>item.count>0)||!unassigned?<ol className="research-line-bars">{values.map(item=><li key={item.line}>
    <span className="research-line-name">{item.line}</span>
    <span className="research-line-track"><span style={{width:`${item.count?Math.max(3,item.count/max*100):0}%`}}/></span>
    <strong>{numberFormat.format(item.count)}</strong>
-  </li>)}</ol>
+  </li>)}</ol>:null}
  </section>;
 }
 

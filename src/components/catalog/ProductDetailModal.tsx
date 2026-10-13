@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ScientificProduct, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../../types';
+import { ScientificProduct, PROJECT_STATUS_LABELS } from '../../types';
 import { normalizeDoi } from '../../services/doiService';
-import { productDateLabel } from '../../services/productPresentation';
+import { productDateLabel, productStatusLabel, productCitationValue, productCitationLabel } from '../../services/productPresentation';
 import { CitationStyle, formatProductCitation } from '../../services/citationService';
 import {
   X,
@@ -33,6 +33,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
   const isVerificado = product.status === 'verificado';
   const isCargado = product.status === 'cargado';
   const isRechazado = product.status === 'rechazado';
+  const source = product.bibliographicSource;
+  const citations = productCitationValue(product);
   const citation = formatProductCitation(isVerificado ? product : { ...product, doi: undefined }, citationStyle);
 
   const cleanDoi = isVerificado ? normalizeDoi(product.doi) : '';
@@ -79,7 +81,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
             <span className="product-detail-meta-divider" aria-hidden="true">·</span>
             <span>{productDateLabel(product)}</span>
             <span className="product-detail-meta-divider" aria-hidden="true">·</span>
-            <span className="product-detail-research-line">{product.researchLine}</span>
+            <span className="product-detail-research-line">{product.researchLine || 'Línea no asignada'}</span>
           </div>
 
           <button
@@ -92,21 +94,23 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
         </header>
 
         <div className="product-detail-content">
-          {showStatus && (
+          {(showStatus || source) && (
             <div className={`product-detail-status ${isVerificado ? 'is-verified' : isCargado ? 'is-pending' : 'is-rejected'}`}>
-              {isVerificado && <><CheckCircle2 size={17} /><span>{PRODUCT_STATUS_LABELS.verificado} / Certificado</span></>}
-              {isCargado && <><Clock size={17} /><span>{PRODUCT_STATUS_LABELS.cargado}</span></>}
-              {isRechazado && <><AlertTriangle size={17} /><span>{PRODUCT_STATUS_LABELS.rechazado}</span></>}
+              {source ? <><FileText size={17} /><span>{productStatusLabel(product)}</span></> : <>
+                {isVerificado && <><CheckCircle2 size={17} /><span>{productStatusLabel(product)} / Certificado</span></>}
+                {isCargado && <><Clock size={17} /><span>{productStatusLabel(product)}</span></>}
+                {isRechazado && <><AlertTriangle size={17} /><span>{productStatusLabel(product)}</span></>}
+              </>}
             </div>
           )}
 
           <div className="product-detail-intro">
             <p className="product-detail-eyebrow">Ficha del producto</p>
             <h2 id="product-detail-title">{product.title}</h2>
-            {venue && (
+            {(venue || source) && (
               <p className="product-detail-venue">
                 <span>{isPublicacion ? 'Publicado en' : 'Entidad o fondo'}</span>
-                <strong>{venue}</strong>
+                <strong>{venue || 'No disponible'}</strong>
                 {product.volumeIssue && <span className="product-detail-volume">{product.volumeIssue}</span>}
               </p>
             )}
@@ -120,18 +124,27 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           )}
 
           <section className="product-detail-section" aria-labelledby="product-detail-authors">
-            <h3 id="product-detail-authors"><Users size={18} aria-hidden="true" />{isPublicacion ? 'Autores' : 'Investigadores participantes'}</h3>
+            <h3 id="product-detail-authors"><Users size={18} aria-hidden="true" />{source ? 'Investigadores vinculados por ORCID' : isPublicacion ? 'Autores' : 'Investigadores participantes'}</h3>
             <div className="product-detail-author-list">
               {(product.type === 'proyecto' && product.projectParticipants?.length ? product.projectParticipants : product.authors).map((author, index) => (
                 <span key={`${author}-${index}`} className="product-detail-author">{author}</span>
               ))}
+              {!product.authors.length && !product.projectParticipants?.length && <span className="product-detail-author">No disponible</span>}
             </div>
           </section>
 
           <section className="product-detail-section" aria-labelledby="product-detail-abstract">
             <h3 id="product-detail-abstract"><FileText size={18} aria-hidden="true" />Resumen académico (abstract)</h3>
-            <div className="product-detail-abstract">{product.abstract}</div>
+            <div className="product-detail-abstract">{product.abstract?.trim() || 'No disponible'}</div>
           </section>
+
+          {source && <section className="product-detail-section" aria-labelledby="product-detail-source">
+            <h3 id="product-detail-source"><FileText size={18} aria-hidden="true" />Fuente bibliográfica</h3>
+            <p><strong>Fuente:</strong> {source.dataset || 'No disponible'}</p>
+            <p><strong>Tipo de publicación:</strong> {source.publicationType || 'No disponible'}</p>
+            <p><strong>Cuartil SJR:</strong> {source.sjrQuartile || 'No disponible'}</p>
+            <p><strong>Índice SJR:</strong> {source.sjrScore ?? 'No disponible'}</p>
+          </section>}
 
           <section className="product-detail-section product-detail-citation-copy" aria-labelledby="product-detail-citation-title">
             <div className="product-detail-citation-heading"><h3 id="product-detail-citation-title"><Quote size={18} aria-hidden="true"/>Cita bibliográfica</h3><span>Copie una referencia lista para usar</span></div>
@@ -139,6 +152,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
               {(['APA 7', 'IEEE', 'Vancouver'] as CitationStyle[]).map(style=><button type="button" key={style} aria-pressed={citationStyle===style} className={citationStyle===style?'selected':''} onClick={()=>setCitationStyle(style)}>{style}</button>)}
             </div>
             <blockquote className="product-detail-citation-text">{citation}</blockquote>
+            {source && <p>El archivo solo incluye investigadores vinculados por ORCID; compruebe la autoría completa en el DOI antes de citar.</p>}
             <button type="button" className="product-detail-copy-citation" onClick={copyCitation}>{copiedCitation?<Check size={16} aria-hidden="true"/>:<Copy size={16} aria-hidden="true"/>}{copiedCitation?'Cita copiada':`Copiar cita ${citationStyle}`}</button>
           </section>
 
@@ -166,8 +180,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
               <h3 id="product-detail-citations">Impacto de citas</h3>
               <div className="product-detail-citation-count">
                 <Quote size={20} aria-hidden="true" />
-                <strong>{product.citations}</strong>
-                <span>{product.citations === 1 ? 'cita indexada' : 'citas indexadas'}</span>
+                <strong>{productCitationLabel(product)}</strong>
+                {citations !== null && <span>{citations === 1 ? 'cita registrada' : 'citas registradas'}</span>}
               </div>
               <p>Registro bibliométrico</p>
             </section>

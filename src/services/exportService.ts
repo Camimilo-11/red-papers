@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
-import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PRODUCT_STATUS_LABELS, PROJECT_STATUS_LABELS } from '../types';
+import { ScientificProduct, FilterState, TeacherUser, TeacherMetrics, PROJECT_STATUS_LABELS } from '../types';
 import { SCHOOLS } from '../constants/schools';
-import { productDateValue } from './productPresentation';
+import { productDateValue, productCitationValue, productCitationLabel, productStatusLabel } from './productPresentation';
 import { openPrintableDocument } from './printDocument';
 import bricolageFontUrl from '../assets/fonts/bricolage-grotesque-latin-wght-normal.woff2?url';
 import sourceSansFontUrl from '../assets/fonts/source-sans-3-latin-wght-normal.woff2?url';
@@ -39,6 +39,7 @@ export const exportService = {
       return false;
     }
 
+    const includeSource = products.some(product => product.bibliographicSource);
     const headers = [
       'ID Sistema',
       'Tipo de Producto',
@@ -56,6 +57,7 @@ export const exportService = {
       'Productos esperados',
       'Citas Registradas',
       'Fecha Registro',
+      ...(includeSource ? ['Fuente', 'Tipo en la fuente', 'Cuartil SJR', 'SJR Score', 'ORCID de investigadores vinculados'] : []),
     ];
 
     const rows = products.map((p) => [
@@ -66,15 +68,18 @@ export const exportService = {
       p.year,
       productDateValue(p),
       p.researchLine,
-      PRODUCT_STATUS_LABELS[p.status],
+      productStatusLabel(p),
       doiForDisplay(p) || p.projectCode || 'N/A',
       p.venue || p.fundingVenue || 'N/A',
       p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
       (p.projectParticipants || []).join('; '),
       p.projectDurationMonths ?? '',
       (p.expectedProducts || []).join('; '),
-      p.citations || 0,
+      productCitationValue(p),
       new Date(p.createdAt).toLocaleDateString('es-EC'),
+      ...(includeSource ? [p.bibliographicSource?.dataset, p.bibliographicSource?.publicationType,
+        p.bibliographicSource?.sjrQuartile, p.bibliographicSource?.sjrScore,
+        p.bibliographicSource?.researcherOrcids.join('; ')] : []),
     ].map(csvCell));
 
     // Encabezado de metadatos institucionales
@@ -108,6 +113,7 @@ export const exportService = {
       return false;
     }
 
+    const includeSource = products.some(product => product.bibliographicSource);
     const data = products.map((p) => ({
       'ID Sistema': p.id,
       'Tipo de Producto': p.type === 'publicacion' ? 'Publicación Científica' : 'Proyecto de Investigación',
@@ -116,15 +122,22 @@ export const exportService = {
       'Año': p.year,
       'Fecha de publicación / inicio': productDateValue(p),
       'Línea de Investigación': p.researchLine,
-      'Estado de verificación': PRODUCT_STATUS_LABELS[p.status],
+      'Estado de verificación': productStatusLabel(p),
       'Identificador Digital / Código': doiForDisplay(p) || p.projectCode || 'N/A',
       'Medio de Difusión / Fondo': p.venue || p.fundingVenue || 'N/A',
       'Estado del proyecto': p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
       'Participantes del proyecto': (p.projectParticipants || []).join('; '),
       'Duración del proyecto (meses)': p.projectDurationMonths ?? '',
       'Productos esperados': (p.expectedProducts || []).join('; '),
-      'Citas Indexadas': p.citations || 0,
+      'Citas Indexadas': productCitationValue(p) ?? '',
       'Fecha Registro': new Date(p.createdAt).toLocaleDateString('es-EC'),
+      ...(includeSource ? {
+        'Fuente': p.bibliographicSource?.dataset || '',
+        'Tipo en la fuente': p.bibliographicSource?.publicationType || '',
+        'Cuartil SJR': p.bibliographicSource?.sjrQuartile || '',
+        'SJR Score': p.bibliographicSource?.sjrScore ?? '',
+        'ORCID de investigadores vinculados': p.bibliographicSource?.researcherOrcids.join('; ') || '',
+      } : {}),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -196,6 +209,7 @@ export const exportService = {
           <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${escapeHtml(p.title)}</div>
           <div style="color: #6B7280; font-size: 10px;">${escapeHtml(p.authors.join(', '))}</div>
           <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${escapeHtml(p.venue || p.fundingVenue || '')}</div>
+          ${p.bibliographicSource ? `<div style="font-size: 9px; margin-top: 2px;">Fuente: ${escapeHtml(p.bibliographicSource.dataset)} · ${escapeHtml(p.bibliographicSource.publicationType)}${p.bibliographicSource.sjrQuartile ? ` · SJR ${escapeHtml(p.bibliographicSource.sjrQuartile)}` : ''}</div>` : ''}
         </td>
         <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${escapeHtml(p.researchLine)}</td>
         <td style="padding: 8px 6px; text-align: center; color: #374151;">${escapeHtml(productDateValue(p))}</td>
@@ -210,10 +224,10 @@ export const exportService = {
               ? 'background: #FFFBEB; color: #B45309;'
               : 'background: #FEF2F2; color: #B91C1C;'
           }">
-            ${PRODUCT_STATUS_LABELS[p.status].toUpperCase()}
+            ${escapeHtml(productStatusLabel(p).toUpperCase())}
           </span>
         </td>
-        <td style="padding: 8px 6px; text-align: right; font-weight: bold; font-family: monospace;">${p.citations || 0}</td>
+        <td style="padding: 8px 6px; text-align: right; font-weight: bold; font-family: monospace;">${escapeHtml(productCitationLabel(p))}</td>
       </tr>
     `
       )
@@ -251,7 +265,7 @@ export const exportService = {
             </div>
           </div>
           <div class="meta-box">
-            <div><strong>Reporte Oficial de Producción Científica</strong></div>
+            <div><strong>${products.some(product => product.bibliographicSource) ? 'Reporte de Producción Científica · Importación ORCID' : 'Reporte Oficial de Producción Científica'}</strong></div>
             <div>Fecha: ${meta.generatedAt}</div>
             <div>Total Registros: ${meta.totalRecords}</div>
           </div>
@@ -277,7 +291,7 @@ export const exportService = {
 
         <div class="footer">
           <div>Universidad de Investigación de Tecnología Experimental Yachay Tech • San Miguel de Urcuquí, Imbabura, Ecuador</div>
-          <div>Reporte generado desde SIMAPC</div>
+          <div>Reporte generado desde SIMAPC${products.some(product => product.bibliographicSource) ? ' · El archivo contiene investigadores vinculados por ORCID; no incluye la autoría completa.' : ''}</div>
         </div>
       </body>
       </html>
@@ -288,6 +302,7 @@ export const exportService = {
 
   async exportTeacherCv(teacher: TeacherUser, products: ScientificProduct[], metrics: TeacherMetrics, generatedAt: string): Promise<boolean> {
     const schoolAccent = SCHOOLS.find(school => teacher.school === school.code)?.accent ?? '#252321';
+    const importedProfile = teacher.id.startsWith('ecmc-orcid-researcher-');
 
     const profileLink = (field: 'githubUrl' | 'googleScholarId' | 'scopusAuthorId' | 'webOfScienceId', label: string, href: string, identifier: string) => {
       if (!identifier) return '';
@@ -335,10 +350,11 @@ export const exportService = {
         h3{font-size:11pt;margin:3px 0}.facts{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}.facts p{margin:2px 0}.muted,.product-meta{color:#6a625b;font-size:9pt}.links{font-size:9pt}.links a{color:#8b2a23;text-decoration:none}.product{padding:8px 0;border-bottom:1px solid #e5dfd8;break-inside:avoid}.product p{margin:2px 0}.authors{font-weight:600}.bio{white-space:pre-wrap}.footer{margin-top:24px;padding-top:8px;border-top:1px solid #ded7ce;color:#777;font-size:8pt;display:flex;justify-content:space-between}
         @media print{a{color:inherit}}
       </style></head><body>
-      <header><p class="eyebrow">Currículum académico · SIMAPC</p><h1>${escapeHtml(teacher.name)}</h1>
-        <p>${escapeHtml(teacher.rank)}${teacher.academicDegree ? ` · ${escapeHtml(teacher.academicDegree)}${teacher.academicField ? ` en ${escapeHtml(teacher.academicField)}` : ''}` : ''}</p>
-        <p>${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}</p></header>
-      <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || 'Perfil académico del personal investigador de la Universidad Yachay Tech.')}</p></section>
+      <header><p class="eyebrow">${importedProfile ? 'Perfil bibliográfico' : 'Currículum académico'} · SIMAPC</p><h1>${escapeHtml(teacher.name)}</h1>
+        ${teacher.rank || teacher.academicDegree ? `<p>${escapeHtml(teacher.rank)}${teacher.academicDegree ? ` · ${escapeHtml(teacher.academicDegree)}${teacher.academicField ? ` en ${escapeHtml(teacher.academicField)}` : ''}` : ''}</p>` : ''}
+        <p>${importedProfile ? 'Fuente: emcc_orcid.sql' : `${escapeHtml(teacher.email)} · Universidad Yachay Tech${teacher.yachayEntryYear ? ` · Docente desde ${escapeHtml(teacher.yachayEntryYear)}` : ''}`}</p></header>
+      ${importedProfile ? '<p class="muted">El archivo no incluye formación, afiliación ni autoría completa. Los investigadores vinculados corresponden a las asociaciones ORCID de la fuente.</p>' : ''}
+      <section><h2>Perfil profesional</h2><p class="bio">${escapeHtml(teacher.bio || (importedProfile ? 'No consta en el archivo importado.' : 'Perfil académico del personal investigador de la Universidad Yachay Tech.'))}</p></section>
       <section><h2>Áreas de investigación</h2>${researchAreasHtml}</section>
       <section><h2>Indicadores de producción</h2><div class="facts"><p><strong>Publicaciones verificadas:</strong> ${metrics.publicationsCount}</p><p><strong>Proyectos verificados:</strong> ${metrics.projectsCount}</p><p><strong>Citas registradas:</strong> ${metrics.citationsTotal}</p>${externalIndex('Google Scholar', teacher.googleScholarHIndex)}${externalIndex('Scopus', teacher.scopusHIndex)}</div></section>
       <section><h2>Identificadores y perfiles académicos</h2><p class="links">${links || 'No registrados'}</p></section>

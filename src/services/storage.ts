@@ -1,14 +1,15 @@
 import { AcademicDegree, OfficialResearchLine, ScientificProduct, TeacherUser, UserNotification } from '../types';
-import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS } from '../constants/seedData';
+import { INITIAL_PRODUCTS, INITIAL_TEACHERS, INITIAL_NOTIFICATIONS, LEGACY_ECMC_PRODUCT_IDS, LEGACY_ECMC_TEACHER_IDS } from '../constants/seedData';
 import { INITIAL_SCHOOL_PRODUCTS, INITIAL_SCHOOL_TEACHERS } from '../constants/schoolSeedData';
 import { ALL_OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 
-const SEED_PRODUCT_BY_ID = new Map(INITIAL_PRODUCTS.map((product) => [product.id, product]));
+
 const INITIAL_TEACHER_DATA = [...INITIAL_TEACHERS, ...INITIAL_SCHOOL_TEACHERS];
 const INITIAL_PRODUCT_DATA = [...INITIAL_PRODUCTS, ...INITIAL_SCHOOL_PRODUCTS];
 const SEED_TEACHER_BY_ID = new Map(INITIAL_TEACHER_DATA.map((teacher) => [teacher.id, teacher]));
 
 function completeSyntheticTeacher(teacher: TeacherUser): TeacherUser {
+  if (teacher.id.startsWith('ecmc-orcid-researcher-')) return teacher;
   const defaults = SEED_TEACHER_BY_ID.get(teacher.id);
   if (!defaults || teacher.syntheticProfileSeedVersion) return teacher;
 
@@ -37,100 +38,14 @@ function completeSyntheticTeacher(teacher: TeacherUser): TeacherUser {
   };
 }
 
-function completeSyntheticProduct(product: ScientificProduct): ScientificProduct {
-  const defaults = SEED_PRODUCT_BY_ID.get(product.id);
-  if (!defaults) return product;
-
-  let updated = product;
-  const fillIfMissing = <K extends keyof ScientificProduct>(key: K) => {
-    if ((updated[key] === undefined || updated[key] === null) && defaults[key] !== undefined) {
-      updated = { ...updated, [key]: defaults[key] };
-    }
-  };
-
-  [
-    'publicationDate',
-    'projectStartDate',
-    'projectEndDate',
-    'projectStatus',
-    'projectParticipants',
-    'projectDurationMonths',
-    'expectedProducts',
-    'projectProgressReports',
-    'projectClosureReport',
-    'articleAttachment',
-    'privacyConsentAt',
-    'venue',
-    'volumeIssue',
-  ].forEach((key) => fillIfMissing(key as keyof ScientificProduct));
-
-  if (updated.id === 'prod-009' && updated.doi?.startsWith('10.1145/preview.')) {
-    updated = { ...updated, doi: undefined };
-  }
-
-  if (updated.id === 'prod-009' && updated.title.startsWith('Borrador:')) {
-    updated = {
-      ...updated,
-      title: defaults.title,
-      authors: defaults.authors,
-      year: defaults.year,
-      semester: defaults.semester,
-      researchLine: defaults.researchLine,
-      abstract: defaults.abstract,
-      publicationDate: defaults.publicationDate,
-      privacyConsentAt: defaults.privacyConsentAt,
-      venue: defaults.venue,
-      volumeIssue: defaults.volumeIssue,
-    };
-  }
-
-  if (updated.id === 'prod-009') {
-    const attachment = updated.articleAttachment;
-    updated = {
-      ...updated,
-      title: /ejemplo sint[eé]tico/i.test(updated.title) ? defaults.title : updated.title,
-      authors: updated.authors.some(author => /demostraci[oó]n/i.test(author)) ? defaults.authors : updated.authors,
-      abstract: /fictici|sint[eé]tic|demostraci[oó]n/i.test(updated.abstract) ? defaults.abstract : updated.abstract,
-      venue: updated.venue && /demostraci[oó]n/i.test(updated.venue) ? defaults.venue : updated.venue,
-      volumeIssue: updated.volumeIssue && /sint[eé]tic|dato de ejemplo/i.test(updated.volumeIssue) ? defaults.volumeIssue : updated.volumeIssue,
-      articleAttachment: attachment && /sint[eé]tic|demo/i.test(`${attachment.id} ${attachment.fileName}`) ? defaults.articleAttachment : attachment,
-    };
-  }
-
-  if (updated.id === 'prod-015') {
-    updated = {
-      ...updated,
-      title: /ejemplo sint[eé]tico/i.test(updated.title) ? defaults.title : updated.title,
-      projectCode: updated.projectCode && /demo/i.test(updated.projectCode) ? defaults.projectCode : updated.projectCode,
-      abstract: /sint[eé]tic|demostraci[oó]n/i.test(updated.abstract) ? defaults.abstract : updated.abstract,
-      expectedProducts: updated.expectedProducts?.some(item => /demostrativ/i.test(item)) ? defaults.expectedProducts : updated.expectedProducts,
-      projectProgressReports: updated.projectProgressReports?.map(report => /demostraci[oó]n|prueba/i.test(`${report.summary} ${report.completedActivities.join(' ')}`)
-        ? { ...report, summary: defaults.projectProgressReports?.[0]?.summary || report.summary, completedActivities: defaults.projectProgressReports?.[0]?.completedActivities || report.completedActivities }
-        : report),
-      fundingVenue: updated.fundingVenue && /demostrativ|sint[eé]tic/i.test(updated.fundingVenue) ? defaults.fundingVenue : updated.fundingVenue,
-    };
-  }
-
-  if (updated.id === 'prod-012' && updated.projectProgressReports?.some(report => /simulad[oa]s/i.test(report.blockers || ''))) {
-    updated = {
-      ...updated,
-      projectProgressReports: updated.projectProgressReports.map(report => {
-        if (!/simulad[oa]s/i.test(report.blockers || '')) return report;
-        const defaultReport = defaults.projectProgressReports?.find(item => item.id === report.id);
-        return defaultReport ? { ...report, blockers: defaultReport.blockers } : { ...report, blockers: undefined };
-      }),
-    };
-  }
-
-  return updated;
-}
-
 export const STORAGE_KEYS = {
   PRODUCTS: 'red_papers_products_v1',
   TEACHERS: 'red_papers_teachers_v1',
   NOTIFICATIONS: 'red_papers_notifications_v1',
   CURRENT_USER: 'red_papers_current_user_v1',
   PUBLIC_VISIBILITY_CONFIG: 'red_papers_public_config_v1',
+  ECMC_ORCID_IMPORT: 'red_papers_ecmc_orcid_import_v1',
+  ECMC_LEGACY_BACKUP: 'red_papers_ecmc_pre_orcid_backup_v1',
 };
 
 /** Restore the original values if any part of a multi-key save fails. */
@@ -152,6 +67,95 @@ export function withStorageRollback(keys: readonly string[], save: () => boolean
     }
   }
   return false;
+}
+
+const ECMC_IMPORT_VERSION = 'emcc-orcid-2026-10-13';
+interface ImportedStorage {
+  products: ScientificProduct[];
+  teachers: TeacherUser[];
+  notifications: UserNotification[];
+  currentUser: TeacherUser | null;
+}
+
+function readArray<T>(key: string, fallback: T[]): T[] {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    const value: unknown = JSON.parse(raw);
+    return Array.isArray(value) ? value : fallback;
+  } catch { return fallback; }
+}
+
+const isLegacyEcmcTeacher = (teacher: TeacherUser) =>
+  (!teacher.school || teacher.school === 'ECMC') && LEGACY_ECMC_TEACHER_IDS.has(teacher.id);
+const isLegacyEcmcProduct = (product: ScientificProduct) =>
+  (!product.school || product.school === 'ECMC') && LEGACY_ECMC_PRODUCT_IDS.has(product.id);
+const importDoi = (doi?: string) => doi?.trim().replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '').toLowerCase();
+
+/** Replace only the retired ECMC fixtures, once, without clearing users' storage. */
+function importEcmcStorage(): ImportedStorage | undefined {
+  try {
+    if (localStorage.getItem(STORAGE_KEYS.ECMC_ORCID_IMPORT) === ECMC_IMPORT_VERSION) return undefined;
+    const previousProducts = readArray(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCT_DATA);
+    const previousTeachers = readArray(STORAGE_KEYS.TEACHERS, INITIAL_TEACHER_DATA);
+    const previousNotifications = readArray(STORAGE_KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
+    let currentUser: TeacherUser | null = null;
+    try { currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || 'null'); } catch { /* Invalid session. */ }
+
+    const teachers = previousTeachers.filter(teacher => !isLegacyEcmcTeacher(teacher));
+    const researcherIds = new Map<string, string>();
+    for (const source of INITIAL_TEACHERS) {
+      const existing = teachers.find(teacher => teacher.school === 'ECMC'
+        && (teacher.id === source.id || (!!source.orcid && teacher.orcid === source.orcid)));
+      researcherIds.set(source.id, existing?.id || source.id);
+      if (!existing) teachers.push(source);
+    }
+
+    const products = previousProducts.filter(product => !isLegacyEcmcProduct(product));
+    const existingIds = new Set(products.map(product => product.id));
+    const existingDois = new Set(products.filter(product => product.school === 'ECMC').map(product => importDoi(product.doi)).filter(Boolean));
+    for (const source of INITIAL_PRODUCTS) {
+      const doi = importDoi(source.doi);
+      if (existingIds.has(source.id) || (doi && existingDois.has(doi))) continue;
+      products.push({ ...source, authorIds: source.authorIds?.map(id => researcherIds.get(id) || id) });
+      existingIds.add(source.id);
+      if (doi) existingDois.add(doi);
+    }
+    const notifications = previousNotifications.filter(notification => !LEGACY_ECMC_PRODUCT_IDS.has(notification.productId));
+    const previousSession = currentUser;
+    if (currentUser && isLegacyEcmcTeacher(currentUser)) {
+      // Keep the public testing account separate from every real researcher.
+      currentUser = currentUser.id === 'doc-001' ? {
+        id: 'doc-001', name: 'Profesor de prueba', email: 'profesor@yachaytech.edu.ec',
+        rank: 'Profesor', school: 'ECMC', role: 'teacher', createdAt: currentUser.createdAt,
+      } : null;
+    }
+
+    const snapshot = { products, teachers, notifications, currentUser };
+    const keys = [STORAGE_KEYS.PRODUCTS, STORAGE_KEYS.TEACHERS, STORAGE_KEYS.NOTIFICATIONS,
+      STORAGE_KEYS.CURRENT_USER, STORAGE_KEYS.ECMC_ORCID_IMPORT, STORAGE_KEYS.ECMC_LEGACY_BACKUP];
+    withStorageRollback(keys, () => {
+      const removedProducts = previousProducts.filter(isLegacyEcmcProduct);
+      const removedTeachers = previousTeachers.filter(isLegacyEcmcTeacher);
+      const removedNotifications = previousNotifications.filter(notification => LEGACY_ECMC_PRODUCT_IDS.has(notification.productId));
+      if ((removedProducts.length || removedTeachers.length || removedNotifications.length)
+        && !localStorage.getItem(STORAGE_KEYS.ECMC_LEGACY_BACKUP)) {
+        localStorage.setItem(STORAGE_KEYS.ECMC_LEGACY_BACKUP, JSON.stringify({
+          migratedAt: new Date().toISOString(), products: removedProducts, teachers: removedTeachers,
+          notifications: removedNotifications, currentUser: previousSession,
+        }));
+      }
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+      localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(teachers));
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+      if (currentUser) localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      else localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      localStorage.setItem(STORAGE_KEYS.ECMC_ORCID_IMPORT, ECMC_IMPORT_VERSION);
+      return true;
+    });
+    // Even if persistence is unavailable, render the factual dataset and retry later.
+    return snapshot;
+  } catch { return undefined; }
 }
 
 // Configuración de visibilidad pública
@@ -178,6 +182,7 @@ function academicFieldFrom(value?: string): string | undefined {
 }
 
 function normalizeTeacher(teacher: TeacherUser): TeacherUser {
+  if (teacher.id.startsWith('ecmc-orcid-researcher-')) return teacher;
   const name = teacher.name || '';
   const namePrefix = name.match(/^\s*((?:m\.?\s*sc|ph\.?\s*d|dr|dra|ing|mag)\.?)\s+/i)?.[1];
   const cleanName = name.replace(/^\s*(?:(?:m\.?\s*sc|ph\.?\s*d|dr|dra|ing|mag)\.?)\s+/i, '').trim();
@@ -198,6 +203,8 @@ function normalizeTeacher(teacher: TeacherUser): TeacherUser {
 export const storageService = {
   getProducts(): ScientificProduct[] {
     try {
+      const imported = importEcmcStorage();
+      if (imported) return imported.products;
       const data = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
       if (!data) {
         this.saveProducts(INITIAL_PRODUCT_DATA);
@@ -205,9 +212,8 @@ export const storageService = {
       }
       const storedProducts: ScientificProduct[] = JSON.parse(data);
       const existingIds = new Set(storedProducts.map(product => product.id));
-      const newDemoFixtures = INITIAL_PRODUCTS.filter(product => product.id === 'prod-015' && !existingIds.has(product.id));
       const newSchoolFixtures = INITIAL_SCHOOL_PRODUCTS.filter(product => !existingIds.has(product.id));
-      const products = [...storedProducts.map(completeSyntheticProduct), ...newDemoFixtures, ...newSchoolFixtures];
+      const products = [...storedProducts, ...newSchoolFixtures];
       if (JSON.stringify(products) !== JSON.stringify(storedProducts)) this.saveProducts(products);
       return products;
     } catch {
@@ -227,6 +233,8 @@ export const storageService = {
 
   getTeachers(): TeacherUser[] {
     try {
+      const imported = importEcmcStorage();
+      if (imported) return imported.teachers.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
       const data = localStorage.getItem(STORAGE_KEYS.TEACHERS);
       if (!data) {
         const teachers = INITIAL_TEACHER_DATA.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)));
@@ -256,17 +264,15 @@ export const storageService = {
 
   getNotifications(): UserNotification[] {
     try {
+      const imported = importEcmcStorage();
+      if (imported) return imported.notifications;
       const data = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
       if (!data) {
         this.saveNotifications(INITIAL_NOTIFICATIONS);
         return INITIAL_NOTIFICATIONS;
       }
       const notifications: UserNotification[] = JSON.parse(data);
-      const normalized = notifications.map(notification => (notification.productTitle || '').startsWith('Ejemplo sintético:')
-        ? { ...notification, productTitle: 'Análisis de datos para investigación académica' }
-        : notification);
-      if (JSON.stringify(normalized) !== JSON.stringify(notifications)) this.saveNotifications(normalized);
-      return normalized;
+      return notifications;
     } catch {
       return INITIAL_NOTIFICATIONS;
     }
@@ -284,6 +290,8 @@ export const storageService = {
 
   getCurrentUser(): TeacherUser | null {
     try {
+      const imported = importEcmcStorage();
+      if (imported) return imported.currentUser ? normalizeTeacher(completeSyntheticTeacher(imported.currentUser)) : null;
       const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
       if (!data) return null;
       const storedUser: TeacherUser = JSON.parse(data);
@@ -332,6 +340,7 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(INITIAL_TEACHER_DATA.map(teacher => normalizeTeacher(completeSyntheticTeacher(teacher)))));
       localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(INITIAL_NOTIFICATIONS));
       localStorage.setItem(STORAGE_KEYS.PUBLIC_VISIBILITY_CONFIG, JSON.stringify(DEFAULT_CONFIG));
+      localStorage.setItem(STORAGE_KEYS.ECMC_ORCID_IMPORT, ECMC_IMPORT_VERSION);
     } catch (err) {
       console.error('Error restableciendo datos:', err);
     }

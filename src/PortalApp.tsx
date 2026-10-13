@@ -1,6 +1,6 @@
 import './portal.css';
 import './mobile-portal.css';
-import { canReview, canDevelop } from './constants/demoAccounts';
+import { canReview, canDevelop, isDemoAccount } from './constants/demoAccounts';
 import React, { lazy, Suspense, useState, useEffect, useMemo, useRef } from 'react';
 import { storageService } from './services/storage';
 import { authService } from './services/authService';
@@ -89,7 +89,8 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
   const [catalogTeacherFilter, setCatalogTeacherFilter] = useState<string>('todos');
   const [directorySelectedTeacherId, setDirectorySelectedTeacherId] = useState<string>('doc-001');
 
-  const schoolTeachers = useMemo(() => selectedSchool ? teachers.filter(teacher => teacher.school === selectedSchool.code) : [], [teachers, selectedSchool]);
+  const schoolTeachers = useMemo(() => selectedSchool ? teachers.filter(teacher => teacher.school === selectedSchool.code
+    && (selectedSchool.code !== 'ECMC' || !isDemoAccount(teacher))) : [], [teachers, selectedSchool]);
   const schoolProducts = useMemo(() => selectedSchool ? products.filter(product => product.school === selectedSchool.code) : [], [products, selectedSchool]);
 
   // Each portal screen is an ordinary browser history entry.
@@ -355,7 +356,9 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
             {teacherDashboard && dashboardActions}
-            <MetricCards metrics={schoolMetrics} school={selectedSchool} secondary={teacherDashboard}/>
+            <MetricCards metrics={schoolMetrics} school={selectedSchool} secondary={teacherDashboard}
+              researchLinesAvailable={!schoolProducts.some(product => product.bibliographicSource)
+                || schoolProducts.some(product => product.status === 'verificado' && !!product.researchLine)}/>
             {!teacherDashboard && dashboardActions}
 
             <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>

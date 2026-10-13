@@ -5,6 +5,7 @@ import { normalizeDoi } from '../../services/doiService';
 import { OfficialResearchLine, ScientificProduct } from '../../types';
 import { FeaturedPublicationBackdrop, ResearchTheme } from './FeaturedPublicationBackdrop';
 import { ResearchLineBackdrop } from './ResearchLineBackdrop';
+import { productCitationValue, productCitationLabel, productStatusLabel } from '../../services/productPresentation';
 
 const numberFormat = new Intl.NumberFormat('es-EC');
 const ROTATION_MS = 5000;
@@ -46,10 +47,17 @@ function useCountUp(value: number, resetKey: string | undefined) {
 }
 
 function getMostCitedByResearchLine(products: ScientificProduct[], researchLines: readonly OfficialResearchLine[]) {
+  const publications = products.filter(product => product.type === 'publicacion' && product.status === 'verificado');
+  if (publications.some(product => product.bibliographicSource)) {
+    // The ORCID source has no research-line assignments. Select from its works
+    // directly rather than silently discarding them or inventing a category.
+    return [...publications].sort((a, b) => (productCitationValue(b) ?? -1) - (productCitationValue(a) ?? -1)
+      || b.year - a.year || a.title.localeCompare(b.title)).slice(0, 6);
+  }
   const topByLine = new Map<OfficialResearchLine, ScientificProduct>();
 
   products.forEach((product) => {
-    if (product.type !== 'publicacion' || product.status !== 'verificado') return;
+    if (product.type !== 'publicacion' || product.status !== 'verificado' || !product.researchLine) return;
 
     const current = topByLine.get(product.researchLine);
     if (!current || product.citations > current.citations) {
@@ -97,7 +105,8 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
 
   const currentIndex = publications.length ? activeIndex % publications.length : 0;
   const publication = publications[currentIndex];
-  const citationsShown = useCountUp(publication?.citations ?? 0, publication?.id);
+  const citationValue = publication ? productCitationValue(publication) : null;
+  const citationsShown = useCountUp(citationValue ?? 0, publication?.id);
   const canRotate = publications.length > 1;
   const running = canRotate && !paused && !focused;
 
@@ -114,8 +123,8 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
     );
   }
 
-  const school = SCHOOLS.find((candidate) => candidate.researchLines.some((line) => line === publication.researchLine));
-  const ecmcTheme = school?.code === 'ECMC' ? ECMC_RESEARCH_THEMES[publication.researchLine] : undefined;
+  const school = SCHOOLS.find((candidate) => candidate.code === publication.school);
+  const ecmcTheme = school?.code === 'ECMC' && publication.researchLine ? ECMC_RESEARCH_THEMES[publication.researchLine] : undefined;
   const cleanDoi = normalizeDoi(publication.doi);
   const goTo = (offset: number) => {
     setActiveIndex((index) => (index + offset + publications.length) % publications.length);
@@ -142,14 +151,14 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
       >
         {ecmcTheme ? (
           <FeaturedPublicationBackdrop key={`backdrop-${publication.researchLine}`} theme={ecmcTheme} />
-        ) : (
+        ) : publication.researchLine ? (
           <ResearchLineBackdrop key={`backdrop-${publication.researchLine}`} researchLine={publication.researchLine} />
-        )}
+        ) : null}
         <div className="featured-paper-copy" key={publication.id}>
           <p className="eyebrow">PUBLICACIÓN DESTACADA</p>
           <p className="featured-paper-line">
             <span className="featured-paper-line-dot" aria-hidden="true" />
-            {publication.researchLine}
+            {publication.researchLine || 'Línea no asignada'}{publication.bibliographicSource ? ` · ${productStatusLabel(publication)}` : ''}
           </p>
           <h3>{publication.title}</h3>
           <p className="featured-paper-authors">{publication.authors.join(' · ')}</p>
@@ -171,11 +180,11 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
           )}
         </div>
 
-        <aside className="featured-paper-citations" aria-label={`${publication.citations} citas registradas`}>
+        <aside className="featured-paper-citations" aria-label={citationValue === null ? 'Citas: No disponible' : `${productCitationLabel(publication)} citas registradas`}>
           <span>IMPACTO REGISTRADO</span>
-          <strong>{numberFormat.format(citationsShown)}</strong>
-          <span>citas registradas</span>
-          <div className="featured-paper-rank"><Award size={16} aria-hidden="true" />La más citada de esta línea</div>
+          <strong>{citationValue === null ? '—' : numberFormat.format(citationsShown)}</strong>
+          <span>{citationValue === null ? 'No disponible' : 'citas registradas'}</span>
+          <div className="featured-paper-rank"><Award size={16} aria-hidden="true" />{publication.bibliographicSource ? 'Fuente: ORCID' : 'La más citada de esta línea'}</div>
         </aside>
 
         <div className="featured-paper-controls" role="group" aria-label="Controles de publicaciones destacadas">

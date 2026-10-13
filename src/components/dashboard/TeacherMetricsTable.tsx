@@ -17,6 +17,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDraft, setSearchDraft] = useState('');
+  const importedProfiles = teacherMetrics.some(metric => metric.teacher.id.startsWith('ecmc-orcid-researcher-'));
 
   const filteredTeachers = teacherMetrics.filter((tm) => {
     const q = searchQuery.toLowerCase();
@@ -43,7 +44,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
               Directorio e Indicadores por Docente ({schoolCode})
             </h3>
             <p className="text-xs text-neutral-500">
-              Publicaciones, proyectos, citas registradas e índices h reportados por plataformas externas.
+              {importedProfiles ? 'Investigadores vinculados por ORCID, publicaciones y citas disponibles en la fuente importada.' : 'Publicaciones, proyectos, citas registradas e índices h reportados por plataformas externas.'}
             </p>
           </div>
         </div>
@@ -98,7 +99,7 @@ export const TeacherMetricsTable: React.FC<TeacherMetricsTableProps> = ({
                         {tm.teacher.name}
                       </div>
                       <div className="text-[11px] text-neutral-500">
-                        {tm.teacher.rank}{tm.teacher.academicDegree?` · ${tm.teacher.academicDegree}${tm.teacher.academicField?` en ${tm.teacher.academicField}`:''}`:''} • <span className="tabular-nums text-[10px]">{tm.teacher.email}</span>
+                        {[tm.teacher.rank, tm.teacher.academicDegree ? `${tm.teacher.academicDegree}${tm.teacher.academicField ? ` en ${tm.teacher.academicField}` : ''}` : ''].filter(Boolean).join(' · ')}{(tm.teacher.rank || tm.teacher.academicDegree) && tm.teacher.email ? ' • ' : ''}{tm.teacher.email ? <span className="tabular-nums text-[10px]">{tm.teacher.email}</span> : tm.teacher.id.startsWith('ecmc-orcid-researcher-') ? 'Perfil importado de ORCID' : ''}
                       </div>
                     </button>
                   </td>
