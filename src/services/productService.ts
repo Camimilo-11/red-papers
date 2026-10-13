@@ -2,6 +2,7 @@ import { authService } from './authService';
 import { ScientificProduct, ProductStatus, FilterState, UserNotification, ProjectProgressReport, ProjectClosureReport } from '../types';
 import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { normalizeDoi, normalizeProjectCode } from './doiService';
+import { canReview } from '../constants/demoAccounts';
 
 export interface DuplicateCheckResult {
   hasDuplicate: boolean;
@@ -336,6 +337,10 @@ export const productService = {
     newStatus: ProductStatus,
     rejectionReason?: string
   ): { success: boolean; product?: ScientificProduct; error?: string } {
+    const actor = authService.getCurrentUser();
+    if (!actor || !canReview(actor)) {
+      return { success: false, error: 'Su perfil no permite revisar publicaciones ni proyectos.' };
+    }
     if (newStatus === 'rechazado' && (!rejectionReason || !rejectionReason.trim())) {
       return {
         success: false,
@@ -351,6 +356,9 @@ export const productService = {
 
     const now = new Date().toISOString();
     const product = { ...products[index] };
+    if (newStatus === 'verificado' && product.ownerId === actor.id) {
+      return { success: false, error: 'No puede verificar un producto propio.' };
+    }
     const prevStatus = product.status;
 
     // Solo emitir notificación si hubo transición efectiva (evitar duplicados)
