@@ -160,13 +160,14 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
 
   // Manejo de inicio de sesión
   const handleLogin = (email: string, pass: string) => {
-    const res = authService.login(email, pass);
+    const res = authService.login(email, pass, selectedSchool?.code);
     if (res.success && res.user) {
       if (res.user.school !== selectedSchool?.code) {
         authService.logout();
         return { success: false, error: 'Esta cuenta pertenece a otra escuela. Seleccione la escuela asociada a su cuenta.' };
       }
       setCurrentUser(res.user);
+      setTeachers(storageService.getTeachers());
       setIsLoginOpen(false);
       setShowAccessScreen(false);
       setActiveTab('dashboard');

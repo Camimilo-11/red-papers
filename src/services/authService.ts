@@ -167,7 +167,7 @@ export const authService = {
     const fixture = DEMO_ACCOUNTS.find(a=>a.user.id===saved.id);
     const storedTeacher = storageService.getTeachers().find(t=>t.id===saved.id);
     const studentProfile = fixture?.user.role === 'student' ? readStudentProfiles()[saved.id] : undefined;
-    const base = fixture ? {...fixture.user, ...storedTeacher, ...saved, ...studentProfile, role:fixture.user.role} : saved;
+    const base = fixture ? {...fixture.user, ...storedTeacher, ...saved, ...studentProfile, email:fixture.user.email, school:fixture.user.school, role:fixture.user.role} : saved;
     return resolveRole(base);
   },
 
@@ -181,7 +181,7 @@ export const authService = {
   /**
    * Inicio de sesión institucional (HU02)
    */
-  login(email: string, password: string): { success: boolean; user?: TeacherUser; error?: string } {
+  login(email: string, password: string, school?: SchoolCode): { success: boolean; user?: TeacherUser; error?: string } {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !password) {
       return { success: false, error: 'Por favor ingresa usuario/correo y contraseña.' };
@@ -190,19 +190,26 @@ export const authService = {
       return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
     }
 
-    const account = DEMO_ACCOUNTS.find(a=>a.user.email===cleanEmail);
+    if (school && !getSchoolByCode(school)) return {success:false,error:'Seleccione una escuela válida.'};
+    const account = DEMO_ACCOUNTS.find(a=>(a.user.email===cleanEmail || a.aliases?.includes(cleanEmail)) && a.user.school===(school || 'ECMC'));
     if(account){
       const credentials=readCredentials();
-      const valid=credentials[account.user.id]?.passwordHash
-        ? credentials[account.user.id].passwordHash===hashPassword(password)
+      const valid=credentials[account.credentialId]?.passwordHash
+        ? credentials[account.credentialId].passwordHash===hashPassword(password)
         : password===account.password;
       if(!valid) return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
-      const storedTeacher=storageService.getTeachers().find(t=>t.id===account.user.id);
+      const teachers=storageService.getTeachers();
+      const storedTeacher=teachers.find(t=>t.id===account.user.id);
       const studentProfile=account.user.role==='student' ? readStudentProfiles()[account.user.id] : undefined;
-      const user=resolveRole({...account.user,...storedTeacher,...studentProfile,role:account.user.role});
-      if (!storageService.setCurrentUser(user)) return { success: false, error: SAVE_ERROR };
+      const user=resolveRole({...account.user,...storedTeacher,...studentProfile,email:account.user.email,school:account.user.school,role:account.user.role});
+      const saved=withStorageRollback([STORAGE_KEYS.TEACHERS,STORAGE_KEYS.CURRENT_USER],()=>{
+        if(account.user.role==='teacher' && !storedTeacher && !storageService.saveTeachers([...teachers,user])) return false;
+        return storageService.setCurrentUser(user);
+      });
+      if (!saved) return { success: false, error: SAVE_ERROR };
       return {success:true,user};
     }
+    if (isDemoAccount({email:cleanEmail})) return {success:false,error:'Esta cuenta pertenece a otra escuela. Seleccione la escuela asociada a su cuenta.'};
     const teachers = storageService.getTeachers();
     const teacher = teachers.find((t) => t.email.toLowerCase() === cleanEmail);
 
@@ -218,6 +225,7 @@ export const authService = {
       ? credentials[teacher.id].passwordHash === hashPassword(password)
       : DEMO_ENABLED && password === '123456';
     if (!valid) return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
+    if (school && teacher.school !== school) return {success:false,error:'Esta cuenta pertenece a otra escuela. Seleccione la escuela asociada a su cuenta.'};
     const user = resolveRole(teacher);
     if (!storageService.setCurrentUser(user)) return { success: false, error: SAVE_ERROR };
     return { success: true, user };
@@ -376,12 +384,13 @@ export const authService = {
     if(newPassword.length<6) return {success:false,error:'La nueva contraseña debe tener al menos 6 caracteres.'};
     const credentials=readCredentials();
     const fixture=DEMO_ACCOUNTS.find(a=>a.user.id===current.id);
-    const valid=credentials[current.id]?.passwordHash
-      ? credentials[current.id].passwordHash===hashPassword(currentPassword)
+    const credentialId=fixture?.credentialId || current.id;
+    const valid=credentials[credentialId]?.passwordHash
+      ? credentials[credentialId].passwordHash===hashPassword(currentPassword)
       : DEMO_ENABLED && (fixture ? currentPassword===fixture.password : currentPassword==='123456');
     if(!valid) return {success:false,error:'La contraseña actual no es correcta.'};
     try {
-      credentials[current.id]={passwordHash:hashPassword(newPassword),updatedAt:new Date().toISOString()};
+      credentials[credentialId]={passwordHash:hashPassword(newPassword),updatedAt:new Date().toISOString()};
       localStorage.setItem('red_papers_auth_creds_v1',JSON.stringify(credentials));
       return {success:true};
     } catch { return {success:false,error:'No se pudo guardar la contraseña. Inténtelo de nuevo.'}; }
