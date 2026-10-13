@@ -383,7 +383,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       finishTransitionRef.current();
       return;
     }
-    const duration = reducedMotion ? .2 * distance : (target === 1 ? .9 : .6) * distance;
+    const duration = reducedMotion ? .2 * distance : (target === 1 ? .55 : .4) * distance;
     // Android can suspend Motion's completion callback. The visible page must
     // never stay scroll-locked at a partial handoff if that callback is lost.
     completionTimer.current = window.setTimeout(() => {

@@ -475,16 +475,26 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
       // Static layout geometry only: scrolling updates motion values, not styles.
       const link = hero.querySelector<HTMLElement>('.institutional-landing-hero-link');
       const copy = link?.closest<HTMLElement>('.institutional-landing-hero-copy');
-      const mobileWelcome = window.matchMedia('(max-width: 600px)').matches;
+      const mobileWelcome = window.matchMedia('(max-width: 760px)').matches;
       const overlayTop = mobileWelcome && link && copy
         ? hero.offsetTop + copy.offsetTop + link.offsetTop + link.offsetHeight + 48
         : hero.offsetTop;
       const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
       const overlayHeight = Math.max(0, hero.offsetTop + hero.offsetHeight - overlayTop);
-      overlay.style.transform = `translate3d(${hero.offsetLeft}px, ${overlayTop}px, 0) scaleY(${overlayHeight / viewportHeight})`;
+      if (mobileWelcome) {
+        // This absolute layer reserves no space in the page. Measure its real
+        // height instead of stretching every logo and its FLIP coordinates.
+        overlay.style.height = `${overlayHeight}px`;
+        overlay.style.transform = `translate3d(${hero.offsetLeft}px, ${overlayTop}px, 0)`;
+      } else {
+        overlay.style.removeProperty('height');
+        overlay.style.transform = `translate3d(${hero.offsetLeft}px, ${overlayTop}px, 0) scaleY(${overlayHeight / viewportHeight})`;
+      }
     };
     const observer = new ResizeObserver(measure);
     observer.observe(hero);
+    const copy = hero.querySelector('.institutional-landing-hero-copy');
+    if (copy) observer.observe(copy);
     measure();
     return () => observer.disconnect();
   }, []);

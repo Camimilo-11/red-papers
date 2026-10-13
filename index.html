@@ -105,6 +105,12 @@
         #simapc-startup-subtitle { font-size:15px; }
         #simapc-startup-curtain { font-size:27px; }
       }
+      @media (max-width:760px) {
+        #simapc-startup-hero { padding-top:26px; }
+        #simapc-startup-title { font-size:clamp(30px,9.8vw,56px); letter-spacing:-.035em; line-height:1.02; }
+        #simapc-startup-title span { padding:.05em .05em .1em 0; }
+        #simapc-startup-subtitle { margin:18px 0 16px; font-size:16px; line-height:1.5; }
+      }
       @media (prefers-reduced-motion:reduce) {
         #simapc-startup-curtain, #simapc-startup-header img, #simapc-startup-logos img { animation:none!important; transition:none!important; }
         html[data-simapc-startup="intro"] #simapc-startup { visibility:hidden; }
