@@ -1,6 +1,6 @@
 import { authService } from './authService';
 import { ScientificProduct, ProductStatus, FilterState, UserNotification, ProjectProgressReport, ProjectClosureReport } from '../types';
-import { storageService } from './storage';
+import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { normalizeDoi, normalizeProjectCode } from './doiService';
 
 export interface DuplicateCheckResult {
@@ -19,6 +19,16 @@ const validIsoDate = (value: string) => {
 };
 
 const cleanList = (values: string[]) => values.map(value => value.trim()).filter(Boolean);
+const SAVE_ERROR = 'No se pudieron guardar los cambios en este dispositivo. Revise el espacio disponible e inténtelo de nuevo.';
+type SaveResult = { success: boolean; error?: string };
+
+function saveProductWithNotification(products: ScientificProduct[], notification: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): SaveResult {
+  const saved = withStorageRollback([STORAGE_KEYS.PRODUCTS, STORAGE_KEYS.NOTIFICATIONS], () => {
+    if (!storageService.saveProducts(products)) return false;
+    return productService.createNotification(notification).success;
+  });
+  return saved ? { success: true } : { success: false, error: SAVE_ERROR };
+}
 
 export const productService = {
   /**
@@ -127,7 +137,7 @@ export const productService = {
       return { success: false, error: dupCheck.message };
     }
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const newId = `prod-${String(products.length + 1).padStart(3, '0')}`;
     const now = new Date().toISOString();
 
@@ -143,16 +153,15 @@ export const productService = {
     };
 
     products.unshift(newProduct);
-    storageService.saveProducts(products);
-
     // Generar notificación al propietario (HU08 / CA22)
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: ownerId,
       productId: newId,
       productTitle: newProduct.title,
       status: 'cargado',
       message: `Tu ${newProduct.type === 'publicacion' ? 'publicación científica' : 'proyecto de investigación'} "${newProduct.title}" ha sido cargado exitosamente. Estado: cargado.`,
     });
+    if (!saved.success) return saved;
 
     return {
       success: true,
@@ -169,7 +178,7 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para corregir el producto.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el producto.' };
 
@@ -197,14 +206,14 @@ export const productService = {
     };
 
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: 'cargado',
       message: `Se corrigió y volvió a enviar "${updated.title}" al Comité Científico para verificación.`,
     });
+    if (!saved.success) return saved;
 
     return { success: true, product: updated, warning: duplicate.warning };
   },
@@ -216,7 +225,7 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para registrar avances.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
     const product = products[index];
@@ -252,14 +261,14 @@ export const productService = {
       updatedAt: now,
     };
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: updated.status,
       message: `Se guardó el informe de avance de "${updated.title}" (${report.progressPercent}%).`,
     });
+    if (!saved.success) return saved;
     return { success: true, product: updated };
   },
 
@@ -270,7 +279,7 @@ export const productService = {
     const actor = authService.getCurrentUser();
     if (!actor || actor.role !== 'teacher') return { success: false, error: 'Inicia sesión con un perfil docente para cerrar el proyecto.' };
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex(product => product.id === productId);
     if (index < 0) return { success: false, error: 'No se encontró el proyecto.' };
     const product = products[index];
@@ -301,14 +310,14 @@ export const productService = {
       updatedAt: new Date().toISOString(),
     };
     products[index] = updated;
-    storageService.saveProducts(products);
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: actor.id,
       productId: updated.id,
       productTitle: updated.title,
       status: updated.status,
       message: `Se registró el cierre del proyecto "${updated.title}" como ${closure.finalStatus === 'finalizado' ? 'finalizado' : 'cancelado'}.`,
     });
+    if (!saved.success) return saved;
     return { success: true, product: updated };
   },
 
@@ -328,14 +337,14 @@ export const productService = {
       };
     }
 
-    const products = storageService.getProducts();
+    const products = [...storageService.getProducts()];
     const index = products.findIndex((p) => p.id === productId);
     if (index === -1) {
       return { success: false, error: 'Producto no encontrado.' };
     }
 
     const now = new Date().toISOString();
-    const product = products[index];
+    const product = { ...products[index] };
     const prevStatus = product.status;
 
     // Solo emitir notificación si hubo transición efectiva (evitar duplicados)
@@ -354,15 +363,13 @@ export const productService = {
     }
 
     products[index] = product;
-    storageService.saveProducts(products);
-
     // Notificación al autor (HU08 / CA23)
     const notifMessage =
       newStatus === 'verificado'
         ? `El Comité Científico ha verificado y certificado tu producto "${product.title}".`
         : `El Comité Científico dejó el producto "${product.title}" en observación. Información solicitada: ${product.rejectionReason}`;
 
-    this.createNotification({
+    const saved = saveProductWithNotification(products, {
       userId: product.ownerId,
       productId: product.id,
       productTitle: product.title,
@@ -370,6 +377,7 @@ export const productService = {
       reason: product.rejectionReason,
       message: notifMessage,
     });
+    if (!saved.success) return saved;
 
     return { success: true, product };
   },
@@ -377,8 +385,8 @@ export const productService = {
   /**
    * Notificaciones para un usuario con control de duplicados
    */
-  createNotification(data: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): void {
-    const notifs = storageService.getNotifications();
+  createNotification(data: Omit<UserNotification, 'id' | 'read' | 'createdAt'>): SaveResult {
+    const notifs = [...storageService.getNotifications()];
     const newId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const newNotif: UserNotification = {
@@ -389,7 +397,7 @@ export const productService = {
     };
 
     notifs.unshift(newNotif);
-    storageService.saveNotifications(notifs);
+    return storageService.saveNotifications(notifs) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
   getUserNotifications(userId: string): UserNotification[] {
@@ -397,16 +405,16 @@ export const productService = {
     return notifs.filter((n) => n.userId === userId);
   },
 
-  markNotificationAsRead(notifId: string): void {
+  markNotificationAsRead(notifId: string): SaveResult {
     const notifs = storageService.getNotifications();
     const updated = notifs.map((n) => (n.id === notifId ? { ...n, read: true } : n));
-    storageService.saveNotifications(updated);
+    return storageService.saveNotifications(updated) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
-  markAllNotificationsAsRead(userId: string): void {
+  markAllNotificationsAsRead(userId: string): SaveResult {
     const notifs = storageService.getNotifications();
     const updated = notifs.map((n) => (n.userId === userId ? { ...n, read: true } : n));
-    storageService.saveNotifications(updated);
+    return storageService.saveNotifications(updated) ? { success: true } : { success: false, error: SAVE_ERROR };
   },
 
   /**

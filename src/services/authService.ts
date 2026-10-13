@@ -1,7 +1,7 @@
 import { resolveRole } from './roleService';
 import { DEMO_ACCOUNTS } from '../constants/demoAccounts';
 import { AcademicDegree, OfficialResearchLine, TeacherResearchSublines, TeacherUser } from '../types';
-import { storageService } from './storage';
+import { storageService, STORAGE_KEYS, withStorageRollback } from './storage';
 import { ALLOWED_EMAIL_DOMAIN, ALL_OFFICIAL_RESEARCH_LINES, OFFICIAL_RESEARCH_SUBLINES } from '../constants/researchLines';
 import { getSchoolByCode } from '../constants/schools';
 
@@ -47,6 +47,7 @@ export interface StudentProfileUpdate {
 
 type StudentProfileFields = Pick<TeacherUser, 'orcid' | 'githubUrl' | 'googleScholarId' | 'bio' | 'profileImage'>;
 const STUDENT_PROFILES_KEY = 'red_papers_student_profiles_v1';
+const SAVE_ERROR = 'No se pudieron guardar los cambios en este dispositivo. Revise el espacio disponible e inténtelo de nuevo.';
 
 function readStudentProfiles(): Record<string, StudentProfileFields> {
   try {
@@ -184,7 +185,7 @@ export const authService = {
       const storedTeacher=storageService.getTeachers().find(t=>t.id===account.user.id);
       const studentProfile=account.user.role==='student' ? readStudentProfiles()[account.user.id] : undefined;
       const user=resolveRole({...account.user,...storedTeacher,...studentProfile,role:account.user.role});
-      storageService.setCurrentUser(user);
+      if (!storageService.setCurrentUser(user)) return { success: false, error: SAVE_ERROR };
       return {success:true,user};
     }
     const teachers = storageService.getTeachers();
@@ -202,10 +203,9 @@ export const authService = {
       ? credentials[teacher.id].passwordHash === hashPassword(password)
       : password === '123456';
     if (!valid) return {success:false,error:'Credenciales inválidas. Verifica tu correo y contraseña.'};
-    teacher.role = resolveRole(teacher).role;
-
-    storageService.setCurrentUser(teacher);
-    return { success: true, user: teacher };
+    const user = resolveRole(teacher);
+    if (!storageService.setCurrentUser(user)) return { success: false, error: SAVE_ERROR };
+    return { success: true, user };
   },
 
   /**
@@ -214,6 +214,7 @@ export const authService = {
   register(formData: RegisterFormData): {
     success: boolean;
     user?: TeacherUser;
+    error?: string;
     errors?: RegisterValidationErrors;
   } {
     const errors: RegisterValidationErrors = {};
@@ -272,11 +273,12 @@ export const authService = {
       passwordHash: hashPassword(formData.password),
       updatedAt: new Date().toISOString(),
     };
-    localStorage.setItem('red_papers_auth_creds_v1', JSON.stringify(secureAuthStore));
-
     teachers.push(newUser);
-    storageService.saveTeachers(teachers);
-    storageService.setCurrentUser(newUser);
+    const saved = withStorageRollback(['red_papers_auth_creds_v1', STORAGE_KEYS.TEACHERS, STORAGE_KEYS.CURRENT_USER], () => {
+      localStorage.setItem('red_papers_auth_creds_v1', JSON.stringify(secureAuthStore));
+      return storageService.saveTeachers(teachers) && storageService.setCurrentUser(newUser);
+    });
+    if (!saved) return { success: false, error: SAVE_ERROR, errors: { general: SAVE_ERROR } };
 
     return { success: true, user: newUser };
   },
@@ -321,8 +323,9 @@ export const authService = {
     const teachers=storageService.getTeachers();
     const index=teachers.findIndex(t=>t.id===current.id);
     if(index>=0) teachers[index]=updated; else teachers.push(updated);
-    storageService.saveTeachers(teachers);
-    storageService.setCurrentUser(updated);
+    const saved=withStorageRollback([STORAGE_KEYS.TEACHERS,STORAGE_KEYS.CURRENT_USER],()=>
+      storageService.saveTeachers(teachers)&&storageService.setCurrentUser(updated));
+    if(!saved) return {success:false,error:SAVE_ERROR};
     return {success:true,user:updated};
   },
 
@@ -340,12 +343,12 @@ export const authService = {
     if(data.profileImage && (!/^data:image\/jpeg;base64,[a-z\d+/]+=*$/i.test(data.profileImage) || data.profileImage.length>1_500_000)) return {success:false,error:'La imagen de perfil no tiene un formato válido o es demasiado grande.'};
 
     const profile:StudentProfileFields={orcid,githubUrl,googleScholarId,bio:bio||undefined,profileImage:data.profileImage||undefined};
-    try {
+    const updated:TeacherUser={...current,...profile,syntheticAcademicProfileFields:[]};
+    const saved=withStorageRollback([STUDENT_PROFILES_KEY,STORAGE_KEYS.CURRENT_USER],()=>{
       localStorage.setItem(STUDENT_PROFILES_KEY,JSON.stringify({...readStudentProfiles(),[current.id]:profile}));
-      const updated:TeacherUser={...current,...profile,syntheticAcademicProfileFields:[]};
-      storageService.setCurrentUser(updated);
-      return {success:true,user:updated};
-    } catch { return {success:false,error:'No se pudo guardar el perfil. Inténtelo de nuevo.'}; }
+      return storageService.setCurrentUser(updated);
+    });
+    return saved ? {success:true,user:updated} : {success:false,error:SAVE_ERROR};
   },
 
   changePassword(currentPassword:string, newPassword:string): {success:boolean; error?:string} {
@@ -374,7 +377,7 @@ export const authService = {
     const teachers = storageService.getTeachers();
     const found = teachers.find((t) => t.id === teacherId);
     if (found) {
-      storageService.setCurrentUser(found);
+      if (!storageService.setCurrentUser(found)) return null;
       return found;
     }
     return null;
