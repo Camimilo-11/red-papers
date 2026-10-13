@@ -19,6 +19,12 @@ const validIsoDate = (value: string) => {
 };
 
 const cleanList = (values: string[]) => values.map(value => value.trim()).filter(Boolean);
+
+function todayLocalIso(): string {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
 const SAVE_ERROR = 'No se pudieron guardar los cambios en este dispositivo. Revise el espacio disponible e inténtelo de nuevo.';
 type SaveResult = { success: boolean; error?: string };
 
@@ -232,7 +238,7 @@ export const productService = {
     if (product.type !== 'proyecto') return { success: false, error: 'El seguimiento solo está disponible para proyectos.' };
     if (product.ownerId !== actor.id) return { success: false, error: 'Solo el docente responsable puede registrar avances.' };
     if (product.projectStatus === 'finalizado' || product.projectStatus === 'cancelado') return { success: false, error: 'El proyecto ya tiene un informe de cierre y no admite nuevos avances.' };
-    if (!validIsoDate(reportData.periodStart) || !validIsoDate(reportData.periodEnd) || reportData.periodStart > reportData.periodEnd || reportData.periodEnd > new Date().toISOString().slice(0, 10)) {
+    if (!validIsoDate(reportData.periodStart) || !validIsoDate(reportData.periodEnd) || reportData.periodStart > reportData.periodEnd || reportData.periodEnd > todayLocalIso()) {
       return { success: false, error: 'Revise las fechas del periodo informado.' };
     }
     if (!Number.isInteger(reportData.progressPercent) || reportData.progressPercent < 0 || reportData.progressPercent > 100) {
@@ -288,7 +294,7 @@ export const productService = {
     if (product.projectClosureReport) {
       return { success: false, error: 'El proyecto ya cuenta con un informe de cierre.' };
     }
-    if (!validIsoDate(closureData.closedAt) || closureData.closedAt > new Date().toISOString().slice(0, 10)) return { success: false, error: 'Indique una fecha de cierre válida.' };
+    if (!validIsoDate(closureData.closedAt) || closureData.closedAt > todayLocalIso()) return { success: false, error: 'Indique una fecha de cierre válida.' };
     if (closureData.summary.trim().length < 30) return { success: false, error: 'El resumen de cierre debe tener al menos 30 caracteres.' };
     const deliveredProducts = cleanList(closureData.deliveredProducts);
     if (closureData.finalStatus === 'finalizado' && !deliveredProducts.length) {
