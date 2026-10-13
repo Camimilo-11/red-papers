@@ -57,7 +57,13 @@ function readStudentProfiles(): Record<string, StudentProfileFields> {
 }
 
 function readCredentials(): Record<string, {passwordHash: string; updatedAt?: string}> {
-  try { return JSON.parse(localStorage.getItem('red_papers_auth_creds_v1') || '{}'); }
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem('red_papers_auth_creds_v1') || '{}');
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value).filter(([, credential]) =>
+      credential && typeof credential === 'object' && !Array.isArray(credential)
+      && typeof credential.passwordHash === 'string'));
+  }
   catch { return {}; }
 }
 
@@ -198,7 +204,7 @@ export const authService = {
       };
     }
 
-    const credentials = JSON.parse(localStorage.getItem('red_papers_auth_creds_v1') || '{}');
+    const credentials = readCredentials();
     const valid = credentials[teacher.id]
       ? credentials[teacher.id].passwordHash === hashPassword(password)
       : password === '123456';
@@ -268,7 +274,7 @@ export const authService = {
     };
 
     // Almacenamiento seguro: la contraseña queda hasheada y no en texto plano (CA03)
-    const secureAuthStore = JSON.parse(localStorage.getItem('red_papers_auth_creds_v1') || '{}');
+    const secureAuthStore = readCredentials();
     secureAuthStore[newId] = {
       passwordHash: hashPassword(formData.password),
       updatedAt: new Date().toISOString(),
