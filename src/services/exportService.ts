@@ -20,6 +20,12 @@ function escapeHtml(value: unknown): string {
   })[character] || character);
 }
 
+function csvCell(value: unknown): string {
+  const text = String(value ?? '');
+  const safeText = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${safeText.replace(/"/g, '""')}"`;
+}
+
 export const exportService = {
   /**
    * Genera y descarga archivo CSV con codificación UTF-8 y BOM
@@ -49,23 +55,23 @@ export const exportService = {
     ];
 
     const rows = products.map((p) => [
-      `"${p.id}"`,
-      `"${p.type === 'publicacion' ? 'Publicación Científica' : 'Proyecto de Investigación'}"`,
-      `"${p.title.replace(/"/g, '""')}"`,
-      `"${p.authors.join('; ').replace(/"/g, '""')}"`,
+      p.id,
+      p.type === 'publicacion' ? 'Publicación Científica' : 'Proyecto de Investigación',
+      p.title,
+      p.authors.join('; '),
       p.year,
-      `"${productDateValue(p)}"`,
-      `"${p.researchLine}"`,
-      `"${PRODUCT_STATUS_LABELS[p.status]}"`,
-      `"${(doiForDisplay(p) || p.projectCode || 'N/A').replace(/"/g, '""')}"`,
-      `"${(p.venue || p.fundingVenue || 'N/A').replace(/"/g, '""')}"`,
-      `"${p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A'}"`,
-      `"${(p.projectParticipants || []).join('; ').replace(/"/g, '""')}"`,
+      productDateValue(p),
+      p.researchLine,
+      PRODUCT_STATUS_LABELS[p.status],
+      doiForDisplay(p) || p.projectCode || 'N/A',
+      p.venue || p.fundingVenue || 'N/A',
+      p.projectStatus ? PROJECT_STATUS_LABELS[p.projectStatus] : 'N/A',
+      (p.projectParticipants || []).join('; '),
       p.projectDurationMonths ?? '',
-      `"${(p.expectedProducts || []).join('; ').replace(/"/g, '""')}"`,
+      (p.expectedProducts || []).join('; '),
       p.citations || 0,
-      `"${new Date(p.createdAt).toLocaleDateString('es-EC')}"`,
-    ]);
+      new Date(p.createdAt).toLocaleDateString('es-EC'),
+    ].map(csvCell));
 
     // Encabezado de metadatos institucionales
     const metaHeader = [
@@ -74,10 +80,9 @@ export const exportService = {
       `# Fecha de Generación: ${meta.generatedAt}`,
       `# Total Registros Exportados: ${meta.totalRecords}`,
       `# Filtros Aplicados: Tipo=${meta.filters.productType}; Línea=${meta.filters.researchLine}; Periodo=${meta.filters.periodYear}`,
-      '',
-    ].join('\r\n');
+    ].map(csvCell).join('\r\n') + '\r\n';
 
-    const csvContent = '\uFEFF' + metaHeader + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const csvContent = '\uFEFF' + metaHeader + [headers.map(csvCell).join(','), ...rows.map((r) => r.join(','))].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
