@@ -260,7 +260,7 @@ export const authService = {
 
     // Guardado seguro del usuario
     const teachers = storageService.getTeachers();
-    const newId = `doc-${String(teachers.length + 1).padStart(3, '0')}`;
+    const newId = `doc-${crypto.randomUUID()}`;
     const newUser: TeacherUser = {
       id: newId,
       name: formData.name.trim(),

@@ -138,7 +138,7 @@ export const productService = {
     }
 
     const products = [...storageService.getProducts()];
-    const newId = `prod-${String(products.length + 1).padStart(3, '0')}`;
+    const newId = `prod-${crypto.randomUUID()}`;
     const now = new Date().toISOString();
 
     const newProduct: ScientificProduct = {
