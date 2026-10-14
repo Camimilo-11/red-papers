@@ -576,6 +576,15 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     if (!landing) return;
     let down: { x: number; y: number; inTour: boolean; inHero: boolean } | null = null;
     let timer = 0;
+    let wheelGestureLocked = false;
+    let wheelGestureTimer = 0;
+    const keepWheelGestureLocked = () => {
+      const isNewGesture = !wheelGestureLocked;
+      wheelGestureLocked = true;
+      window.clearTimeout(wheelGestureTimer);
+      wheelGestureTimer = window.setTimeout(() => { wheelGestureLocked = false; }, 360);
+      return isNewGesture;
+    };
     const settle = (event?: Event) => {
       if (event && event.target !== document && event.target !== window) return;
       if (transitionAnimating.current || performance.now() < navigationUntil.current) return;
@@ -629,19 +638,29 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       else if (origin.inHero && dy < 0) go(0);
     };
     const wheel = (event: WheelEvent) => {
-      if (!mobileTransitionEnabled || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-      if (transitionAnimating.current) {
+      if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest('.touch-school-stage')) {
+        const isNewGesture = keepWheelGestureLocked();
         event.preventDefault();
-        queueTransitionIntent(active.current + (event.deltaY > 0 ? 1 : -1));
+        if (isNewGesture && !transitionAnimating.current) go(active.current + (event.deltaY > 0 ? 1 : -1));
+        return;
+      }
+      if (!mobileTransitionEnabled) return;
+      if (transitionAnimating.current) {
+        keepWheelGestureLocked();
+        event.preventDefault();
         return;
       }
       const { start } = geometry.current;
       if (event.deltaY > 0 && window.scrollY < start - 1) {
+        const isNewGesture = keepWheelGestureLocked();
         event.preventDefault();
-        go(0);
+        if (isNewGesture) go(0);
       } else if (event.deltaY < 0 && entered.current && active.current === 0 && window.scrollY <= start + 1) {
+        const isNewGesture = keepWheelGestureLocked();
         event.preventDefault();
-        go(-1);
+        if (isNewGesture) go(-1);
       }
     };
     const click = (event: Event) => {
@@ -677,6 +696,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     settle();
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(wheelGestureTimer);
       landing.removeEventListener('pointerdown', pointerDown as EventListener);
       landing.removeEventListener('pointermove', pointerMove as EventListener);
       landing.removeEventListener('pointerup', pointerUp as EventListener);
