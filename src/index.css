@@ -555,6 +555,12 @@ button:disabled { cursor:wait; }
   .institutional-landing-footer-bottom { min-height: 68px; align-items: flex-start; justify-content: center; flex-direction: column; gap: 6px; padding: 12px 0; font-size: 11px; }
   .institutional-landing-skip { right: 12px; bottom: 12px; font-size: 12px; }
 }
+
+@media (max-width: 760px) {
+  .institutional-landing-hero-emblem-float { background: transparent; }
+  .institutional-landing-hero-emblem .institutional-landing-emblem-image { mix-blend-mode: multiply; }
+}
+
 @media (max-height: 500px) and (orientation: landscape) {
   .institutional-landing { --landing-header-height: calc(48px + env(safe-area-inset-top)); }
 }
