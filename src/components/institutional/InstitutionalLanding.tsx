@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef,
 import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ensurePrioritySchoolMascotsDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
+import { BASE_MASCOT } from '../../assets/schoolMascots';
 import { useMascotHandoff } from './mascotHandoff';
 import type { MascotHandoff } from './mascotHandoff';
 import './MascotHandoff.css';
@@ -662,6 +663,7 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
       )}
 
       <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
+        <img className="institutional-landing-mobile-mascot" src={BASE_MASCOT} width={768} height={768} alt="" aria-hidden="true" decoding="async" draggable={false} />
         <motion.div className="institutional-landing-hero-copy" style={mobileTransition ? { opacity: welcomeOpacity, y: welcomeY } : undefined}>
           <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>UNIVERSIDAD YACHAY TECH · SIMAPC</p>
           <h1 id="landing-title" className="institutional-landing-title">

@@ -113,6 +113,26 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
 }
 /* On phone-sized screens, keep every school reachable in a fixed thumb zone. */
 @media (max-width: 760px) {
+  .institutional-landing .institutional-landing-hero {
+    background:
+      radial-gradient(ellipse 72% 42% at 78% 79%, rgb(221 233 231 / 88%) 0%, rgb(240 242 237 / 42%) 55%, transparent 100%),
+      var(--paper);
+  }
+  .institutional-landing-mobile-mascot {
+    position: absolute;
+    z-index: 0;
+    right: -24px;
+    bottom: -7%;
+    display: block;
+    width: min(82vw, 350px);
+    height: auto;
+    max-height: 62%;
+    object-fit: contain;
+    opacity: .2;
+    pointer-events: none;
+    user-select: none;
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 100%);
+  }
   .touch-school-track { overscroll-behavior-y: contain; }
   /* Let institutional links cover the fixed scene after the last school. */
   .institutional-landing-footer {

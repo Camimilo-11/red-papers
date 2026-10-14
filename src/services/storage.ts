@@ -69,7 +69,7 @@ export function withStorageRollback(keys: readonly string[], save: () => boolean
   return false;
 }
 
-const ECMC_IMPORT_VERSION = 'emcc-orcid-2026-10-13-lines-v1';
+const ECMC_IMPORT_VERSION = 'emcc-orcid-2026-10-13-lines-v2';
 interface ImportedStorage {
   products: ScientificProduct[];
   teachers: TeacherUser[];

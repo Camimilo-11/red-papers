@@ -13,6 +13,8 @@ describe('diccionario temporal de líneas ECMC', () => {
       .toBe('Ecuaciones diferenciales, análisis matemático, modelamiento y optimización');
     expect(suggestEcmcResearchLine('Reflexiones sobre justicia social y filosofía de la educación')?.line)
       .toBe('Ciencia, Tecnología y Sociedad');
+    expect(suggestEcmcResearchLine('Artificial Intelligence in 5G Technology: A Survey')?.line)
+      .toBe('Inteligencia artificial');
   });
 
   it('no asigna una línea cuando el título no ofrece evidencia suficiente', () => {
@@ -35,6 +37,7 @@ describe('diccionario temporal de líneas ECMC', () => {
 
   it('migra productos importados existentes, conserva asignaciones manuales y otros registros', () => {
     const suggestedProduct = INITIAL_PRODUCTS.find(product => product.bibliographicSource?.researchLineClassification)!;
+    const formerlyUnassigned = INITIAL_PRODUCTS.find(product => product.title === 'Artificial Intelligence in 5G Technology: A Survey')!;
     const manuallyAssignedProduct = INITIAL_PRODUCTS.find(product =>
       product.id !== suggestedProduct.id && product.bibliographicSource?.researchLineClassification
         && product.researchLine !== OFFICIAL_RESEARCH_LINES[0]
@@ -44,6 +47,11 @@ describe('diccionario temporal de líneas ECMC', () => {
       ...suggestedProduct,
       researchLine: '',
       bibliographicSource: { ...suggestedProduct.bibliographicSource!, researchLineClassification: undefined },
+    };
+    const priorUnassigned = {
+      ...formerlyUnassigned,
+      researchLine: '',
+      bibliographicSource: { ...formerlyUnassigned.bibliographicSource!, researchLineClassification: undefined },
     };
     const priorManual = {
       ...manuallyAssignedProduct,
@@ -56,13 +64,16 @@ describe('diccionario temporal de líneas ECMC', () => {
       status: 'cargado' as const, createdAt: '2024-01-01', updatedAt: '2024-01-01', citations: 0,
     };
     const otherSchoolProduct = INITIAL_SCHOOL_PRODUCTS.find(product => product.school === 'ECTEA')!;
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify([priorImport, priorManual, customProduct, otherSchoolProduct]));
-    localStorage.setItem(STORAGE_KEYS.ECMC_ORCID_IMPORT, 'emcc-orcid-2026-10-13');
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify([priorImport, priorUnassigned, priorManual, customProduct, otherSchoolProduct]));
+    localStorage.setItem(STORAGE_KEYS.ECMC_ORCID_IMPORT, 'emcc-orcid-2026-10-13-lines-v1');
 
     const migrated = storageService.getProducts();
     expect(migrated.find(product => product.id === priorImport.id)?.researchLine).toBe(suggestedProduct.researchLine);
     expect(migrated.find(product => product.id === priorImport.id)?.bibliographicSource?.researchLineClassification?.method)
       .toBe('temporary-keyword-dictionary');
+    expect(migrated.find(product => product.id === priorUnassigned.id)?.researchLine).toBe('Inteligencia artificial');
+    expect(migrated.find(product => product.id === priorUnassigned.id)?.bibliographicSource?.researchLineClassification?.version)
+      .toBe('ecmc-lines-v2');
     expect(migrated.find(product => product.id === priorManual.id)?.researchLine).toBe(manuallyAssignedLine);
     expect(migrated.find(product => product.id === priorManual.id)?.bibliographicSource?.researchLineClassification).toBeUndefined();
     expect(migrated.find(product => product.id === customProduct.id)).toEqual(customProduct);

@@ -168,6 +168,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           {/* Botón Descargar resultados con menú */}
           <div className="relative">
             <button
+              type="button"
+              aria-expanded={showExportMenu}
+              aria-controls="catalog-export-menu"
               onClick={() => setShowExportMenu(!showExportMenu)}
               className="flex items-center gap-1.5 px-3.5 py-2 border border-neutral-300 hover:border-neutral-400 bg-white text-neutral-700 text-xs font-semibold transition-colors"
             >
@@ -177,27 +180,30 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </button>
 
             {showExportMenu && (
-              <div className="absolute right-0 mt-1.5 w-48 z-30 p-1.5 text-xs">
+              <div id="catalog-export-menu" className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-neutral-200 bg-white p-1.5 text-sm shadow-lg">
                 <button
+                  type="button"
                   onClick={() => handleExport('csv')}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 flex items-center gap-2 font-medium text-neutral-700"
+                  className="flex w-full items-start gap-2 rounded-md px-3 py-2.5 text-left font-medium leading-5 text-neutral-700 hover:bg-neutral-50"
                 >
-                  <FileText className="w-4 h-4 text-blue-600" />
-                  <span>Descargar como CSV</span>
+                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                  <span className="min-w-0">Descargar como CSV</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleExport('xlsx')}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 flex items-center gap-2 font-medium text-neutral-700"
+                  className="flex w-full items-start gap-2 rounded-md px-3 py-2.5 text-left font-medium leading-5 text-neutral-700 hover:bg-neutral-50"
                 >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                  <span>Descargar como Excel (.xlsx)</span>
+                  <FileSpreadsheet className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <span className="min-w-0">Descargar como Excel (.xlsx)</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleExport('pdf')}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-50 flex items-center gap-2 font-medium text-neutral-700"
+                  className="flex w-full items-start gap-2 rounded-md px-3 py-2.5 text-left font-medium leading-5 text-neutral-700 hover:bg-neutral-50"
                 >
-                  <Printer className="w-4 h-4 school-accent-text" />
-                  <span>Imprimir / Exportar PDF</span>
+                  <Printer className="mt-0.5 h-4 w-4 shrink-0 school-accent-text" />
+                  <span className="min-w-0">Imprimir / Exportar PDF</span>
                 </button>
               </div>
             )}

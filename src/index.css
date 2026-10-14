@@ -223,6 +223,7 @@ button:disabled { cursor:wait; }
   opacity: 0;
   transition: opacity 350ms var(--landing-ease);
 }
+.institutional-landing-mobile-mascot { display: none; }
 
 .institutional-landing-hero[data-assets-ready="true"] { opacity: 1; }
 
