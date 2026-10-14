@@ -85,6 +85,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     return productMatchesTeacher(p, activeTeacher);
   });
   const importedProfile = activeTeacher?.id.startsWith('ecmc-orcid-researcher-') || teacherProducts.some(product => product.bibliographicSource);
+  const hasTemporaryLineSuggestions = teacherProducts.some(product => product.bibliographicSource?.researchLineClassification);
   const citationsAvailable = !teacherProducts.length || teacherProducts.some(product => productCitationValue(product) !== null);
   const teacherResearchLines = activeTeacher
     ? activeTeacher.researchLines?.length
@@ -178,6 +179,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         <div className="academic-profile-body">
           <section className="academic-profile-section academic-research-section" aria-labelledby="academic-research-line-title">
             <h4 id="academic-research-line-title">Línea de investigación</h4>
+            {hasTemporaryLineSuggestions&&<p className="academic-section-empty">Líneas sugeridas temporalmente a partir de las publicaciones importadas; el perfil ORCID no las declara.</p>}
             {teacherResearchLines.length?<div className="academic-research-groups">{teacherResearchLines.map(line=><div className="academic-research-group" key={line}><strong>{line}</strong>{activeTeacher.researchSublines?.[line]?.length?<ul>{activeTeacher.researchSublines[line]?.map(subline=><li key={subline}>{subline}</li>)}</ul>:null}</div>)}</div>:<p className="academic-section-empty">Este docente aún no ha registrado una línea de investigación.</p>}
           </section>
           <aside className="academic-year-chart" aria-labelledby="academic-year-chart-title">

@@ -27,6 +27,10 @@ El campo `Investigador` indica una asociación bibliográfica con un ORCID, no l
 - Se decodifica `&amp;` a `&` (siete filas originales) y se convierte el espacio no separable a espacio normal (13 filas), sin modificar el contenido bibliográfico restante.
 - Los identificadores de producto son estables: prefijo `ecmc-orcid-` más los primeros 24 caracteres hexadecimales de SHA-256 de `doi:{DOI normalizado}` o, cuando falta DOI, de `title:{año}:{título normalizado}`. Los identificadores de investigador se basan en su ORCID.
 
+## Clasificación temática temporal
+
+El SQL no relaciona publicaciones con líneas de investigación. Para hacer útil el contenido provisional se aplica un diccionario transparente en `src/services/ecmcResearchLineDictionary.ts`, solo a las 135 publicaciones de este archivo y solo a partir de sus títulos. Reconoce términos en inglés y español, compara puntajes entre las seis líneas oficiales de ECMC y deja sin asignar los casos con poca evidencia o empate. Cada sugerencia guarda la versión del diccionario, los términos coincidentes y la solidez relativa; esto no es una probabilidad ni una clasificación provista por ORCID. La interfaz y las exportaciones la identifican como temporal. Los perfiles de investigadores, otras escuelas y registros futuros no se clasifican con este diccionario.
+
 El estado técnico `verificado` se utiliza únicamente para permitir la visibilidad pública del conjunto importado en el contrato actual del portal. `bibliographicSource` identifica la procedencia, la interfaz lo distingue como «Importado ORCID» y no existe `verifiedAt` ni una aprobación atribuida al comité.
 
 ## Almacenamiento local

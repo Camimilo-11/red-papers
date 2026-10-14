@@ -158,7 +158,10 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
           <p className="eyebrow">PUBLICACIÓN DESTACADA</p>
           <p className="featured-paper-line">
             <span className="featured-paper-line-dot" aria-hidden="true" />
-            {publication.researchLine || 'Línea no asignada'}{publication.bibliographicSource ? ` · ${productStatusLabel(publication)}` : ''}
+            {publication.researchLine || 'Línea no asignada'}
+            {publication.bibliographicSource?.researchLineClassification
+              ? ' · Sugerencia temporal'
+              : publication.bibliographicSource ? ` · ${productStatusLabel(publication)}` : ''}
           </p>
           <h3>{publication.title}</h3>
           <p className="featured-paper-authors">{publication.authors.join(' · ')}</p>

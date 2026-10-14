@@ -47,7 +47,7 @@ export const exportService = {
       'Autores / Investigadores',
       'Año',
       'Fecha de publicación / inicio',
-      'Línea de Investigación Oficial',
+      'Línea de Investigación',
       'Estado Oficial',
       'Identificador (DOI / Código)',
       'Medio / Revista / Fondo',
@@ -57,7 +57,7 @@ export const exportService = {
       'Productos esperados',
       'Citas Registradas',
       'Fecha Registro',
-      ...(includeSource ? ['Fuente', 'Tipo en la fuente', 'Cuartil SJR', 'SJR Score', 'ORCID de investigadores vinculados'] : []),
+      ...(includeSource ? ['Fuente', 'Tipo en la fuente', 'Cuartil SJR', 'SJR Score', 'ORCID de investigadores vinculados', 'Método de asignación de línea'] : []),
     ];
 
     const rows = products.map((p) => [
@@ -79,7 +79,8 @@ export const exportService = {
       new Date(p.createdAt).toLocaleDateString('es-EC'),
       ...(includeSource ? [p.bibliographicSource?.dataset, p.bibliographicSource?.publicationType,
         p.bibliographicSource?.sjrQuartile, p.bibliographicSource?.sjrScore,
-        p.bibliographicSource?.researcherOrcids.join('; ')] : []),
+        p.bibliographicSource?.researcherOrcids.join('; '),
+        p.bibliographicSource?.researchLineClassification ? 'Sugerencia temporal por diccionario de palabras clave' : 'Sin asignación automática'] : []),
     ].map(csvCell));
 
     // Encabezado de metadatos institucionales
@@ -137,6 +138,7 @@ export const exportService = {
         'Cuartil SJR': p.bibliographicSource?.sjrQuartile || '',
         'SJR Score': p.bibliographicSource?.sjrScore ?? '',
         'ORCID de investigadores vinculados': p.bibliographicSource?.researcherOrcids.join('; ') || '',
+        'Método de asignación de línea': p.bibliographicSource?.researchLineClassification ? 'Sugerencia temporal por diccionario de palabras clave' : 'Sin asignación automática',
       } : {}),
     }));
 
@@ -209,7 +211,7 @@ export const exportService = {
           <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">${escapeHtml(p.title)}</div>
           <div style="color: #6B7280; font-size: 10px;">${escapeHtml(p.authors.join(', '))}</div>
           <div style="color: #9CA3AF; font-size: 9px; margin-top: 2px;">${escapeHtml(p.venue || p.fundingVenue || '')}</div>
-          ${p.bibliographicSource ? `<div style="font-size: 9px; margin-top: 2px;">Fuente: ${escapeHtml(p.bibliographicSource.dataset)} · ${escapeHtml(p.bibliographicSource.publicationType)}${p.bibliographicSource.sjrQuartile ? ` · SJR ${escapeHtml(p.bibliographicSource.sjrQuartile)}` : ''}</div>` : ''}
+          ${p.bibliographicSource ? `<div style="font-size: 9px; margin-top: 2px;">Fuente: ${escapeHtml(p.bibliographicSource.dataset)} · ${escapeHtml(p.bibliographicSource.publicationType)}${p.bibliographicSource.sjrQuartile ? ` · SJR ${escapeHtml(p.bibliographicSource.sjrQuartile)}` : ''}${p.bibliographicSource.researchLineClassification ? ` · Línea sugerida temporalmente por diccionario: ${escapeHtml(p.bibliographicSource.researchLineClassification.matchedKeywords.join(', '))}` : ''}</div>` : ''}
         </td>
         <td style="padding: 8px 6px; color: #374151; font-size: 10px;">${escapeHtml(p.researchLine)}</td>
         <td style="padding: 8px 6px; text-align: center; color: #374151;">${escapeHtml(productDateValue(p))}</td>

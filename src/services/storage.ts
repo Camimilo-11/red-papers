@@ -69,7 +69,7 @@ export function withStorageRollback(keys: readonly string[], save: () => boolean
   return false;
 }
 
-const ECMC_IMPORT_VERSION = 'emcc-orcid-2026-10-13';
+const ECMC_IMPORT_VERSION = 'emcc-orcid-2026-10-13-lines-v1';
 interface ImportedStorage {
   products: ScientificProduct[];
   teachers: TeacherUser[];
@@ -116,7 +116,33 @@ function importEcmcStorage(): ImportedStorage | undefined {
     const existingDois = new Set(products.filter(product => product.school === 'ECMC').map(product => importDoi(product.doi)).filter(Boolean));
     for (const source of INITIAL_PRODUCTS) {
       const doi = importDoi(source.doi);
-      if (existingIds.has(source.id) || (doi && existingDois.has(doi))) continue;
+      const existingIndex = products.findIndex(product => product.id === source.id);
+      if (existingIndex >= 0) {
+        const existing = products[existingIndex];
+        const previousClassification = existing.bibliographicSource?.researchLineClassification;
+        if (previousClassification && existing.bibliographicSource) {
+          // Refresh an older automated suggestion when the dictionary changes.
+          const bibliographicSource = { ...existing.bibliographicSource };
+          if (source.bibliographicSource?.researchLineClassification) {
+            bibliographicSource.researchLineClassification = source.bibliographicSource.researchLineClassification;
+          } else {
+            delete bibliographicSource.researchLineClassification;
+          }
+          products[existingIndex] = { ...existing, researchLine: source.researchLine, bibliographicSource };
+        // Fill only an empty line on an imported record; preserve manual assignments.
+        } else if (!existing.researchLine && source.researchLine && existing.bibliographicSource) {
+          products[existingIndex] = {
+            ...existing,
+            researchLine: source.researchLine,
+            bibliographicSource: {
+              ...existing.bibliographicSource,
+              researchLineClassification: source.bibliographicSource?.researchLineClassification,
+            },
+          };
+        }
+        continue;
+      }
+      if (doi && existingDois.has(doi)) continue;
       products.push({ ...source, authorIds: source.authorIds?.map(id => researcherIds.get(id) || id) });
       existingIds.add(source.id);
       if (doi) existingDois.add(doi);

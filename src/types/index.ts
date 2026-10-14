@@ -85,7 +85,7 @@ export interface ScientificProduct {
   publicationDate?: string; // Fecha ISO para publicaciones
   projectStartDate?: string;
   projectEndDate?: string;
-  researchLine: OfficialResearchLine | ''; // Empty when the source does not provide a classification.
+  researchLine: OfficialResearchLine | ''; // Official or temporary dictionary classification; empty when no line is suggested.
   abstract: string;
   status: ProductStatus;
   createdAt: string;
@@ -102,6 +102,12 @@ export interface ScientificProduct {
     citations: number | null;
     sjrQuartile: string | null;
     sjrScore: number | null;
+    researchLineClassification?: {
+      method: 'temporary-keyword-dictionary';
+      version: string;
+      strength: 'media' | 'alta';
+      matchedKeywords: string[];
+    };
   };
 
   // Específico para publicaciones
