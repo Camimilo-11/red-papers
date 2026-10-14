@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AcademicDegree, SyntheticAcademicProfileField, TeacherUser, ScientificProduct } from '../../types';
 import { metricsService } from '../../services/metricsService';
 import { exportService, ExportMetadata } from '../../services/exportService';
@@ -63,13 +63,12 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   const [viewingProduct, setViewingProduct] = useState<ScientificProduct | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
-  const profileRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!mobileProfileOpen || !window.matchMedia('(max-width: 1000px)').matches) return;
 
     const frame = window.requestAnimationFrame(() => {
-      profileRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [mobileProfileOpen, activeTeacherId]);
@@ -174,7 +173,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
         {filteredTeachers.map(t=><button key={t.id} type="button" className={t.id===activeTeacher?.id?'selected':''} aria-pressed={t.id===activeTeacher?.id} onClick={()=>{setActiveTeacherId(t.id);setMobileProfileOpen(true);}}><span>{t.name}</span><small>{t.rank || (t.id.startsWith('ecmc-orcid-researcher-') ? 'Perfil importado de ORCID' : '')}{academicTitle(t)?`${t.rank ? ' · ' : ''}${academicTitle(t)}`:''}</small><ChevronRight className="academic-person-open-icon" size={18} aria-hidden="true"/></button>)}
         {!filteredTeachers.length&&<p className="academic-empty">No se encontraron docentes.</p>}
       </nav>
-      {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id} ref={profileRef}>
+      {activeTeacher&&activeTeacherMetrics?<article className="academic-profile" key={activeTeacher.id}>
         <button type="button" className="academic-mobile-back" onClick={()=>setMobileProfileOpen(false)}><ArrowLeft size={17} aria-hidden="true"/>Todos los docentes</button>
         <header className="academic-profile-heading">
           {portrait(activeTeacher)?<img className="academic-avatar" src={portrait(activeTeacher)} alt={activeTeacher.name}/>:<span className="academic-avatar academic-initial" aria-hidden="true">{activeTeacher.name.split(' ')[1]?.charAt(0)||activeTeacher.name.charAt(0)}</span>}
