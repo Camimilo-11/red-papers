@@ -1,7 +1,7 @@
 import { OFFICIAL_RESEARCH_LINES } from '../constants/researchLines';
 import type { OfficialResearchLine } from '../types';
 
-export const ECMC_RESEARCH_DICTIONARY_VERSION = 'ecmc-lines-v1';
+export const ECMC_RESEARCH_DICTIONARY_VERSION = 'ecmc-lines-v2';
 
 export interface ResearchLineSuggestion {
   line: OfficialResearchLine;
@@ -84,6 +84,8 @@ const DICTIONARY: LineRule[] = [
     line: artificialIntelligence,
     keywords: [
       { phrase: 'artificial intelligence', weight: 5 }, { phrase: 'machine learning', weight: 3 },
+      { phrase: 'artificial intelligence in 5g', weight: 7 },
+      { phrase: 'artificial intelligence 5g technology', weight: 7 },
       { phrase: 'inteligencia artificial', weight: 5 }, { phrase: 'aprendizaje automatico', weight: 3 },
       { phrase: 'aprendizaje profundo', weight: 5 }, { phrase: 'vision por computador', weight: 5 },
       { phrase: 'vision computacional', weight: 5 }, { phrase: 'red neuronal', weight: 4 },
