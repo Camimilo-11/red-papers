@@ -85,13 +85,13 @@ describe('credenciales compartidas entre escuelas', () => {
     }
   });
 
-  it('conserva el correo estudiantil anterior y sus colaboraciones ECMC', () => {
+  it('conserva el correo estudiantil anterior sin atribuir colaboraciones ficticias', () => {
     const account = sharedAccounts.find(account => account.user.role === 'student')!;
     for (const school of SCHOOLS) {
       const result = authService.login('estudiante.ecmc@yachaytech.edu.ec', account.password, school.code);
       expect(result.success).toBe(true);
       expect(result.user?.email).toBe('estudiante@yachaytech.edu.ec');
-      expect((STUDENT_COLLABORATIONS[result.user!.id] || []).length).toBe(school.code === 'ECMC' ? 3 : 0);
+      expect((STUDENT_COLLABORATIONS[result.user!.id] || []).length).toBe(0);
       authService.logout();
     }
   });
