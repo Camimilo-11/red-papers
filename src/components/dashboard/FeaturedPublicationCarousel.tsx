@@ -46,21 +46,22 @@ function useCountUp(value: number, resetKey: string | undefined) {
   return shown;
 }
 
-function getMostCitedByResearchLine(products: ScientificProduct[], researchLines: readonly OfficialResearchLine[]) {
-  const publications = products.filter(product => product.type === 'publicacion' && product.status === 'verificado');
-  if (publications.some(product => product.bibliographicSource)) {
-    // The ORCID source has no research-line assignments. Select from its works
-    // directly rather than silently discarding them or inventing a category.
-    return [...publications].sort((a, b) => (productCitationValue(b) ?? -1) - (productCitationValue(a) ?? -1)
-      || b.year - a.year || a.title.localeCompare(b.title)).slice(0, 6);
-  }
+export function getMostCitedByResearchLine(products: ScientificProduct[], researchLines: readonly OfficialResearchLine[]) {
   const topByLine = new Map<OfficialResearchLine, ScientificProduct>();
 
   products.forEach((product) => {
     if (product.type !== 'publicacion' || product.status !== 'verificado' || !product.researchLine) return;
+    if (!researchLines.includes(product.researchLine)) return;
+
+    // Unknown citation counts cannot be ranked against verified counts.
+    const citations = productCitationValue(product);
+    if (citations === null || !Number.isFinite(citations)) return;
 
     const current = topByLine.get(product.researchLine);
-    if (!current || product.citations > current.citations) {
+    const currentCitations = current ? productCitationValue(current) : null;
+    if (!current || citations > (currentCitations ?? -1)
+      || (citations === currentCitations && (product.year > current.year
+        || (product.year === current.year && product.title.localeCompare(current.title) < 0)))) {
       topByLine.set(product.researchLine, product);
     }
   });
@@ -68,7 +69,8 @@ function getMostCitedByResearchLine(products: ScientificProduct[], researchLines
   return researchLines
     .map((line) => topByLine.get(line))
     .filter((product): product is ScientificProduct => Boolean(product))
-    .sort((a, b) => b.citations - a.citations || b.year - a.year);
+    .sort((a, b) => (productCitationValue(b) ?? -1) - (productCitationValue(a) ?? -1)
+      || b.year - a.year || a.title.localeCompare(b.title));
 }
 
 export function FeaturedPublicationCarousel({ products, researchLines }: { products: ScientificProduct[]; researchLines: readonly OfficialResearchLine[] }) {
@@ -187,7 +189,7 @@ export function FeaturedPublicationCarousel({ products, researchLines }: { produ
           <span>IMPACTO REGISTRADO</span>
           <strong>{citationValue === null ? '—' : numberFormat.format(citationsShown)}</strong>
           <span>{citationValue === null ? 'No disponible' : 'citas registradas'}</span>
-          <div className="featured-paper-rank"><Award size={16} aria-hidden="true" />{publication.bibliographicSource ? 'Fuente: ORCID' : 'La más citada de esta línea'}</div>
+          <div className="featured-paper-rank"><Award size={16} aria-hidden="true" />La más citada de esta línea</div>
         </aside>
 
         <div className="featured-paper-controls" role="group" aria-label="Controles de publicaciones destacadas">
