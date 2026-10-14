@@ -44,8 +44,8 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
   .institutional-landing-subtitle { font-size: 16px; line-height: 1.45; margin: 22px 0 16px; max-width: 34em; }
   .institutional-landing-hero-link { display: inline-flex; min-height: 48px; align-items: center; font-size: 16px; }
   .institutional-landing-hero-link { margin-top: 4px; }
-  .institutional-landing > .mascot-handoff-logos { z-index: 4; mix-blend-mode: normal; }
-  .mascot-handoff-logos .institutional-landing-hero-emblem { --emblem-size: 74px !important; width: var(--emblem-size) !important; height: var(--emblem-size) !important; opacity: 0; mix-blend-mode: normal; }
+  .institutional-landing > .mascot-handoff-logos { z-index: 4; mix-blend-mode: multiply; }
+  .mascot-handoff-logos .institutional-landing-hero-emblem { --emblem-size: 74px !important; width: var(--emblem-size) !important; height: var(--emblem-size) !important; opacity: 0; mix-blend-mode: multiply; }
   .mascot-handoff-logos .institutional-landing-hero-emblem.is-visible { opacity: .94; }
   .mascot-handoff-logos .institutional-landing-emblem-image { width: 100% !important; height: 100% !important; mix-blend-mode: multiply; }
   .mascot-handoff-logos .institutional-landing-hero-emblem:nth-child(1) { left: 25% !important; top: calc(37px + 2%) !important; }
