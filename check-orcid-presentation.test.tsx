@@ -1,11 +1,11 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ScientificProduct, TeacherUser } from './src/types';
+import type { OfficialResearchLine, ScientificProduct, TeacherUser } from './src/types';
 import { metricsService } from './src/services/metricsService';
 import { productCitationLabel, productCitationValue, productMatchesTeacher, productStatusLabel } from './src/services/productPresentation';
 import { ProductDetailModal } from './src/components/catalog/ProductDetailModal';
-import { FeaturedPublicationCarousel } from './src/components/dashboard/FeaturedPublicationCarousel';
+import { FeaturedPublicationCarousel, getMostCitedByResearchLine } from './src/components/dashboard/FeaturedPublicationCarousel';
 import { SCHOOLS } from './src/constants/schools';
 
 const imported: ScientificProduct = {
@@ -63,8 +63,36 @@ describe('presentación factual de registros ORCID', () => {
     expect(detail).toContain('compruebe la autoría completa en el DOI antes de citar');
     expect(detail).not.toContain('Certificado');
     const carousel = renderToStaticMarkup(<FeaturedPublicationCarousel products={[imported]} researchLines={SCHOOLS.find(school => school.code === 'ECMC')!.researchLines} />);
-    expect(carousel).toContain(imported.title);
-    expect(carousel).toContain('Citas: No disponible');
-    expect(carousel).not.toContain('La más citada de esta línea');
+    expect(carousel).toContain('Aún no hay publicaciones verificadas para destacar.');
+    expect(carousel).not.toContain(imported.title);
+  });
+
+  it('destaca solo la publicación más citada de cada línea, incluidas las citas ORCID', () => {
+    const lines = SCHOOLS.find(school => school.code === 'ECMC')!.researchLines;
+    const lineOne = lines[0];
+    const lineTwo = lines[1];
+    const makeProduct = (id: string, researchLine: OfficialResearchLine | '', citations: number, year = 2024): ScientificProduct => ({
+      ...imported,
+      id,
+      title: id,
+      researchLine,
+      citations: 0,
+      year,
+      bibliographicSource: { ...imported.bibliographicSource!, citations },
+    });
+    const products = [
+      makeProduct('local-line-one', lineOne, 9),
+      makeProduct('orcid-line-one-winner', lineOne, 24),
+      makeProduct('orcid-line-one-runner-up', lineOne, 18),
+      makeProduct('line-two-winner', lineTwo, 12),
+      makeProduct('unassigned-high-count', '', 99),
+      { ...makeProduct('unknown-citations', lineTwo, 0), bibliographicSource: { ...imported.bibliographicSource!, citations: null } },
+      { ...makeProduct('rejected-high-count', lineTwo, 100), status: 'rechazado' as const },
+    ];
+
+    const featured = getMostCitedByResearchLine(products, lines);
+
+    expect(featured.map(product => product.id)).toEqual(['orcid-line-one-winner', 'line-two-winner']);
+    expect(new Set(featured.map(product => product.researchLine)).size).toBe(featured.length);
   });
 });
