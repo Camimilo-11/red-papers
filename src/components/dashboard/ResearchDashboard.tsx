@@ -67,12 +67,13 @@ function ResearchLineChart({products,school}:{products:ScientificProduct[];schoo
   .sort((a,b)=>b.count-a.count||a.index-b.index);
  const max=Math.max(1,...values.map(item=>item.count));
  const unassigned=verified.filter(product=>!product.researchLine).length;
+  const hasOrcidImport=verified.some(product=>product.bibliographicSource);
  return <section className="research-chart-card research-line-chart" aria-labelledby="research-lines-chart-title">
   <header className="research-chart-heading">
    <div><p className="eyebrow">ÁREAS · {school.code}</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
    <BarChart3 size={21} aria-hidden="true"/>
   </header>
-  {unassigned>0&&<p className="academic-section-empty">{unassigned} {unassigned===1?'producto sin línea asignada':'productos sin línea asignada'}. La fuente ORCID no proporciona esta clasificación.</p>}
+  {unassigned>0&&<p className="academic-section-empty">{unassigned} {unassigned===1?'producto sin línea asignada':'productos sin línea asignada'}. {hasOrcidImport?'La fuente ORCID no incluye líneas; las asignaciones visibles son sugerencias temporales del diccionario.':'No se ha especificado una línea para estos productos.'}</p>}
   {values.some(item=>item.count>0)||!unassigned?<ol className="research-line-bars">{values.map(item=><li key={item.line}>
    <span className="research-line-name">{item.line}</span>
    <span className="research-line-track"><span style={{width:`${item.count?Math.max(3,item.count/max*100):0}%`}}/></span>

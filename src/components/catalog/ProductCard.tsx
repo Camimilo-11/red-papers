@@ -43,7 +43,10 @@ export const ProductCard: React.FC<{
             <ExternalLink size={14} aria-hidden="true" />
           </a>
         )}
-        <span className="product-line">{product.researchLine || 'Línea no asignada'}</span>
+        <span className="product-line">
+          {product.researchLine || 'Línea no asignada'}
+          {product.bibliographicSource?.researchLineClassification && <small> · Sugerencia temporal</small>}
+        </span>
       </div>
       <div className="product-row-actions">
         {onEdit&&<button type="button" className="product-edit" onClick={onEdit}><PencilLine size={16} aria-hidden="true"/>Corregir y reenviar</button>}

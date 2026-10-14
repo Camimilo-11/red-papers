@@ -81,7 +81,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
             <span className="product-detail-meta-divider" aria-hidden="true">·</span>
             <span>{productDateLabel(product)}</span>
             <span className="product-detail-meta-divider" aria-hidden="true">·</span>
-            <span className="product-detail-research-line">{product.researchLine || 'Línea no asignada'}</span>
+            <span className="product-detail-research-line">
+              {product.researchLine || 'Línea no asignada'}
+              {source?.researchLineClassification ? ' · Sugerencia temporal' : ''}
+            </span>
           </div>
 
           <button
@@ -144,6 +147,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
             <p><strong>Tipo de publicación:</strong> {source.publicationType || 'No disponible'}</p>
             <p><strong>Cuartil SJR:</strong> {source.sjrQuartile || 'No disponible'}</p>
             <p><strong>Índice SJR:</strong> {source.sjrScore ?? 'No disponible'}</p>
+            {source.researchLineClassification && <p><strong>Clasificación temática:</strong> sugerencia temporal del diccionario ({source.researchLineClassification.strength} coincidencia; {source.researchLineClassification.matchedKeywords.join(', ')}).</p>}
           </section>}
 
           <section className="product-detail-section product-detail-citation-copy" aria-labelledby="product-detail-citation-title">
