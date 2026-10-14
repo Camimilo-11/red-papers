@@ -9,6 +9,8 @@ import { getSchoolByCode } from '../../constants/schools';
 import juanPhoto from '../../assets/researchers/juan-pablo-astudillo.png';
 import diegoPhoto from '../../assets/researchers/diego-peluffo.png';
 import eugenioPhoto from '../../assets/researchers/eugenio-morocho.png';
+import jeffersonPhoto from '../../assets/researchers/jefferson-moreno-guaicha.png';
+import rigobertoPhoto from '../../assets/researchers/rigoberto-fonseca-delgado.png';
 const degreeLabels:Record<AcademicDegree,string>={PhD:'Doctorado (PhD)',MSc:'Maestría (MSc)',BSc:'Licenciatura o Ingeniería',Other:'Otro título'};
 const academicProfileLink=(teacher:TeacherUser,field:SyntheticAcademicProfileField,label:string,href:string)=>{
  if(!teacher[field]) return null;
@@ -28,7 +30,9 @@ const academicTitle = (teacher:TeacherUser) => {
 const portrait = (teacher: TeacherUser) => {
  if(teacher.profileImage) return teacher.profileImage;
  const name=teacher.name.toLowerCase();
- if(name.includes('juan pablo') && name.includes('astudillo')) return juanPhoto;
+ if(teacher.orcid==='0000-0002-0380-4739' || name.includes('jefferson') || name.includes('jeferzon')) return jeffersonPhoto;
+ if(teacher.orcid==='0000-0002-7291-3584' || name.includes('juan pablo') && name.includes('astudillo')) return juanPhoto;
+ if(teacher.orcid==='0000-0002-8890-3911' || name.includes('rigoberto') && name.includes('fonseca')) return rigobertoPhoto;
  if(name.includes('diego') && name.includes('peluffo')) return diegoPhoto;
  if(name.includes('eugenio') && name.includes('morocho')) return eugenioPhoto;
  return undefined;
