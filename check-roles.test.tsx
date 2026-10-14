@@ -32,6 +32,10 @@ describe('cuentas, menús y permisos', () => {
         />,
       );
 
+      assert.equal(html.includes('aria-label="Navegación principal móvil"'), true);
+      assert.equal(html.includes('aria-current="page"'), true);
+      assert.equal(html.includes('Publicaciones y proyectos'), true);
+      assert.equal(html.includes('Docentes'), true);
       assert.equal(html.includes('Otras herramientas'), user.role === 'developer');
       assert.equal(html.includes('Comité Científico'), user.role === 'developer' || user.role === 'reviewer_demo');
       assert.equal(canReview(user), user.role === 'developer' || user.role === 'reviewer_demo');
