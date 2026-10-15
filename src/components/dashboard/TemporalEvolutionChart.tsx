@@ -24,8 +24,8 @@ export const TemporalEvolutionChart: React.FC<TemporalEvolutionChartProps> = ({ 
   return (
     <div className="research-chart-card research-semester-chart">
       {/* Encabezado del gráfico */}
-      <div className="semester-chart-heading flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4">
-        <div className="flex items-center gap-2">
+      <div className="semester-chart-heading flex flex-col items-stretch justify-between gap-4 mb-6 pb-4">
+        <div className="flex min-w-0 items-center gap-2">
           <div className="semester-chart-accent-icon p-1.5">
             <TrendingUp className="w-5 h-5" />
           </div>

@@ -17,7 +17,7 @@ import { AccessScreen } from './components/auth/AccessScreen';
 import { LoginDialog } from './components/auth/LoginDialog';
 import { InstitutionalLanding } from './components/institutional/InstitutionalLanding';
 import { PortalEntryLoading } from './components/institutional/PortalEntryLoading';
-import { getSchoolByCode, type SchoolConfig } from './constants/schools';
+import { getSchoolByCode, getSchoolDisplayCode, type SchoolConfig } from './constants/schools';
 
 const RoleManagementView = lazy(() => import('./components/roles/RoleManagementView').then((module) => ({ default: module.RoleManagementView })));
 const ProfileSettingsView = lazy(() => import('./components/profile/ProfileSettingsView').then((module) => ({ default: module.ProfileSettingsView })));
@@ -389,7 +389,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
             currentUserId={currentUser ? currentUser.id : null}
             initialTeacherFilter={catalogTeacherFilter}
             researchLines={selectedSchool.researchLines}
-            schoolName={`${selectedSchool.name} (${selectedSchool.code})`}
+            schoolName={`${selectedSchool.name} (${getSchoolDisplayCode(selectedSchool.code)})`}
             onEditProduct={product => {
               setEditingProduct(product);
               setRegisterType(product.type);
@@ -430,7 +430,7 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
       </main>
 
       {/* 3. Pie de Página Institucional */}
-      <footer className="portal-footer"><span>SIMAPC · {selectedSchool.code}</span><span>Universidad Yachay Tech</span></footer>
+      <footer className="portal-footer"><span>SIMAPC · {getSchoolDisplayCode(selectedSchool.code)}</span><span>Universidad Yachay Tech</span></footer>
 
       {/* 4. Modales Globales */}
       <LoginDialog isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onLogin={handleLogin} />

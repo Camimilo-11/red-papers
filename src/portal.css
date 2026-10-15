@@ -246,14 +246,14 @@
 .profile-research-lines-field>small { color:var(--muted); font-size:12px; line-height:1.4; }
 .profile-research-line-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:12px 0 8px; }
 .profile-research-line-option { display:flex; align-items:flex-start; gap:10px; min-width:0; padding:11px 12px; border:1px solid #ded8d1; background:#fff; cursor:pointer; }
-.profile-research-line-option:has(input:checked) { border-color:var(--accent); background:#fff7f3; }
+.profile-research-line-option.is-selected { border-color:var(--accent); background:#fff7f3; }
 .profile-research-line-option input { flex:0 0 17px; width:17px; height:17px; min-height:17px; margin:1px 0 0; padding:0; accent-color:var(--accent); }
 .profile-research-line-option span { color:var(--ink); font-size:13px; line-height:1.4; }
 .profile-research-subline-group { margin:14px 0 0; padding:13px 14px; border:1px solid #e8dfd6; background:#fcfaf7; }
 .profile-research-subline-group>strong { display:block; margin-bottom:9px; color:#4d423b; font-size:13px; }
 .profile-research-subline-options { display:flex; flex-wrap:wrap; gap:8px; }
 .profile-research-subline-option { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid #ded8d1; background:#fff; cursor:pointer; }
-.profile-research-subline-option:has(input:checked) { border-color:var(--accent); background:#fff2ed; }
+.profile-research-subline-option.is-selected { border-color:var(--accent); background:#fff2ed; }
 .profile-research-subline-option input { width:15px; height:15px; margin:0; accent-color:var(--accent); }
 .profile-research-subline-option span { color:var(--ink); font-size:12px; line-height:1.35; }
 .profile-bibliometrics-note { margin:0; padding:11px 13px; border-left:3px solid var(--accent); background:#fcf8f3; color:var(--muted); font-size:12px; line-height:1.5; }
@@ -971,6 +971,12 @@ html, body {
 .semester-chart-legend span { display:inline-flex; align-items:center; gap:7px; }
 .semester-chart-legend i { display:inline-block; width:10px; height:10px; }
 .semester-chart-accent-icon { color:var(--accent); background:color-mix(in srgb,var(--accent) 9%,white); }
+.research-semester-chart .semester-chart-heading>div:first-child { min-width:0; }
+.research-semester-chart .semester-mode-control { align-self:flex-start; flex-wrap:wrap; max-width:100%; }
+.research-semester-chart .semester-chart-scroll { max-width:100%; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#c8c2bb transparent; }
+.research-semester-chart .semester-chart-content { width:max(100%,var(--semester-chart-width)); }
+.research-semester-chart .semester-chart-slot { flex:0 0 48px; width:48px; }
+.research-semester-chart .semester-chart-axis .semester-chart-slot { overflow:visible; text-overflow:clip; white-space:nowrap; }
 .semester-chart-value.is-highlighted { color:var(--accent); }
 .semester-mode-publications[aria-pressed="true"] { color:var(--accent); }
 .semester-legend-publications { background:var(--accent); }

@@ -112,6 +112,10 @@ export type SchoolConfig = (typeof SCHOOLS)[number];
 export type SchoolCode = SchoolConfig['code'];
 export type OfficialResearchLine = SchoolConfig['researchLines'][number];
 
+export function getSchoolDisplayCode(code?: string | null): string {
+  return code === 'ECIAA' ? 'ECAA' : code ?? '';
+}
+
 export function getSchoolByCode(code?: string | null): SchoolConfig | undefined {
   return SCHOOLS.find((school) => school.code === code);
 }

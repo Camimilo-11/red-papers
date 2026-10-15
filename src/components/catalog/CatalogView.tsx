@@ -55,7 +55,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [sortOption, setSortOption] = useState<'recent' | 'citations' | 'title'>('recent');
 
   // Estado de filtros
-  const [searchDraft,setSearchDraft]=useState('');
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
     productType: 'todos',
@@ -104,7 +103,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     filters.researchLine !== 'todas';
 
   const resetFilters = () => {
-    setSearchDraft('');
     setFilters({
       searchQuery: '',
       productType: 'todos',
@@ -238,8 +236,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setFilters(current=>({...current,searchQuery:searchDraft.trim()}));}}}
-              onChange={(e) => setSearchDraft(e.target.value)}
+              value={filters.searchQuery}
+              onChange={(e) => setFilters(current => ({ ...current, searchQuery: e.target.value }))}
               aria-label="Buscar publicaciones y proyectos" placeholder="Escriba un título, autor o revista"
               className="school-accent-focus w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-200 text-xs bg-neutral-50/50 focus:bg-white transition-colors"
             />
@@ -362,7 +360,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               {filters.searchQuery && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-neutral-700 text-[11px]">
                   Búsqueda: "{filters.searchQuery}"
-                  <button onClick={() => {setSearchDraft('');setFilters({ ...filters, searchQuery: '' });}}>
+                  <button onClick={() => setFilters(current => ({ ...current, searchQuery: '' }))}>
                     <X className="w-3 h-3" />
                   </button>
                 </span>

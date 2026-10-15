@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { ArrowDown } from 'lucide-react';
-import { SCHOOLS, SchoolConfig } from '../../constants/schools';
+import { getSchoolDisplayCode, SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ensurePrioritySchoolMascotsDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { BASE_MASCOT } from '../../assets/schoolMascots';
 import { LoginSchoolEmblem } from '../auth/LoginSchoolEmblem';
@@ -26,7 +26,7 @@ function SchoolStageFallback({ onSelect, touchLayout }: { onSelect: (school: Sch
   return <div id="escuelas" className="institutional-school-stage-fallback" style={{ height: trackHeight }} aria-label="Escuelas disponibles">
     {SCHOOLS.map((school) => <section key={school.code} className="institutional-school-stage-fallback-card" style={{ '--school-accent': school.accent } as React.CSSProperties}>
       <img src={SCHOOL_LOGOS[school.code]} width={72} height={72} alt="" />
-      <p>{school.code === 'ECIAA' ? 'ECAA' : school.code}</p>
+      <p>{getSchoolDisplayCode(school.code)}</p>
       <h2>{school.name}</h2>
       <button type="button" onClick={() => onSelect(school)}>Ver investigaciones y proyectos <span aria-hidden="true">→</span></button>
     </section>)}
@@ -687,7 +687,11 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
       )}
 
       <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
-        <img className="institutional-landing-desktop-mascot" src={BASE_MASCOT} width={768} height={768} alt="" aria-hidden="true" decoding="async" draggable={false} />
+        <div className="institutional-landing-mascot-scene" aria-hidden="true">
+          <span className="institutional-landing-mascot-orbit institutional-landing-mascot-orbit-primary" />
+          <span className="institutional-landing-mascot-orbit institutional-landing-mascot-orbit-secondary" />
+          <img className="institutional-landing-desktop-mascot" src={BASE_MASCOT} width={768} height={768} alt="" decoding="async" draggable={false} />
+        </div>
         <motion.div className="institutional-landing-hero-copy" style={mobileTransition ? { opacity: welcomeOpacity, y: welcomeY } : undefined}>
           <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>SIMAPC · Portal de investigación</p>
           <h1 id="landing-title" className="institutional-landing-title">

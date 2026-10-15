@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
-import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
+import { getSchoolDisplayCode, SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
 import { ensureSchoolLogosDecoded, ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolMascots, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { BASE_MASCOT, SCHOOL_MASCOT_FRAME, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
@@ -28,14 +28,14 @@ const SCHOOL_LINE_OFFSETS = SCHOOLS.map((school, schoolIndex) =>
   SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + stageSlidesFor(previous).length, 0),
 );
 const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
-const graphSchoolCode = (school: SchoolConfig): GraphSchoolCode => school.code === 'ECIAA' ? 'ECAA' : school.code as GraphSchoolCode;
+const graphSchoolCode = (school: SchoolConfig): GraphSchoolCode => getSchoolDisplayCode(school.code) as GraphSchoolCode;
 export function getStageState(value: number) {
   const progress = clamp(value, 0, TOTAL_UNITS);
   const current = clamp(Math.floor(progress / STAGE_TIMING.step), 0, STAGE_PLANES.length - 1);
   const activeIndex = current;
   return { progress, activeIndex };
 }
-const displaySchoolCode = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
+const displaySchoolCode = (school: SchoolConfig) => getSchoolDisplayCode(school.code);
 const RESEARCH_ENTRY_LABEL = 'Ver investigaciones y proyectos';
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
@@ -252,8 +252,10 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
     return SCHOOL_LINE_OFFSETS[schoolIndex] + (schoolProgress - schoolIndex) * stageSlidesFor(SCHOOLS[schoolIndex]).length;
   });
   const arrival = useTransform(() => clamp((scrollY.get() - (start.get() - sceneHeight.get() * .7)) / (sceneHeight.get() * .85)));
-  const baseOpacity = useTransform(handoff.progress, [0, .84, .9, 1], [0, 0, 1, 0]);
-  const baseScale = useTransform(handoff.progress, [.84, 1], [.9, 1]);
+  // Reveal the base robot as soon as the school section enters view. This
+  // bridges the gap between the welcome mascot and the decoded school pose.
+  const baseOpacity = useTransform(handoff.progress, [0, .56, .7, .82, .9, .96, 1], [0, 0, .45, 1, 1, 0, 0]);
+  const baseScale = useTransform(handoff.progress, [.7, .82, .96, 1], [.92, 1, 1, 1]);
   const flashOpacity = useMotionValue(0);
   const flashScale = useMotionValue(.6);
   const previewOpacity = useTransform(preview, (index) => index < 0 ? 0 : .27);
