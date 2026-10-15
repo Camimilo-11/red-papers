@@ -901,6 +901,9 @@ html, body {
 
 /* Tablero editorial del inicio. */
 .dashboard-home { display:flex; flex-direction:column; }
+.portal-main-public-dashboard .dashboard-home > .school-summary { order: 1; }
+.portal-main-public-dashboard .dashboard-home > .featured-publications { order: 2; }
+.portal-main-public-dashboard .dashboard-home > :not(.school-summary):not(.featured-publications) { order: 3; }
 .dashboard-home .home-welcome { margin-bottom:30px; }
 .research-dashboard { margin:0 0 4px; }
 .research-dashboard-heading { margin-bottom:20px; }

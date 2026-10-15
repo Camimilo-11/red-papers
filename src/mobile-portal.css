@@ -710,6 +710,41 @@
 
 @media (max-width: 760px) {
   .portal-app .portal-main { padding: 18px 16px 24px; }
+  .portal-app .portal-main-public-dashboard { padding: 12px 14px 22px; }
+  .portal-app .portal-main-public-dashboard .dashboard-home > .featured-publications { order: 1; }
+  .portal-app .portal-main-public-dashboard .dashboard-home > .school-summary { order: 2; }
+  .portal-app .portal-main-public-dashboard .featured-publications { margin: 8px 0 12px; }
+  .portal-app .portal-main-public-dashboard .featured-publications-heading { margin-bottom: 6px; }
+  .portal-app .portal-main-public-dashboard .featured-publications-heading h2 {
+    margin: 0;
+    font-size: clamp(1.4rem, 6vw, 1.6rem);
+    line-height: 1.08;
+  }
+  .portal-app .portal-main-public-dashboard .featured-paper-card {
+    min-height: 0;
+    gap: 7px;
+    padding: 12px 12px 10px;
+  }
+  .portal-app .portal-main-public-dashboard .featured-paper-line { margin-bottom: 5px; }
+  .portal-app .portal-main-public-dashboard .featured-paper-copy h3 {
+    -webkit-line-clamp: 3;
+    font-size: clamp(1.2rem, 5.2vw, 1.4rem);
+    line-height: 1.1;
+  }
+  .portal-app .portal-main-public-dashboard .featured-paper-authors { margin: 6px 0 3px; }
+  .portal-app .portal-main-public-dashboard .featured-paper-actions { margin-top: 5px; }
+  .portal-app .portal-main-public-dashboard .featured-paper-link { min-height: 44px; font-size: 12px; }
+  .portal-app .portal-main-public-dashboard .featured-paper-citations {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 5px;
+    padding: 6px 0 0;
+  }
+  .portal-app .portal-main-public-dashboard .featured-paper-citations strong { font-size: 1.9rem; }
+  .portal-app .portal-main-public-dashboard .featured-paper-citations > span:nth-of-type(2) { font-size: 11px; }
+  .portal-app .portal-main-public-dashboard .featured-paper-controls { min-height: 44px; margin-top: 0; padding: 0; }
+  .portal-app .portal-main-public-dashboard .school-summary.school-summary-overview { margin-top: 14px; }
   .portal-app .school-summary.school-summary-overview { margin-bottom: 18px; padding-bottom: 12px; }
   .portal-app .school-summary-heading h1 { font-size: clamp(1.5rem, 6.6vw, 1.8rem); }
   .portal-app .school-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

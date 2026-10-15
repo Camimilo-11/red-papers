@@ -4,7 +4,7 @@ import { animate, motion, useMotionValue, useTransform, type MotionValue } from 
 import { SCHOOLS, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
 import { ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolMascots, SCHOOL_LOGOS } from '../../assets/schoolLogos';
-import { BASE_MASCOT, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
+import { BASE_MASCOT, SCHOOL_MASCOT_FRAME, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
 import { SchoolGraphBackdrop } from '../SchoolGraphBackdrop';
 import type { MascotHandoff } from './mascotHandoff';
 import { ConstellationSparkles } from './ConstellationSparkles';
@@ -75,14 +75,15 @@ const TouchSlide = React.memo(function TouchSlide({ school, active, handoff, onS
     });
     return () => { mounted = false; mascotAnimation.current?.stop(); };
   }, [active, isSharedEcaaFade, mobileTransition, school.code, mascotFade]);
-  const handoffOpacity = useTransform(handoff.progress, (progress) => reducedMotion ? clamp(progress) : clamp((progress - .2) / .8));
+  const mascotHandoffOpacity = useTransform(handoff.progress, (progress) => reducedMotion ? 1 : clamp((progress - .2) / .8));
+  const contentOpacity = useTransform(handoff.progress, (progress) => reducedMotion ? 1 : clamp((progress - .4) / .55));
   const opacity = useTransform(() => {
-    if (mobileTransition && !mascotDecoded) return school.code === 'ECIAA' ? handoffOpacity.get() : 1;
-    return mascotFade.get() * (school.code === 'ECIAA' ? handoffOpacity.get() : 1);
+    if (mobileTransition && !mascotDecoded) return school.code === 'ECIAA' ? mascotHandoffOpacity.get() : 1;
+    return mascotFade.get() * (school.code === 'ECIAA' ? mascotHandoffOpacity.get() : 1);
   });
-  const titleOpacity = useTransform(handoff.progress, clamp);
+  const titleOpacity = contentOpacity;
   const titleY = useTransform(handoff.progress, (progress) => reducedMotion ? 0 : 16 * (1 - easeCurve(progress)));
-  const buttonOpacity = useTransform(handoff.progress, clamp);
+  const buttonOpacity = contentOpacity;
   const buttonY = useTransform(handoff.progress, (progress) => reducedMotion ? 0 : 16 * (1 - easeCurve(progress)));
   const mobileOpacity = useTransform(schoolFade, (progress) => {
     if (transitionRole === 'outgoing') return 1 - progress;
@@ -90,8 +91,10 @@ const TouchSlide = React.memo(function TouchSlide({ school, active, handoff, onS
     return 1;
   });
   const slide = RESEARCH_STAGE_SLIDES[school.code][0];
+  const mascotFrame = SCHOOL_MASCOT_FRAME[school.code];
+  const mascotFrameStyle = { '--mascot-frame-scale': mascotFrame.scale, '--mascot-frame-y': mascotFrame.offsetY } as React.CSSProperties;
   return <motion.section className="touch-school-slide" data-school={school.code} inert={!active} aria-hidden={!active}
-    style={{ ...styleFor(school), opacity: mobileTransition ? mobileOpacity : blockOpacity, y: mobileTransition ? 0 : y, pointerEvents: active && (!mobileTransition || stageInteractive) ? 'auto' : 'none' }}>
+    style={{ ...styleFor(school), ...mascotFrameStyle, opacity: mobileTransition ? mobileOpacity : blockOpacity, y: mobileTransition ? 0 : y, pointerEvents: active && (!mobileTransition || stageInteractive) ? 'auto' : 'none' }}>
     <motion.div className="touch-school-copy" style={mobileTransition ? { opacity: titleOpacity, y: titleY } : undefined}>
       <div className="touch-school-identity"><img src={SCHOOL_LOGOS[school.code]} width={44} height={44} alt="" /><p>{acronym(school)}</p></div>
       <h2>{slide.title.split(' ').map((word, index, words) => <React.Fragment key={index}><span className={slide.accentWords.includes(index) ? 'is-accent' : undefined}>{word}</span>{index < words.length - 1 ? ' ' : ''}</React.Fragment>)}</h2>
@@ -574,7 +577,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     if (!interactionEnabled) return;
     const landing = track.current?.closest('.institutional-landing');
     if (!landing) return;
-    let down: { x: number; y: number; inTour: boolean; inHero: boolean } | null = null;
+    let down: { x: number; y: number; scrollY: number; inTour: boolean; inHero: boolean } | null = null;
     let timer = 0;
     let wheelGestureLocked = false;
     let wheelGestureTimer = 0;
@@ -616,7 +619,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       const stage = target.closest<HTMLElement>('.touch-school-stage');
       const stageBounds = mobileTransitionEnabled ? null : stage?.getBoundingClientRect();
       const inTour = mobileTransitionEnabled ? !!stage : !!stageBounds && stageBounds.top < window.innerHeight && stageBounds.bottom > 0;
-      down = { x: event.clientX, y: event.clientY, inTour, inHero: !!target.closest('.institutional-landing-hero, .mascot-handoff-logos') };
+      down = { x: event.clientX, y: event.clientY, scrollY: window.scrollY, inTour, inHero: !!target.closest('.institutional-landing-hero, .mascot-handoff-logos') };
     };
     const pointerMove = (event: PointerEvent) => {
       if (!down || event.pointerType !== 'touch' || !transitionAnimating.current) return;
@@ -634,7 +637,11 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       if (transitionAnimating.current) {
         if (origin.inTour) queueTransitionIntent(active.current + (dy < 0 ? 1 : -1));
         else if (origin.inHero) queueTransitionIntent(dy < 0 ? 0 : -1);
-      } else if (origin.inTour) go(active.current + (dy < 0 ? 1 : -1));
+      } else if (origin.inTour) {
+        const nativeScrollStarted = mobileTransitionEnabled && Math.abs(window.scrollY - origin.scrollY) > 2;
+        if (!mobileTransitionEnabled || !nativeScrollStarted) go(active.current + (dy < 0 ? 1 : -1));
+        else if (active.current === 0 && dy > 0) go(-1);
+      }
       else if (origin.inHero && dy < 0) go(0);
     };
     const wheel = (event: WheelEvent) => {
@@ -676,7 +683,19 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       }
       if (target.closest('a[href="#escuelas"]')) { event.preventDefault(); go(0); }
     };
-    const cancel = () => { down = null; };
+    const cancel = (event?: Event) => {
+      const origin = down;
+      down = null;
+      if (!mobileTransitionEnabled || !origin || !(event instanceof PointerEvent) || event.pointerType !== 'touch') return;
+      const dx = event.clientX - origin.x;
+      const dy = event.clientY - origin.y;
+      if (Math.abs(dy) < 40 || Math.abs(dx) >= Math.abs(dy)) return;
+      if (transitionAnimating.current) {
+        if (origin.inTour) queueTransitionIntent(active.current + (dy < 0 ? 1 : -1));
+        else if (origin.inHero) queueTransitionIntent(dy < 0 ? 0 : -1);
+      } else if (origin.inHero && dy < 0) go(0);
+      else if (origin.inTour && active.current === 0 && dy > 0) go(-1);
+    };
     const keyboard = (event: KeyboardEvent) => {
       if ((event.target as HTMLElement).matches('input, textarea, select')) return;
       const { start, height } = geometry.current;
@@ -713,7 +732,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     {SCHOOLS.map((school, index) => <div className="touch-school-snap" key={school.code} style={{ top: `${index * 100}svh` }} aria-hidden="true" />)}
     <motion.div ref={scene} className="touch-school-stage" style={{ ...styleFor(activeSchool), ...(mobileTransitionEnabled ? { pointerEvents: stagePointerEvents } : {}), ...(mobileTransitionEnabled && reducedMotion ? { opacity: handoff.progress } : {}) }} data-school={activeSchool.code} data-active-index={activeIndex} data-transitioning="false" aria-busy={!logosReady} role="region" aria-label="Recorrido por las escuelas">
       <motion.div className="touch-school-tint" style={{ ...styleFor(activeSchool), clipPath: mobileTransitionEnabled && !reducedMotion ? stageClipPath : 'none' }} aria-hidden="true" />
-      <motion.div className="touch-school-graph-transition" style={mobileTransitionEnabled ? { opacity: graphProgress } : undefined}><SchoolGraphBackdrop school={activeSchool.code === 'ECIAA' ? 'ECAA' : activeSchool.code} className="touch-school-graph" active={!mobileTransitionEnabled || graphActive} pauseWhenSettled={mobileTransitionEnabled} snapToTarget={mobileTransitionEnabled} anchorX={landscape ? .77 : .5} anchorY={.58} /></motion.div>
+      <motion.div className="touch-school-graph-transition" style={mobileTransitionEnabled ? { opacity: graphProgress } : undefined}><SchoolGraphBackdrop school={activeSchool.code === 'ECIAA' ? 'ECAA' : activeSchool.code} className="touch-school-graph" active={!mobileTransitionEnabled || graphActive} pauseWhenSettled={mobileTransitionEnabled} anchorX={landscape ? .77 : .5} anchorY={.58} /></motion.div>
       {logosReady && <>
         <motion.nav ref={rail} className="touch-school-navigation" aria-label="Escuelas" style={mobileTransitionEnabled ? { opacity: mobileNavOpacity, y: mobileNavY } : undefined}><ol>{SCHOOLS.map((school, index) => <li key={school.code}><button type="button" data-school-index={index} aria-current={index === activeIndex ? 'step' : undefined} aria-label={`Ir a ${school.name}`} onClick={mobileTransitionEnabled ? undefined : () => go(index)} style={styleFor(school)}><img src={SCHOOL_LOGOS[school.code]} width={28} height={28} alt="" /><span>{acronym(school)}</span></button></li>)}</ol></motion.nav>
         {(mobileTransitionEnabled

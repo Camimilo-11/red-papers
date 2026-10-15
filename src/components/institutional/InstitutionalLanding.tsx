@@ -1,8 +1,11 @@
 import React, { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
+import { ArrowDown } from 'lucide-react';
 import { SCHOOLS, SchoolConfig } from '../../constants/schools';
 import { enableNearbySchoolMascotPrefetch, ensureFloatingSchoolLogosDecoded, ensurePrioritySchoolMascotsDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { BASE_MASCOT } from '../../assets/schoolMascots';
+import { LoginSchoolEmblem } from '../auth/LoginSchoolEmblem';
+import { EcmcLogo } from '../../assets/EcmcLogo';
 import { useMascotHandoff } from './mascotHandoff';
 import type { MascotHandoff } from './mascotHandoff';
 import './MascotHandoff.css';
@@ -134,24 +137,25 @@ function getInitialPhase(replayIntro: boolean): IntroPhase {
 }
 
 const emblemPositions = [
-  { left: '67%', top: '14%', size: 224, rotation: '-17deg', parallax: 0.035, floatDelay: '0s' },
-  { left: '86%', top: '16%', size: 184, rotation: '12deg', parallax: 0.055, floatDelay: '-1.1s' },
-  { left: '73%', top: '40%', size: 220, rotation: '-9deg', parallax: 0.03, floatDelay: '-2.2s' },
-  { left: '91%', top: '43%', size: 204, rotation: '15deg', parallax: 0.05, floatDelay: '-3.3s' },
-  { left: '66%', top: '70%', size: 204, rotation: '11deg', parallax: 0.045, floatDelay: '-4.4s' },
-  { left: '84%', top: '72%', size: 190, rotation: '-13deg', parallax: 0.06, floatDelay: '-5.5s' },
-  { left: '94%', top: '89%', size: 176, rotation: '8deg', parallax: 0.04, floatDelay: '-6.1s' },
+  { left: '68%', top: '15%', size: 150, rotation: '-17deg', parallax: 0.035, floatDelay: '0s' },
+  { left: '87%', top: '18%', size: 138, rotation: '12deg', parallax: 0.055, floatDelay: '-1.1s' },
+  { left: '72%', top: '42%', size: 158, rotation: '-9deg', parallax: 0.03, floatDelay: '-2.2s' },
+  { left: '91%', top: '46%', size: 144, rotation: '15deg', parallax: 0.05, floatDelay: '-3.3s' },
+  { left: '68%', top: '70%', size: 148, rotation: '11deg', parallax: 0.045, floatDelay: '-4.4s' },
+  { left: '86%', top: '74%', size: 138, rotation: '-13deg', parallax: 0.06, floatDelay: '-5.5s' },
+  { left: '78%', top: '91%', size: 130, rotation: '8deg', parallax: 0.04, floatDelay: '-6.1s' },
 ] as const;
 
 function LandingEmblem({ school, size }: { school: SchoolConfig; size: number }) {
   return (
-    <img
+    <span
       className="institutional-landing-emblem-image"
-      src={SCHOOL_LOGOS[school.code]}
-      alt=""
-      draggable={false}
-      style={{ width: size, height: size }}
-    />
+      style={{ width: size, height: size, '--school-accent': school.accent } as React.CSSProperties}
+    >
+      {school.code === 'ECMC'
+        ? <EcmcLogo className="institutional-landing-emblem-ecmc" size={size * .76} variant="color" />
+        : <LoginSchoolEmblem school={school} size={size} />}
+    </span>
   );
 }
 
@@ -231,6 +235,7 @@ function DesktopFloatingLandingEmblem({ school, index, visible, scrollY, reduced
         '--float-delay': position.floatDelay,
         '--entry-x': index % 2 === 0 ? '42px' : '-42px',
         '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg',
+        '--arrival-delay': `${index * 55}ms`,
       } as React.CSSProperties}
     >
       <motion.span className="institutional-landing-hero-emblem-parallax" style={{ x, y, scale, rotate, opacity: reducedMotion ? 1 : opacity }}>
@@ -297,7 +302,7 @@ function MobileFloatingLandingEmblem({ school, index, visible, scrollY, reducedM
   }, [handoffLogos, position.size, school.code, sourceSize, sourceX, sourceY]);
 
   return <span ref={anchorRef} className={`institutional-landing-hero-emblem ${visible ? 'is-visible' : ''}`} data-school={school.code}
-    style={{ left: position.left, top: position.top, '--emblem-rotation': position.rotation, '--emblem-size': `${position.size}px`, '--float-delay': position.floatDelay, '--entry-x': index % 2 === 0 ? '42px' : '-42px', '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg' } as React.CSSProperties}>
+    style={{ left: position.left, top: position.top, '--emblem-rotation': position.rotation, '--emblem-size': `${position.size}px`, '--float-delay': position.floatDelay, '--entry-x': index % 2 === 0 ? '42px' : '-42px', '--entry-rotation': index % 2 === 0 ? '13deg' : '-13deg', '--arrival-delay': `${index * 55}ms` } as React.CSSProperties}>
     <motion.span className="institutional-landing-hero-emblem-parallax" style={{ transform, opacity }}>
       <span className={`institutional-landing-hero-emblem-float ${visible ? 'is-floating' : ''}`}><LandingEmblem school={school} size={position.size} /></span>
     </motion.span>
@@ -615,7 +620,22 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
   const revealStyle = (step: number) => ({
     '--reveal-delay': `${step * INTRO_TIMING_MS.contentStagger}ms`,
   } as React.CSSProperties);
-  const welcomeOpacity = useTransform(handoff.progress, (progress) => 1 - Math.max(0, Math.min(1, progress)));
+  const handleSchoolsLinkClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (replayIntro && introVisible) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (!mobileTransition) return;
+    event.preventDefault();
+    event.stopPropagation();
+    document.dispatchEvent(new Event('simapc-enter-schools'));
+  };
+  const welcomeOpacity = useTransform(handoff.progress, (progress) => {
+    const handoffProgress = Math.max(0, Math.min(1, progress));
+    if (reducedMotion) return 1 - handoffProgress;
+    return 1 - Math.max(0, Math.min(1, (handoffProgress - .16) / .24));
+  });
   const welcomeY = useTransform(handoff.progress, (progress) => reducedMotion ? 0 : -16 * handoffEase(Math.max(0, Math.min(1, progress))));
   const stageCanWarm = mobileTransition && logosReady && (phase === 'logo' || phase === 'transition');
 
@@ -631,7 +651,11 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
     >
       {scrollReady && !touchLayout && <LandingScrollDriver value={scrollY} />}
       <header className="institutional-landing-header" aria-label="Universidad Yachay Tech">
-        <span className="institutional-landing-header-space" aria-hidden="true" />
+        <span className="institutional-landing-header-space">
+          <a className="institutional-landing-header-link" href="#escuelas" onClick={handleSchoolsLinkClick}>
+            Acceso institucional <ArrowDown aria-hidden="true" size={17} strokeWidth={2} />
+          </a>
+        </span>
         <img
           className="institutional-landing-brand-logo"
           src="./assets/yachay-logo-clean.svg"
@@ -663,28 +687,28 @@ export function InstitutionalLanding({ onSelect, replayIntroOnEntry = false }: {
       )}
 
       <section ref={heroRef} className="institutional-landing-hero" aria-labelledby="landing-title" data-assets-ready={logosReady} data-in-view="false">
-        <img className="institutional-landing-mobile-mascot" src={BASE_MASCOT} width={768} height={768} alt="" aria-hidden="true" decoding="async" draggable={false} />
+        <img className="institutional-landing-desktop-mascot" src={BASE_MASCOT} width={768} height={768} alt="" aria-hidden="true" decoding="async" draggable={false} />
         <motion.div className="institutional-landing-hero-copy" style={mobileTransition ? { opacity: welcomeOpacity, y: welcomeY } : undefined}>
-          <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>UNIVERSIDAD YACHAY TECH · SIMAPC</p>
+          <p className="institutional-landing-eyebrow landing-reveal" style={revealStyle(0)}>SIMAPC · Portal de investigación</p>
           <h1 id="landing-title" className="institutional-landing-title">
-            <span className="institutional-landing-title-mask landing-reveal" style={revealStyle(1)}><span>¡BIENVENIDOS!</span></span>
-            <span className="institutional-landing-title-mask landing-reveal" style={revealStyle(2)}><span className="institutional-landing-blue-word">SIMAPC</span></span>
+            <span className="institutional-landing-title-mask landing-reveal" style={revealStyle(1)}><span>La investigación</span></span>
+            <span className="institutional-landing-title-mask landing-reveal" style={revealStyle(2)}><span className="institutional-landing-blue-word">de Yachay Tech</span></span>
           </h1>
           <p className="institutional-landing-subtitle landing-reveal" style={revealStyle(3)}>
-            La producción científica y la comunidad investigadora de Yachay Tech, en un solo lugar.
+            Publicaciones, proyectos y perfiles académicos de las siete escuelas.
           </p>
-          <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(4)} href="#escuelas" onClick={(event) => {
-            if (replayIntro && introVisible) {
-              event.preventDefault();
-              event.stopPropagation();
-              return;
-            }
-            if (!mobileTransition) return;
-            event.preventDefault();
-            event.stopPropagation();
-            document.dispatchEvent(new Event('simapc-enter-schools'));
-          }}>
-            Explora nuestras escuelas <span aria-hidden="true">↓</span>
+          <div className="institutional-landing-entry-guide landing-reveal" style={revealStyle(4)} aria-label="Formas de usar el portal">
+            <div className="institutional-landing-entry-item">
+              <strong>Consulta pública</strong>
+              <span>Explora publicaciones, proyectos y docentes.</span>
+            </div>
+            <div className="institutional-landing-entry-item">
+              <strong>Comunidad Yachay Tech</strong>
+              <span>Elige tu escuela para iniciar sesión.</span>
+            </div>
+          </div>
+          <a className="institutional-landing-hero-link landing-reveal" style={revealStyle(5)} href="#escuelas" onClick={handleSchoolsLinkClick}>
+            Explorar las escuelas <ArrowDown aria-hidden="true" size={19} strokeWidth={2.2} />
           </a>
         </motion.div>
       </section>

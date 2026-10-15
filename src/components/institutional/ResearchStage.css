@@ -3,12 +3,13 @@
 .research-stage { position: sticky; top: var(--landing-header-height); height: calc(100svh - var(--landing-header-height)); min-height: 0; overflow: clip; background: #fff; isolation: isolate; --stage-gutter: max(34px, calc((100vw - 1320px) / 2)); --stage-ease: cubic-bezier(.22, 1, .36, 1); --emblem-left: 63%; --emblem-top: 18%; --emblem-width: clamp(230px, 29vw, 410px); --emblem-height: clamp(250px, 34vw, 460px); }
 .research-stage-art, .research-stage-shot-art { position: absolute; inset: 0; pointer-events: none; }
 .research-stage-art { z-index: 0; }
-.research-stage-shot-art { opacity: var(--plane-opacity, 0); color: var(--school-ink); }
+.research-stage-graph { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; opacity: .24; pointer-events: none; contain: layout paint style; shape-rendering: optimizeSpeed; mask-image: linear-gradient(90deg, transparent 46%, rgb(0 0 0 / .18) 60%, #000 82%); }
+.research-stage-shot-art { opacity: var(--plane-opacity, 0); color: var(--school-ink); -webkit-mask-image: linear-gradient(90deg, transparent 35%, rgb(0 0 0 / .14) 49%, #000 68%); mask-image: linear-gradient(90deg, transparent 35%, rgb(0 0 0 / .14) 49%, #000 68%); }
 .research-stage-shot-art.is-preview { z-index: 8 !important; }
 .research-stage-shot-art.is-selected-draw { z-index: 9 !important; }
 .research-stage-wash-parallax { position: absolute; inset: 0;  }
 .research-stage-wash { display:none; }
-.research-stage-motif-camera { position: absolute; width: 122%; height: 136%; left: -11%; top: -18%; opacity: .42; }
+.research-stage-motif-camera { position: absolute; width: 122%; height: 136%; left: -11%; top: -18%; opacity: .28; }
 .research-stage-motif-ambient { width: 100%; height: 100%; }
 .research-stage-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .research-stage-emblems { position: absolute; inset: 0; z-index: 7;  }
@@ -19,7 +20,7 @@
 .research-stage-eyebrow { position: absolute; z-index: 3; top: 19%; left: var(--stage-gutter); margin: 0; color: #40474d; font-size: 12px; font-weight: 800; letter-spacing: .17em; }
 .research-stage-eyebrow { display: none; }
 .research-stage-copy-stack { position: absolute; left: var(--stage-gutter); top: 24%; width: min(850px, 69%); height: auto; max-height: 68%; z-index: 4; pointer-events: none; }
-.research-stage-copy-stack::before { content: ''; position: absolute; z-index: -1; inset: -30px -80px -22px -20px; background: linear-gradient(90deg, #fff 0%, rgb(255 255 255 / 96%) 60%, rgb(255 255 255 / 0%) 100%); pointer-events: none; }
+.research-stage-copy-stack::before { content: ''; position: absolute; z-index: -1; inset: -38px -115px -52px -22px; background: linear-gradient(90deg, #fff 0%, rgb(255 255 255 / 98%) 43%, rgb(255 255 255 / 88%) 67%, rgb(255 255 255 / 0%) 100%); -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 11%, #000 88%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0%, #000 11%, #000 88%, transparent 100%); pointer-events: none; }
 .research-stage-shot-copy { position: absolute; inset: 0 auto auto 0; width: 100%; opacity: 0; pointer-events: none; }
 .research-stage-shot-copy h2 { max-width: 100%; margin: 0; color: var(--ink); font-family:var(--font-display); font-size: clamp(40px, 6vw, 82px); font-weight: 800; letter-spacing: -.035em; line-height: 1.08; text-wrap: balance; }
 .research-stage-shot-copy h2 .is-accent { color: inherit; }
@@ -147,9 +148,9 @@
 .research-stage-card-emblem { aspect-ratio: 1; background: #fff; }
 
 /* A single reserved footprint for the base robot and every school outfit. */
-.research-stage-mascot-slot { position: absolute; z-index: 3; left: 64%; top: 16%; width: min(33vw, 450px); aspect-ratio: 1; pointer-events: none; }
-.research-stage-mascot-slot img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; }
-.research-stage-mascot-shadow { position: absolute; left: 20%; bottom: 3%; width: 60%; height: 8%; background: radial-gradient(ellipse at center, rgb(0 0 0 / 25%), rgb(0 0 0 / 0%) 72%); }
+.research-stage-mascot-slot { position: absolute; z-index: 3; left: 61%; top: 16%; width: min(37vw, 480px); aspect-ratio: 1; isolation: isolate; pointer-events: none; }
+.research-stage-mascot-slot img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; translate: var(--mascot-frame-x, 0%) var(--mascot-frame-y, 0%); scale: var(--mascot-frame-scale, 1); transform-origin: center; filter: contrast(1.06) saturate(.9) drop-shadow(0 14px 14px rgb(29 43 54 / 14%)); }
+.research-stage-mascot-shadow { position: absolute; z-index: 0; left: 20%; bottom: 3%; width: 60%; height: 8%; background: radial-gradient(ellipse at center, rgb(0 0 0 / 17%), rgb(0 0 0 / 0%) 72%); }
 .research-stage-mascot-measure { visibility: hidden; }
 .research-stage-base-mascot { z-index: 5; }
 .research-stage-mascot-flash { z-index: 6; display: grid; place-items: center; overflow: visible; color: var(--school-accent); background: transparent; mix-blend-mode: multiply; }
@@ -168,7 +169,7 @@
 .research-stage-school-emblem { background: #fff; }
 .research-stage-school-emblem { width: 32px; height: 32px; flex-basis: 32px; }
 @media (max-width: 1000px) and (min-width: 769px) {
-  .research-stage-mascot-slot { left: 65%; width: 33vw; top: 22%; }
+  .research-stage-mascot-slot { left: 63%; width: 35vw; top: 22%; }
   .research-stage-title-emblem { width: 72px; flex-basis: 72px; }
   .research-stage-title-row { grid-template-columns: 72px minmax(0, 1fr); }
   .research-stage-title-row h2 { font-size: 30px; }
