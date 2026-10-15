@@ -4,7 +4,7 @@ import {ScientificProduct, TeacherMetrics, TeacherUser} from '../../types';
 import {metricsService} from '../../services/metricsService';
 import type {TemporalDataPoint} from '../../services/metricsService';
 import {TemporalEvolutionChart} from './TemporalEvolutionChart';
-import {SchoolConfig} from '../../constants/schools';
+import {getSchoolDisplayCode, SchoolConfig} from '../../constants/schools';
 import {productCitationValue, productMatchesTeacher} from '../../services/productPresentation';
 
 type RankingMetric='citations'|'publications'|'scholarHIndex'|'scopusHIndex';
@@ -70,7 +70,7 @@ function ResearchLineChart({products,school}:{products:ScientificProduct[];schoo
   const hasOrcidImport=verified.some(product=>product.bibliographicSource);
  return <section className="research-chart-card research-line-chart" aria-labelledby="research-lines-chart-title">
   <header className="research-chart-heading">
-   <div><p className="eyebrow">ÁREAS · {school.code}</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
+   <div><p className="eyebrow">ÁREAS · {getSchoolDisplayCode(school.code)}</p><h3 id="research-lines-chart-title">Productos por línea de investigación</h3></div>
    <BarChart3 size={21} aria-hidden="true"/>
   </header>
   {unassigned>0&&<p className="academic-section-empty">{unassigned} {unassigned===1?'producto sin línea asignada':'productos sin línea asignada'}. {hasOrcidImport?'La fuente ORCID no incluye líneas; las asignaciones visibles son sugerencias temporales del diccionario.':'No se ha especificado una línea para estos productos.'}</p>}

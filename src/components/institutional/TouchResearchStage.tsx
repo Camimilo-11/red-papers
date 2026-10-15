@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import './TouchResearchStage.css';
 import { animate, motion, useMotionValue, useTransform, type MotionValue } from 'motion/react';
-import { SCHOOLS, type SchoolConfig } from '../../constants/schools';
+import { getSchoolDisplayCode, SCHOOLS, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
 import { ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolMascots, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 import { BASE_MASCOT, SCHOOL_MASCOT_FRAME, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
 import { SchoolGraphBackdrop } from '../SchoolGraphBackdrop';
+import type { SchoolCode as GraphSchoolCode } from '../schoolGraphs';
 import type { MascotHandoff } from './mascotHandoff';
 import { ConstellationSparkles } from './ConstellationSparkles';
 import type { MobileHandoffLogo } from './InstitutionalLanding';
@@ -19,7 +20,7 @@ const easeCurve = (value: number) => {
 };
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const label = 'Ver investigaciones y proyectos';
-const acronym = (school: SchoolConfig) => school.code === 'ECIAA' ? 'ECAA' : school.code;
+const acronym = (school: SchoolConfig) => getSchoolDisplayCode(school.code);
 const styleFor = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`,
@@ -538,6 +539,8 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     if (!interactionEnabled) return;
     const root = document.documentElement;
     root.classList.add('has-touch-school-tour');
+    const orientation = window.matchMedia('(orientation: landscape)');
+    let currentOrientation = orientation.matches;
     const update = () => {
       if (track.current && scene.current) geometry.current = { start: track.current.getBoundingClientRect().top + window.scrollY, height: scene.current.offsetHeight };
       if (rail.current) {
@@ -548,18 +551,51 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       setLandscape(window.matchMedia('(orientation: landscape)').matches);
     };
     let orientationFrame = 0;
+    let orientationTimer = 0;
+    let orientationTarget: number | null = null;
     const onOrientationChange = () => {
+      const nextOrientation = orientation.matches;
+      if (nextOrientation === currentOrientation) return;
+      currentOrientation = nextOrientation;
+      if (orientationTarget === null) {
+        const { start, height } = geometry.current;
+        const currentPosition = window.scrollY;
+        const isInSchoolTour = currentPosition >= start - 1 && currentPosition < start + height * SCHOOLS.length;
+        orientationTarget = isInSchoolTour ? active.current : -1;
+      }
+      // Ignore scroll-snap events caused by the viewport changing until the new
+      // school positions have been measured and restored.
+      navigationUntil.current = performance.now() + 1200;
       cancelAnimationFrame(orientationFrame);
-      orientationFrame = requestAnimationFrame(() => requestAnimationFrame(update));
+      window.clearTimeout(orientationTimer);
+      orientationFrame = requestAnimationFrame(() => requestAnimationFrame(() => {
+        orientationTimer = window.setTimeout(() => {
+          update();
+          if (transitionAnimating.current) {
+            finishTransitionRef.current(true);
+          } else if (orientationTarget !== null && orientationTarget >= 0) {
+            const { start, height } = geometry.current;
+            const target = start + orientationTarget * height;
+            window.scrollTo({ top: target, behavior: 'instant' });
+            scrollY.set(target);
+          }
+          orientationTarget = null;
+        }, 120);
+      }));
     };
     window.addEventListener('orientationchange', onOrientationChange);
+    window.addEventListener('resize', onOrientationChange);
+    orientation.addEventListener('change', onOrientationChange);
     update();
     return () => {
       root.classList.remove('has-touch-school-tour');
       cancelAnimationFrame(orientationFrame);
+      window.clearTimeout(orientationTimer);
       window.removeEventListener('orientationchange', onOrientationChange);
+      window.removeEventListener('resize', onOrientationChange);
+      orientation.removeEventListener('change', onOrientationChange);
     };
-  }, [interactionEnabled, measureHandoff]);
+  }, [interactionEnabled, measureHandoff, scrollY]);
 
   useEffect(() => {
     // Every chip fits in the mobile 4+3 grid, so horizontal centering is both
@@ -732,7 +768,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     {SCHOOLS.map((school, index) => <div className="touch-school-snap" key={school.code} style={{ top: `${index * 100}svh` }} aria-hidden="true" />)}
     <motion.div ref={scene} className="touch-school-stage" style={{ ...styleFor(activeSchool), ...(mobileTransitionEnabled ? { pointerEvents: stagePointerEvents } : {}), ...(mobileTransitionEnabled && reducedMotion ? { opacity: handoff.progress } : {}) }} data-school={activeSchool.code} data-active-index={activeIndex} data-transitioning="false" aria-busy={!logosReady} role="region" aria-label="Recorrido por las escuelas">
       <motion.div className="touch-school-tint" style={{ ...styleFor(activeSchool), clipPath: mobileTransitionEnabled && !reducedMotion ? stageClipPath : 'none' }} aria-hidden="true" />
-      <motion.div className="touch-school-graph-transition" style={mobileTransitionEnabled ? { opacity: graphProgress } : undefined}><SchoolGraphBackdrop school={activeSchool.code === 'ECIAA' ? 'ECAA' : activeSchool.code} className="touch-school-graph" active={!mobileTransitionEnabled || graphActive} pauseWhenSettled={mobileTransitionEnabled} anchorX={landscape ? .77 : .5} anchorY={.58} /></motion.div>
+      <motion.div className="touch-school-graph-transition" style={mobileTransitionEnabled ? { opacity: graphProgress } : undefined}><SchoolGraphBackdrop school={getSchoolDisplayCode(activeSchool.code) as GraphSchoolCode} className="touch-school-graph" active={!mobileTransitionEnabled || graphActive} pauseWhenSettled={mobileTransitionEnabled} anchorX={landscape ? .77 : .5} anchorY={.58} /></motion.div>
       {logosReady && <>
         <motion.nav ref={rail} className="touch-school-navigation" aria-label="Escuelas" style={mobileTransitionEnabled ? { opacity: mobileNavOpacity, y: mobileNavY } : undefined}><ol>{SCHOOLS.map((school, index) => <li key={school.code}><button type="button" data-school-index={index} aria-current={index === activeIndex ? 'step' : undefined} aria-label={`Ir a ${school.name}`} onClick={mobileTransitionEnabled ? undefined : () => go(index)} style={styleFor(school)}><img src={SCHOOL_LOGOS[school.code]} width={28} height={28} alt="" /><span>{acronym(school)}</span></button></li>)}</ol></motion.nav>
         {(mobileTransitionEnabled

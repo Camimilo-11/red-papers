@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { SCHOOLS, type SchoolConfig } from '../../constants/schools';
+import { getSchoolDisplayCode, SCHOOLS, type SchoolConfig } from '../../constants/schools';
 import { YachayLogo } from './SchoolLogo';
 import { ensureSchoolLogosDecoded, SCHOOL_LOGOS } from '../../assets/schoolLogos';
 
@@ -45,7 +45,7 @@ export function SchoolSelector({ onSelect }: { onSelect: (school: SchoolConfig) 
           {SCHOOLS.map((school) => (
             <article className="school-selector-card" key={school.code} style={{ '--school-accent': school.accent, '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`, '--accent': `color-mix(in srgb, ${school.accent} 46%, #252321)` } as React.CSSProperties}>
               <div className="school-selector-logo"><SchoolSelectorMark school={school} /></div>
-              <span className="school-selector-code">{school.code}</span>
+              <span className="school-selector-code">{getSchoolDisplayCode(school.code)}</span>
               <h2>{school.name}</h2>
               <button type="button" className="school-selector-enter" onClick={() => onSelect(school)}>
                 Ingresar a esta escuela <ArrowRight size={18} aria-hidden="true" />

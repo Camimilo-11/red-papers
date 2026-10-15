@@ -59,7 +59,6 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     selectedTeacherId || teachers[0]?.id || 'doc-001'
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchDraft, setSearchDraft] = useState('');
   const [viewingProduct, setViewingProduct] = useState<ScientificProduct | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
@@ -73,8 +72,22 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     return () => window.cancelAnimationFrame(frame);
   }, [mobileProfileOpen, activeTeacherId]);
 
-  // Docente activo seleccionado
-  const activeTeacher = teachers.find((t) => t.id === activeTeacherId) || teachers[0];
+  // Filtrado de la lista izquierda
+  const filteredTeachers = teachers.filter((t) => {
+    const q = searchQuery.trim().toLowerCase();
+    return (
+      t.name.toLowerCase().includes(q) ||
+      t.rank.toLowerCase().includes(q) ||
+      (t.academicDegree&&degreeLabels[t.academicDegree].toLowerCase().includes(q)) ||
+      (t.academicField&&t.academicField.toLowerCase().includes(q)) ||
+      Object.values(t.researchSublines||{}).flat().some(subline=>subline.toLowerCase().includes(q)) ||
+      t.email.toLowerCase().includes(q) ||
+      (t.bio && t.bio.toLowerCase().includes(q))
+    );
+  });
+
+  // Mantener el perfil dentro de los resultados, sin mostrar uno ajeno al filtro.
+  const activeTeacher = filteredTeachers.find((teacher) => teacher.id === activeTeacherId) || filteredTeachers[0];
 
   // Métricas del docente seleccionado
   const activeTeacherMetrics = activeTeacher
@@ -105,20 +118,6 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
     });
   })();
   const maxAnnualResearchCount=Math.max(1,...annualResearchCounts.map(item=>item.count));
-
-  // Filtrado de la lista izquierda
-  const filteredTeachers = teachers.filter((t) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      t.name.toLowerCase().includes(q) ||
-      t.rank.toLowerCase().includes(q) ||
-      (t.academicDegree&&degreeLabels[t.academicDegree].toLowerCase().includes(q)) ||
-      (t.academicField&&t.academicField.toLowerCase().includes(q)) ||
-      Object.values(t.researchSublines||{}).flat().some(subline=>subline.toLowerCase().includes(q)) ||
-      t.email.toLowerCase().includes(q) ||
-      (t.bio && t.bio.toLowerCase().includes(q))
-    );
-  });
 
   // Exportaciones de este docente
   const handleTeacherExport = async (format: 'csv' | 'xlsx' | 'pdf') => {
@@ -165,7 +164,7 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
   return <section className="academic-directory">
     <header className="academic-directory-heading">
       <div><h2>Docentes e investigadores</h2></div>
-      <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/></div>
+      <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}/></div>
     </header>
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
     <div className="academic-directory-layout" data-mobile-profile-open={mobileProfileOpen}>

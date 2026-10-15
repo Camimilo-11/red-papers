@@ -1,7 +1,7 @@
 import { canDevelop } from '../../constants/demoAccounts';
 import React, { useState, useEffect, useRef } from 'react';
 import { TeacherUser, UserNotification } from '../../types';
-import { getSchoolByCode, SchoolConfig } from '../../constants/schools';
+import { getSchoolByCode, getSchoolDisplayCode, SchoolConfig } from '../../constants/schools';
 import { YachaySymbol } from '../institutional/SchoolLogo';
 import { NotificationsPopover } from './NotificationsPopover';
 import { Home, BookOpen, Users, FolderOpen, Bell, LogOut, LogIn, Menu, X, ShieldCheck, GitBranch, Settings, ChevronDown } from 'lucide-react';
@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   <a href="#main-content" className="skip-link">Ir al contenido</a>
   <header className={`portal-topbar${p.currentUser ? '' : ' portal-topbar-guest'}`}>
    <button className="mobile-menu" aria-label={mobileOpen?'Cerrar menú':'Abrir menú'} aria-expanded={mobileOpen} onClick={()=>setMobileOpen(!mobileOpen)}>{mobileOpen?<X/>:<Menu/>}</button>
-   <div className="topbar-context"><span>SIMAPC-{school.code === 'ECIAA' ? 'ECAA' : school.code}</span><span>{school.name}</span></div>
+   <div className="topbar-context"><span>SIMAPC-{getSchoolDisplayCode(school.code)}</span><span>{school.name}</span></div>
    {!p.currentUser && p.onChangeSchool && <button type="button" className="mobile-school-change" aria-label="Cambiar escuela" onClick={p.onChangeSchool}><ChevronDown size={18} aria-hidden="true" /></button>}
    <div className="topbar-actions">
     {p.currentUser ? <>
@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
   </nav>
   {mobileOpen&&<button className="sidebar-scrim" aria-label="Cerrar menú" onClick={()=>setMobileOpen(false)}/>}
   <aside data-role={p.currentUser?.role || 'visitor'} className={`portal-sidebar ${mobileOpen?'is-open':''}`}>
-   <button type="button" className="sidebar-brand" onClick={p.onChangeSchool} aria-label="SIMAPC, volver a la bienvenida"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {school.code}</small></span></button>
+   <button type="button" className="sidebar-brand" onClick={p.onChangeSchool} aria-label="SIMAPC, volver a la bienvenida"><YachaySymbol size={48}/><span>SIMAPC<small>Investigación · {getSchoolDisplayCode(school.code)}</small></span></button>
    <nav aria-label="Navegación principal">{tabs.map(({id,label,icon:Icon})=><button key={id} className={`sidebar-link ${p.activeTab===id?'active':''}`} aria-current={p.activeTab===id?'page':undefined} onClick={()=>navigate(id)}><Icon size={23}/><span>{label}</span></button>)}</nav>
    {p.currentUser && <div className="sidebar-bottom">
     {canDevelop(p.currentUser) && <details className="secondary-tools"><summary>Otras herramientas</summary><button onClick={()=>navigate('traceability')}><GitBranch size={19}/>Trazabilidad del proyecto</button><button aria-current={p.activeTab==='reviewer'?'page':undefined} onClick={()=>{setMobileOpen(false);setNotificationsOpen(false);p.onOpenReviewerConsole();}}><ShieldCheck size={19}/>Comité Científico</button>
