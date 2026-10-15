@@ -32,11 +32,14 @@
 .research-stage-navigation { position: absolute; z-index: 12; top: 7px; left: 50%; width: min(1200px, calc(100% - 48px)); transform: translateX(-50%); }
 .research-stage-navigation ol { display: flex; justify-content: center; gap: 8px; padding: 0; margin: 0; list-style: none; }
 .research-stage-navigation li { flex: 1 1 0; min-width: 0; }
-.research-stage-school-button { position: relative; display: flex; width: 100%; min-width: 78px; min-height: 54px; align-items: center; justify-content: center; gap: 7px; overflow: hidden; padding: 6px 9px 9px; border: 1px solid #e0e3e5; background: rgb(255 255 255 / 96%); color: #262a2e; cursor: pointer;  }
+.research-stage-school-button { position: relative; display: flex; width: 100%; min-width: 78px; min-height: 64px; align-items: center; justify-content: center; gap: 8px; overflow: hidden; padding: 6px 9px 9px; border: 1px solid #e0e3e5; background: rgb(255 255 255 / 96%); color: #262a2e; cursor: pointer;  }
 .research-stage-school-button::after { content: ''; position: absolute; right: 11px; bottom: 4px; left: 11px; height: 3px; background: var(--school-accent); transform: scaleX(var(--school-progress, 0)); transform-origin: left center;  }
 .research-stage-navigation .is-active .research-stage-school-button { border-color: var(--school-accent); background: color-mix(in srgb, var(--school-accent) 13%, #fff); color: var(--school-ink); }
 .research-stage-school-emblem { display: grid; width: 26px; height: 26px; flex: 0 0 26px; place-items: center;  }
 .research-stage-school-button small { font-size: 11px; font-weight: 800; letter-spacing: .035em; }
+.research-stage-school-copy { display: grid; min-width: 0; justify-items: start; gap: 3px; text-align: left; }
+.research-stage-school-label { display: -webkit-box; overflow: hidden; color: #4f585f; font-size: 10px; font-weight: 550; line-height: 1.12; text-wrap: balance; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.research-stage-navigation .is-active .research-stage-school-label { color: var(--school-ink); }
 .research-stage-bottom { position: relative; z-index: 5; grid-column: 2; grid-row: 3; width: fit-content; max-width: 100%; margin-top: 18px; }
 .research-stage-bottom button { display: inline-flex; max-width: 100%; min-height: 56px; align-items: center; justify-content: space-between; gap: 24px; padding: 10px 28px; border: 1px solid var(--school-ink); background: var(--school-ink); color: #fff; font-family: var(--font-sans); font-size: 20px; font-weight: 800; line-height: 1.3; cursor: pointer; }
 .research-stage-bottom button span { font-size: 20px; }
@@ -199,5 +202,7 @@
 @media (min-width: 1025px) {
   .research-stage-slide .research-stage-copy-stack { top: 50%; transform: translateY(-50%); }
   .research-stage-mascot-slot { top: calc(50% - min(18.5vw, 240px)); }
+  .research-stage-title-row h2 { position: relative; isolation: isolate; }
+  .research-stage-title-row h2::before { content: ''; position: absolute; z-index: -1; inset: -38px -72px -34px -30px; background: radial-gradient(ellipse at 37% 50%, color-mix(in srgb, var(--school-accent) 15%, transparent) 0%, color-mix(in srgb, var(--school-accent) 9%, transparent) 40%, transparent 76%); filter: blur(16px); pointer-events: none; }
 }
 
