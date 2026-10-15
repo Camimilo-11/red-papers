@@ -37,6 +37,15 @@ export function getStageState(value: number) {
 }
 const displaySchoolCode = (school: SchoolConfig) => getSchoolDisplayCode(school.code);
 const RESEARCH_ENTRY_LABEL = 'Ver investigaciones y proyectos';
+const SCHOOL_NAV_LABELS: Record<SchoolCode, string> = {
+  ECIAA: 'Agropecuarias y agroindustriales',
+  ECBI: 'Biología e ingeniería',
+  ECFN: 'Física y nanotecnología',
+  ECTEA: 'Tierra, energía y ambiente',
+  ECMC: 'Matemáticas y computación',
+  ECQI: 'Química e ingeniería',
+  YTLC: 'Idiomas y cultura',
+};
 const schoolStyle = (school: SchoolConfig) => ({
   '--school-accent': school.accent,
   '--school-ink': `color-mix(in srgb, ${school.accent} 46%, #252321)`,
@@ -192,7 +201,8 @@ function SchoolNavigationItem({ school, schoolIndex, timeline, jump }: {
   const fill = useTransform(timeline, (value) => clamp((value - SCHOOL_LINE_OFFSETS[schoolIndex]) / stageSlidesFor(school).length));
   return <li data-school={school.code} style={schoolStyle(school)}>
     <button className="research-stage-school-button" type="button" data-school-index={schoolIndex} aria-label={`Ir a ${school.name}`} aria-current={schoolIndex === 0 ? 'step' : undefined} onClick={() => jump(school)}>
-      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span><small>{displaySchoolCode(school)}</small>
+      <span className="research-stage-school-emblem" aria-hidden="true"><Emblem school={school} /></span>
+      <span className="research-stage-school-copy"><small>{displaySchoolCode(school)}</small><span className="research-stage-school-label">{SCHOOL_NAV_LABELS[school.code]}</span></span>
       <motion.span className="research-stage-school-fill" style={{ scaleX: fill }} aria-hidden="true" />
     </button>
   </li>;
