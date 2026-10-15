@@ -199,5 +199,7 @@
 @media (min-width: 1025px) {
   .research-stage-slide .research-stage-copy-stack { top: 50%; transform: translateY(-50%); }
   .research-stage-mascot-slot { top: calc(50% - min(18.5vw, 240px)); }
+  .research-stage-title-row h2 { position: relative; isolation: isolate; }
+  .research-stage-title-row h2::before { content: ''; position: absolute; z-index: -1; inset: -38px -72px -34px -30px; background: radial-gradient(ellipse at 37% 50%, color-mix(in srgb, var(--school-accent) 15%, transparent) 0%, color-mix(in srgb, var(--school-accent) 9%, transparent) 40%, transparent 76%); filter: blur(16px); pointer-events: none; }
 }
 
