@@ -26,7 +26,6 @@ interface Props {
   className?: string;
   active?: boolean;
   pauseWhenSettled?: boolean;
-  snapToTarget?: boolean;
   /** Centro del grafo en escritorio, como fracción del contenedor (donde está la mascota). */
   anchorX?: number;
   anchorY?: number;
@@ -39,7 +38,7 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-export function SchoolGraphBackdrop({ school, className, active = true, pauseWhenSettled = false, snapToTarget = false, anchorX = 0.78, anchorY = 0.52 }: Props) {
+export function SchoolGraphBackdrop({ school, className, active = true, pauseWhenSettled = false, anchorX = 0.78, anchorY = 0.52 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const edgeRefs = useRef<(SVGPathElement | null)[]>([]);
   const bigRef = useRef<SVGPathElement>(null);
@@ -150,20 +149,11 @@ export function SchoolGraphBackdrop({ school, className, active = true, pauseWhe
       const target = targetRef.current;
       if (target !== lastTarget) {
         lastTarget = target;
-        if (snapToTarget) {
-          sets.splice(0, sets.length, { code: target, alpha: 1, goal: 1 });
-          pos.set(targets[target]);
-          const targetColor = hexToRgb(SCHOOL_GRAPH_COLORS[target]);
-          color[0] = targetColor[0];
-          color[1] = targetColor[1];
-          color[2] = targetColor[2];
-        } else {
-          for (const s of sets) s.goal = 0;
-          const existing = sets.find((s) => s.code === target);
-          if (existing) existing.goal = 1;
-          else sets.push({ code: target, alpha: 0, goal: 1 });
-          while (sets.length > SET_COUNT) sets.shift();
-        }
+        for (const s of sets) s.goal = 0;
+        const existing = sets.find((s) => s.code === target);
+        if (existing) existing.goal = 1;
+        else sets.push({ code: target, alpha: 0, goal: 1 });
+        while (sets.length > SET_COUNT) sets.shift();
       }
 
       const tp = targets[target];

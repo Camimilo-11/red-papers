@@ -356,12 +356,12 @@ export default function App({ initialSchool, onChangeSchool }: { initialSchool: 
         {activeTab === 'dashboard' && (
           <div className="dashboard-home">
             {teacherDashboard && dashboardActions}
+            {!currentUser && <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>}
             <MetricCards metrics={schoolMetrics} school={selectedSchool} secondary={teacherDashboard}
               researchLinesAvailable={!schoolProducts.some(product => product.bibliographicSource)
                 || schoolProducts.some(product => product.status === 'verificado' && !!product.researchLine)}/>
             {!teacherDashboard && dashboardActions}
-
-            <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>
+            {currentUser && <FeaturedPublicationCarousel products={schoolProducts} researchLines={selectedSchool.researchLines}/>}
 
             {/* Tablero: evolución semestral, ranking y líneas de investigación */}
             <ResearchDashboard teachers={schoolTeachers} products={schoolProducts} temporalData={temporalData} school={selectedSchool} />

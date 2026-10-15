@@ -3,7 +3,7 @@ import { animate, cubicBezier, motion, MotionValue, useMotionValue, useMotionVal
 import { SCHOOLS, type OfficialResearchLine, type SchoolCode, type SchoolConfig } from '../../constants/schools';
 import { RESEARCH_STAGE_SLIDES } from '../../constants/researchStageSlides';
 import { ensureSchoolLogosDecoded, ensureSchoolMascotDecoded, isSchoolMascotDecoded, scheduleNearbySchoolMascots, SCHOOL_LOGOS } from '../../assets/schoolLogos';
-import { BASE_MASCOT, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
+import { BASE_MASCOT, SCHOOL_MASCOT_FRAME, SCHOOL_MASCOTS } from '../../assets/schoolMascots';
 import type { MascotHandoff } from './mascotHandoff';
 import { RESEARCH_LINE_MOTIFS, useBackdropMotionVisibility } from '../dashboard/ResearchLineBackdrop';
 import './ResearchStage.css';
@@ -11,6 +11,8 @@ import { TouchResearchStage } from './TouchResearchStage';
 import { useMotionPreference } from './useMotionPreference';
 import { ConstellationSparkles } from './ConstellationSparkles';
 import type { MobileHandoffLogo } from './InstitutionalLanding';
+import { SchoolGraphBackdrop } from '../SchoolGraphBackdrop';
+import type { SchoolCode as GraphSchoolCode } from '../schoolGraphs';
 
 export const STAGE_RESEARCH_LINES = SCHOOLS.reduce((lines, school) => {
   lines[school.code] = RESEARCH_STAGE_SLIDES[school.code].map((slide) => slide.line);
@@ -26,6 +28,7 @@ const SCHOOL_LINE_OFFSETS = SCHOOLS.map((school, schoolIndex) =>
   SCHOOLS.slice(0, schoolIndex).reduce((total, previous) => total + stageSlidesFor(previous).length, 0),
 );
 const clamp = (n: number, min = 0, max = 1) => Math.min(max, Math.max(min, n));
+const graphSchoolCode = (school: SchoolConfig): GraphSchoolCode => school.code === 'ECIAA' ? 'ECAA' : school.code as GraphSchoolCode;
 export function getStageState(value: number) {
   const progress = clamp(value, 0, TOTAL_UNITS);
   const current = clamp(Math.floor(progress / STAGE_TIMING.step), 0, STAGE_PLANES.length - 1);
@@ -156,9 +159,11 @@ function StageSlide({ index, timeline, live, handoff, jumpFrom, jumpTo, jumpBlen
   const mascotOpacity = useTransform(() => mascotFade.get() * handoffOpacity.get());
   // Cancel the slide's entrance offset so every outfit occupies exactly one box.
   const mascotY = useTransform(y, (value) => -value);
+  const mascotFrame = SCHOOL_MASCOT_FRAME[school.code];
+  const mascotFrameStyle = { '--mascot-frame-scale': mascotFrame.scale, '--mascot-frame-y': mascotFrame.offsetY } as React.CSSProperties;
   const words = plane.title.split(' ');
 
-  return <motion.section className="research-stage-slide" data-school={school.code} data-slide-index={index} style={{ ...schoolStyle(school), opacity, y }} aria-hidden={index !== 0} inert={index !== 0}>
+  return <motion.section className="research-stage-slide" data-school={school.code} data-slide-index={index} style={{ ...schoolStyle(school), ...mascotFrameStyle, opacity, y }} aria-hidden={index !== 0} inert={index !== 0}>
     <div className="research-stage-art" aria-hidden="true">
       <div className="research-stage-shot-art">
         <div className="research-stage-wash-parallax"><div className="research-stage-wash" /></div>
@@ -228,6 +233,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
   const attached = useRef(new Set<number>());
   const currentIndex = useRef(-1);
   const activeSlide = useRef({ school: STAGE_PLANES[0].school, index: 0 });
+  const [graphSchool, setGraphSchool] = useState<GraphSchoolCode>(() => graphSchoolCode(STAGE_PLANES[0].school));
   const start = useMotionValue(0);
   const unit = useMotionValue(1);
   const sceneHeight = useMotionValue(1);
@@ -299,6 +305,8 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
     if (currentIndex.current === index) return;
     currentIndex.current = index;
     activeSlide.current = { school: STAGE_PLANES[index].school, index };
+    const nextGraphSchool = graphSchoolCode(activeSlide.current.school);
+    setGraphSchool((current) => current === nextGraphSchool ? current : nextGraphSchool);
     scheduleNearbySchoolMascots(activeSlide.current.school.code);
     if (scene.current) {
       scene.current.dataset.school = activeSlide.current.school.code;
@@ -430,6 +438,7 @@ function AnimatedStage({ onSelect, logosReady, scrollY, handoff }: { onSelect: (
   return <div ref={track} className="research-stage-track" id="escuelas" onKeyDown={keyboardNavigation}>
     <div ref={scene} className="research-stage" data-school={SCHOOLS[0].code} role="region" aria-label="Recorrido por las escuelas" aria-busy={!logosReady}>
       <div className="research-stage-mascot-slot research-stage-mascot-measure" ref={mascotSlot} aria-hidden="true" />
+      {logosReady && <SchoolGraphBackdrop school={graphSchool} className="research-stage-graph" pauseWhenSettled />}
       {logosReady && <motion.div className="research-stage-slides">
         {STAGE_PLANES.map((plane, index) => <StageSlide key={`${plane.school.code}-${index}`} index={index} timeline={timeline} live={live} handoff={handoff} jumpFrom={jumpFrom} jumpTo={jumpTo} jumpBlend={jumpBlend} registerHost={registerHost} onSelectSchool={onSelect} />)}
         <motion.div className="research-stage-preview research-stage-motif-camera" style={{ opacity: previewOpacity }} aria-hidden="true"><div ref={previewHost} className="research-stage-motif-ambient" /></motion.div>

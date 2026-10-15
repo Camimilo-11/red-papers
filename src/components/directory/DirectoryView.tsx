@@ -164,8 +164,8 @@ export const DirectoryView: React.FC<DirectoryViewProps> = ({
 
   return <section className="academic-directory">
     <header className="academic-directory-heading">
-      <div><h2>Docentes e investigadores</h2><p>Conozca a nuestra comunidad y explore sus publicaciones.</p></div>
-      <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" placeholder="Nombre o especialidad · Enter" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/></div>
+      <div><h2>Docentes e investigadores</h2></div>
+      <div className="academic-search"><Search size={19} aria-hidden="true"/><input aria-label="Buscar docente" value={searchDraft} onKeyDown={e=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing){e.preventDefault();setSearchQuery(searchDraft.trim());}}} onChange={e=>setSearchDraft(e.target.value)}/></div>
     </header>
     {exportNotice&&<p role="status" className="save-notice">{exportNotice}</p>}
     <div className="academic-directory-layout" data-mobile-profile-open={mobileProfileOpen}>

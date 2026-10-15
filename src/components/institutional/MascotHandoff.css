@@ -13,10 +13,9 @@
   transform-origin: top left;
   pointer-events: none;
   overflow: visible;
-  mix-blend-mode: multiply;
 }
-.mascot-handoff-logos .institutional-landing-hero-emblem { mix-blend-mode: multiply; }
-.mascot-handoff-logos .institutional-landing-emblem-image { mix-blend-mode: multiply; }
+.mascot-handoff-logos .institutional-landing-hero-emblem { mix-blend-mode: normal; }
+.mascot-handoff-logos .institutional-landing-emblem-image { mix-blend-mode: normal; }
 .mascot-handoff-logos[data-assets-ready="false"] { visibility: hidden; }
 .mascot-handoff-logos .institutional-landing-hero-emblem-float { background: transparent; }
 .mascot-handoff-logos[data-in-view="true"] .institutional-landing-hero-emblem-parallax,
