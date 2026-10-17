@@ -1,5 +1,5 @@
-# Restaurar la portada anterior
+# Restore the previous landing page
 
-Esta carpeta guarda los archivos previos al cambio de portada.
+This folder contains the files from before the landing-page change.
 
-Para volver a esa versión, copia `App.tsx.backup` sobre `src/App.tsx` y `index.css.backup` sobre `src/index.css`, y elimina `src/components/institutional/InstitutionalLanding.tsx`. `SchoolSelector.tsx.backup` conserva también una copia de la pantalla de selección original.
+To restore that version, copy `App.tsx.backup` over `src/App.tsx` and `index.css.backup` over `src/index.css`, then remove `src/components/institutional/InstitutionalLanding.tsx`. `SchoolSelector.tsx.backup` also preserves a copy of the original selection screen.

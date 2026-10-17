@@ -1,35 +1,35 @@
-# Footer móvil: tipografía y espacio inferior
+# Mobile footer: typography and bottom spacing
 
-Rama: `mobile-polish`. Sin merge a `main`.
+Branch: `mobile-polish`. Not merged into `main`.
 
-Causa: `.institutional-landing-footer-group h2` forzaba `Georgia, 'Times New Roman', serif` en `src/index.css`.
+Cause: `.institutional-landing-footer-group h2` forced `Georgia, 'Times New Roman', serif` in `src/index.css`.
 
-El ajuste se limita al footer con ancho inferior a 760 px. Sus encabezados heredan la misma familia del cuerpo, con peso 600 y tamaño 1.1rem. Se mantiene el resto de sus colores, márgenes y contenido. Se añade `padding-bottom: calc(24px + env(safe-area-inset-bottom))`, enlaces de al menos 44 px de alto, separación vertical de 12 px y logo al 85 % de su ancho anterior.
+The adjustment is limited to the footer below 760 px wide. Its headings inherit the body font family at weight 600 and 1.1rem. Other colors, margins, and content remain unchanged. The footer adds `padding-bottom: calc(24px + env(safe-area-inset-bottom))`, links at least 44 px high, 12 px vertical spacing, and a logo reduced to 85% of its previous width.
 
-## Verificación en Chromium / Edge
+## Chromium / Edge verification
 
-Móvil: 390×844, emulación móvil y táctil, escala 3. Acceso al footer mediante gestos CDP desde YTLC.
+Mobile: 390×844, mobile/touch emulation, scale 3. The footer was reached from YTLC using CDP touch gestures.
 
-| Comprobación | Resultado |
-| --- | --- |
-| Los tres encabezados coinciden con `getComputedStyle(document.body).fontFamily` | Pasa |
-| Resto de textos del footer con la misma familia sans | Pasa |
-| Encabezados con peso 600 y tamaño 17.6 px | Pasa |
-| Enlaces: altura mínima / separación vertical | 44 px / 12 px |
-| Logo: ancho antes → después | 190 → 161.5 px (85 %) |
-| Padding inferior en emulación sin área segura adicional | 24 px |
-| Última línea completamente visible tras el desplazamiento táctil | Pasa; borde inferior a 822.81 px de 844 px |
-| Desbordamiento horizontal | Ninguno |
-| CLS móvil antes → después | 0 → 0 |
-| Comprobación adicional a 360×740 | Fuente correcta, enlaces ≥ 44 px, última línea visible, CLS 0 y sin desbordamiento |
-| Footer escritorio 1366 px: diferencia de píxeles antes/después | 0 |
-| Footer en el límite de 760 px: diferencia de píxeles | 0 |
-| Chequeo de tipos y build | Sin errores |
+| Check | Result |
+|---|---|
+| All three headings match `getComputedStyle(document.body).fontFamily` | Pass |
+| Remaining footer text uses the same sans family | Pass |
+| Headings at weight 600 and 17.6 px | Pass |
+| Links: minimum height / vertical spacing | 44 px / 12 px |
+| Logo width before → after | 190 → 161.5 px (85%) |
+| Bottom padding without additional safe-area inset | 24 px |
+| Last line fully visible after touch scroll | Pass; bottom edge at 822.81 px of 844 px |
+| Horizontal overflow | None |
+| Mobile CLS before → after | 0 → 0 |
+| Additional 360×740 check | Correct font, links ≥ 44 px, last line visible, CLS 0, no overflow |
+| Desktop footer at 1366 px: pixel difference before/after | 0 |
+| Footer at 760 px boundary: pixel difference | 0 |
+| Type check and build | No errors |
 
-La familia calculada del cuerpo y del footer es `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`.
+Computed body and footer family: `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`.
 
-`390-before.png` y `390-after.png` muestran el footer completo. Las capturas `390-*-bottom.png` muestran la última línea en el viewport después de gestos táctiles. `desktop-*.png` y `760-*.png` contienen las comparaciones fuera del alcance móvil.
+`390-before.png` and `390-after.png` show the full footer. The `390-*-bottom.png` captures show the last line in the viewport after touch gestures. `desktop-*.png` and `760-*.png` compare areas outside the mobile scope.
 
-Detalle de medición: el anclaje existente deja el desplazamiento móvil en 6700 px frente a un máximo geométrico de 6716 px; la última línea permanece completamente visible. No se modificó ese comportamiento. A 760 px se registra CLS previo de aproximadamente 0.0944 y posterior de 0.0947, originado en la bienvenida y sus logos, fuera del footer; sus fuentes están identificadas en `verification.json`. El footer de 760 px es pixel-idéntico y no recibe las reglas nuevas.
+Measurement detail: the existing anchor leaves mobile scroll offset at 6,700 px versus a geometric maximum of 6,716 px; the last line remains fully visible. That behavior was not changed. At 760 px, CLS is approximately 0.0944 before and 0.0947 after, caused by the welcome page and its logos, outside the footer; sources are listed in `verification.json`. The 760 px footer is pixel-identical and receives none of the new rules.
 
-El servidor de desarrollo registró `ResizeObserver loop completed with undelivered notifications` antes y después del ajuste. El chequeo de tipos y el build terminaron correctamente; no se modificaron observadores ni transiciones.
+The development server logged `ResizeObserver loop completed with undelivered notifications` before and after the adjustment. The type check and build completed successfully; observers and transitions were not changed.

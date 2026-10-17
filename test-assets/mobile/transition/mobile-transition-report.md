@@ -1,17 +1,17 @@
-# Verificación de la transición móvil
+# Mobile transition verification
 
-Probé la transición en Playwright con Edge Chromium, `isMobile`, `hasTouch`, `deviceScaleFactor: 3` y CPU ralentizada 4×. Guardé los videos de ida y vuelta y ocho cuadros clave por tamaño en esta carpeta.
+The transition was tested in Playwright with Edge Chromium, `isMobile`, `hasTouch`, `deviceScaleFactor: 3`, and CPU throttled 4×. Round-trip videos and eight key frames per viewport were saved in this folder.
 
-| Punto | Resultado | Medición / corrección |
+| Area | Result | Measurement / change |
 |---|---|---|
-| Bienvenida → ECAA | Pasa | Una sola progresión de Motion de 0 a 1; FLIP de logos, expansión circular del tinte, destello, grafo, texto y panel en fases. Duración nominal: 0,9 s. |
-| Mascota y logos | Pasa | El fondo `base.webp` evita el hueco mientras llega la mascota; fundido al arte de ECAA. El fondo blanco de los logos desaparece durante el viaje móvil. Cuadros vacíos: 0; logos perdidos durante el viaje: 0. |
-| Inversión e intención pendiente | Pasa | El regreso dura 0,6 s; se invalida el callback anterior al invertir. Un gesto adicional durante la entrada termina en ECBI en ambos tamaños. El regreso interrumpido termina en bienvenida completamente visible. |
-| Títulos de escuelas | Pasa | Salida antes de entrada. Cuadros con dos títulos por encima de 40%: 0. |
-| Pantalla y navegación | Pasa | Sin desbordamiento horizontal en las muestras; saltos directos a YTLC y ECAA verificados en ambos tamaños. |
-| Movimiento reducido | Pasa | Fundido de 229 ms; sin `clip-path` circular. |
-| Rendimiento con CPU 4× | Parcial | En varias corridas: 54,4–56,2 FPS en 390×844 y 56,3–56,9 FPS en 360×740. La vuelta promedió 60,1 FPS; el mayor intervalo registrado fue 116,5/83,3 ms. No hubo tareas largas (>50 ms). |
-| Escritorio 1366×768 | Pasa | Welcome y ECAA comparados con HEAD: 0 píxeles distintos en capturas deterministas. Se pausó el movimiento CSS y se ocultó el motivo SVG animado durante la comparación. |
-| Build y tipos | Pasa | `npm run build` y `npm run lint` terminan correctamente. |
+| Welcome → ECAA | Pass | One Motion progression from 0 to 1; FLIP logos, expanding circular tint, spark, graph, text, and panel staged in phases. Nominal duration: 0.9 s. |
+| Mascot and logos | Pass | `base.webp` prevents a gap while the mascot loads; it fades into the ECAA artwork. White logo backgrounds disappear during the mobile transition. Blank frames: 0; missing logos during transition: 0. |
+| Reversal and pending intent | Pass | Return lasts 0.6 s; the earlier callback is invalidated on reversal. An extra gesture during entry ends at ECBI at both sizes. An interrupted return ends with the welcome page fully visible. |
+| School titles | Pass | Outgoing title leaves before the next enters. Frames with two titles above 40% opacity: 0. |
+| Screen and navigation | Pass | No horizontal overflow in samples; direct jumps to YTLC and ECAA verified at both sizes. |
+| Reduced motion | Pass | 229 ms fade; no circular `clip-path`. |
+| Performance with CPU 4× | Partial | Across runs: 54.4–56.2 FPS at 390×844 and 56.3–56.9 FPS at 360×740. Return averaged 60.1 FPS; the largest recorded interval was 116.5/83.3 ms. No long tasks (>50 ms). |
+| Desktop 1366×768 | Pass | Welcome and ECAA compared with HEAD: zero pixel differences in deterministic captures. CSS motion was paused and the animated SVG motif was hidden for the comparison. |
+| Build and types | Pass | `npm run build` and `npm run lint` completed successfully. |
 
-La entrada no sostuvo 60 FPS en la simulación CPU 4×. El mayor salto coincide con el primer pintado del grafo y la mascota; no hubo tareas largas de JavaScript.
+Entry did not sustain 60 FPS in the CPU 4× simulation. The largest frame interval coincided with the graph and mascot's first paint; there were no long JavaScript tasks.

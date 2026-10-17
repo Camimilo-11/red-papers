@@ -613,8 +613,9 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     if (!interactionEnabled) return;
     const landing = track.current?.closest('.institutional-landing');
     if (!landing) return;
-    let down: { x: number; y: number; scrollY: number; inTour: boolean; inHero: boolean } | null = null;
+    let down: { x: number; y: number; inTour: boolean; inHero: boolean } | null = null;
     let timer = 0;
+    let settleRetryTimer = 0;
     let wheelGestureLocked = false;
     let wheelGestureTimer = 0;
     const keepWheelGestureLocked = () => {
@@ -626,7 +627,21 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     };
     const settle = (event?: Event) => {
       if (event && event.target !== document && event.target !== window) return;
-      if (transitionAnimating.current || performance.now() < navigationUntil.current) return;
+      if (transitionAnimating.current) return;
+      const navigationDelay = navigationUntil.current - performance.now();
+      if (navigationDelay > 0) {
+        // A quick swipe can finish while a recent button/handoff navigation is
+        // still protected from transient snap positions. Retry after that
+        // guard expires so the active school cannot get stuck out of sync.
+        window.clearTimeout(settleRetryTimer);
+        settleRetryTimer = window.setTimeout(() => {
+          settleRetryTimer = 0;
+          settle();
+        }, navigationDelay + 24);
+        return;
+      }
+      window.clearTimeout(settleRetryTimer);
+      settleRetryTimer = 0;
       if (!track.current || !scene.current) return;
       const { start, height } = geometry.current;
       const top = start - window.scrollY;
@@ -655,7 +670,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
       const stage = target.closest<HTMLElement>('.touch-school-stage');
       const stageBounds = mobileTransitionEnabled ? null : stage?.getBoundingClientRect();
       const inTour = mobileTransitionEnabled ? !!stage : !!stageBounds && stageBounds.top < window.innerHeight && stageBounds.bottom > 0;
-      down = { x: event.clientX, y: event.clientY, scrollY: window.scrollY, inTour, inHero: !!target.closest('.institutional-landing-hero, .mascot-handoff-logos') };
+      down = { x: event.clientX, y: event.clientY, inTour, inHero: !!target.closest('.institutional-landing-hero, .mascot-handoff-logos') };
     };
     const pointerMove = (event: PointerEvent) => {
       if (!down || event.pointerType !== 'touch' || !transitionAnimating.current) return;
@@ -674,9 +689,11 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
         if (origin.inTour) queueTransitionIntent(active.current + (dy < 0 ? 1 : -1));
         else if (origin.inHero) queueTransitionIntent(dy < 0 ? 0 : -1);
       } else if (origin.inTour) {
-        const nativeScrollStarted = mobileTransitionEnabled && Math.abs(window.scrollY - origin.scrollY) > 2;
-        if (!mobileTransitionEnabled || !nativeScrollStarted) go(active.current + (dy < 0 ? 1 : -1));
-        else if (active.current === 0 && dy > 0) go(-1);
+        // The mobile stage disables native vertical panning (CSS below), so
+        // this gesture handler is the single source of school-to-school scroll.
+        // Always commit on release instead of guessing whether a small native
+        // movement will eventually clear the mandatory scroll-snap threshold.
+        go(active.current + (dy < 0 ? 1 : -1));
       }
       else if (origin.inHero && dy < 0) go(0);
     };
@@ -730,7 +747,6 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
         if (origin.inTour) queueTransitionIntent(active.current + (dy < 0 ? 1 : -1));
         else if (origin.inHero) queueTransitionIntent(dy < 0 ? 0 : -1);
       } else if (origin.inHero && dy < 0) go(0);
-      else if (origin.inTour && active.current === 0 && dy > 0) go(-1);
     };
     const keyboard = (event: KeyboardEvent) => {
       if ((event.target as HTMLElement).matches('input, textarea, select')) return;
@@ -751,6 +767,7 @@ export function TouchResearchStage({ onSelect, logosReady, handoff, scrollY, mob
     settle();
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(settleRetryTimer);
       window.clearTimeout(wheelGestureTimer);
       landing.removeEventListener('pointerdown', pointerDown as EventListener);
       landing.removeEventListener('pointermove', pointerMove as EventListener);
