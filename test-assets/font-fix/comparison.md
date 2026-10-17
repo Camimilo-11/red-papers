@@ -1,14 +1,14 @@
-# Verificación de tipografía
+# Font verification
 
-**Causa:** el commit `c3302bc` quitó `@import "tailwindcss"` de `src/index.css`; Preflight dejó de aportar la fuente sans global y `--font-sans` quedó sin aplicarse al texto normal.
+**Cause:** commit `c3302bc` removed `@import "tailwindcss"` from `src/index.css`; Preflight no longer supplied the global sans font and `--font-sans` was not applied to normal text.
 
-En las capturas «antes» se retiraron solo las dos reglas globales nuevas del HTML; todas las demás reglas y el contenido son los mismos. Las capturas «después» muestran el cambio tipográfico.
+For the “before” screenshots, only the two new global rules from the HTML were removed; all other rules and content are unchanged. The “after” screenshots show the font change.
 
-| Viewport | Bienvenida | ECAA | ECBI | Fast 3G, caché vacía |
+| Viewport | Welcome | ECAA | ECBI | Fast 3G, empty cache |
 |---|---|---|---|---|
-| 360 × 740 | [antes](360-welcome-before.png) · [después](360-welcome-after.png) | [antes](360-ecaa-before.png) · [después](360-ecaa-after.png) | [antes](360-ecbi-before.png) · [después](360-ecbi-after.png) | [captura](fast3g-360-initial.png) |
-| 390 × 844 | [antes](390-welcome-before.png) · [después](390-welcome-after.png) | [antes](390-ecaa-before.png) · [después](390-ecaa-after.png) | [antes](390-ecbi-before.png) · [después](390-ecbi-after.png) | [captura](fast3g-390-initial.png) |
-| 430 × 932 | [antes](430-welcome-before.png) · [después](430-welcome-after.png) | [antes](430-ecaa-before.png) · [después](430-ecaa-after.png) | [antes](430-ecbi-before.png) · [después](430-ecbi-after.png) | [captura](fast3g-430-initial.png) |
-| 1366 × 768 | [antes](1366-welcome-before.png) · [después](1366-welcome-after.png) | [antes](1366-ecaa-before.png) · [después](1366-ecaa-after.png) | [antes](1366-ecbi-before.png) · [después](1366-ecbi-after.png) | [captura](fast3g-1366-initial.png) |
+| 360 × 740 | [before](360-welcome-before.png) · [after](360-welcome-after.png) | [before](360-ecaa-before.png) · [after](360-ecaa-after.png) | [before](360-ecbi-before.png) · [after](360-ecbi-after.png) | [capture](fast3g-360-initial.png) |
+| 390 × 844 | [before](390-welcome-before.png) · [after](390-welcome-after.png) | [before](390-ecaa-before.png) · [after](390-ecaa-after.png) | [before](390-ecbi-before.png) · [after](390-ecbi-after.png) | [capture](fast3g-390-initial.png) |
+| 430 × 932 | [before](430-welcome-before.png) · [after](430-welcome-after.png) | [before](430-ecaa-before.png) · [after](430-ecaa-after.png) | [before](430-ecbi-before.png) · [after](430-ecbi-after.png) | [capture](fast3g-430-initial.png) |
+| 1366 × 768 | [before](1366-welcome-before.png) · [after](1366-welcome-after.png) | [before](1366-ecaa-before.png) · [after](1366-ecaa-after.png) | [before](1366-ecbi-before.png) · [after](1366-ecbi-after.png) | [capture](fast3g-1366-initial.png) |
 
-Fast 3G: caché deshabilitada, 1.6 Mbps de descarga y 150 ms de latencia. En el primer pintado, el texto de bienvenida computó como sans en los cuatro tamaños; hubo cero solicitudes de fuentes web. Build y chequeo de tipos completados sin errores.
+Fast 3G profile: cache disabled, 1.6 Mbps download, and 150 ms latency. On first paint, welcome text computed as sans at all four viewport sizes; there were zero web-font requests. Build and type checks completed without errors.

@@ -255,8 +255,11 @@ html.has-touch-school-tour { scroll-snap-type: y mandatory; scroll-padding-top: 
   .institutional-landing-hero,
   .institutional-landing > .mascot-handoff-logos { touch-action: pan-x pinch-zoom; }
   .institutional-landing .institutional-landing-hero,
-  .institutional-landing > .mascot-handoff-logos,
-  .touch-school-stage { touch-action: pan-y pinch-zoom; }
+  .institutional-landing > .mascot-handoff-logos { touch-action: pan-y pinch-zoom; }
+  /* School changes are committed by the touch gesture handler. Letting the
+     browser pan vertically here competed with scroll-snap and could cancel a
+     swipe before it reached the next school. */
+  .touch-school-stage { touch-action: pan-x pinch-zoom; }
   html.simapc-mobile-transition-lock { scroll-snap-type: none !important; touch-action: none; overscroll-behavior: none; }
   html.simapc-mobile-transition-lock body { touch-action: none; overscroll-behavior: none; }
   .institutional-landing.is-mobile-school-transitioning { touch-action: none; overscroll-behavior: none; }

@@ -1,23 +1,23 @@
-# Inicio: cifras de la escuela
+# Dashboard: school metrics
 
-El inicio abre con un único bloque «La escuela en cifras», seguido por las publicaciones destacadas y los gráficos. Las cuatro métricas conservan sus datos; se presentan en tarjetas con números grandes, iconos y el acento de cada escuela. En móvil se ordenan en 2×2. Se retiraron los slogans del banner y del menú lateral, y se compactaron los accesos de los perfiles autenticados.
+The dashboard opens with one “The school in numbers” block, followed by featured publications and charts. All four metrics retain their data and are shown as cards with large numbers, icons, and each school's accent color. On mobile they use a 2×2 layout. Slogans were removed from the banner and sidebar, and authenticated-profile shortcuts were compacted.
 
-Verificación con Playwright/Chromium: **17/17 comprobaciones pasan**.
+Playwright/Chromium verification: **17/17 checks passed**.
 
-| Comprobación | Resultado |
+| Check | Result |
 | --- | --- |
-| 360×740, 390×844, 430×932 | Pasa: tarjetas 2×2, textos completos, sin scroll horizontal |
-| 768×1024 | Pasa: cuadrícula de dos columnas, sin solapamientos |
-| 1366×768, 1920×1080 | Pasa: cuatro columnas, encabezado único, publicaciones debajo |
-| Datos de las siete escuelas | Pasa: coinciden con los productos verificados |
-| Acciones y menú de docentes | Pasa: registrar publicación/proyecto y Mis registros |
-| Acciones y menú de estudiantes | Pasa: consulta y Mis colaboraciones |
-| Acciones a 1050 y 1100 px | Pasa: iconos y textos sin solapamiento |
-| Excepciones de página capturadas por Playwright | Ninguna |
-| Tipos y compilación | Pasa: `npm run lint` y `npm run build` |
+| 360×740, 390×844, 430×932 | Pass: 2×2 cards, complete text, no horizontal scrolling |
+| 768×1024 | Pass: two-column grid, no overlaps |
+| 1366×768, 1920×1080 | Pass: four columns, single header, publications below |
+| Data for all seven schools | Pass: matches verified products |
+| Faculty actions and menu | Pass: register publication/project and open My records |
+| Student actions and menu | Pass: browse and open My collaborations |
+| Actions at 1050 and 1100 px | Pass: icons and text do not overlap |
+| Page exceptions captured by Playwright | None |
+| Types and build | Pass: `npm run lint` and `npm run build` |
 
-Capturas: `home-desktop-1366.png` y `home-mobile-390.png`. Datos detallados: `verification.json`.
+Screenshots: `home-desktop-1366.png` and `home-mobile-390.png`. Detailed data: `verification.json`.
 
-La comprobación detectó que el botón X del encabezado móvil queda debajo del menú lateral abierto; es una condición previa fuera de este rediseño. El menú se cierra mediante navegación o el fondo.
+The check found that the X button in the mobile header is covered by the open sidebar; this is a pre-existing condition outside this redesign. The menu can be closed through navigation or its backdrop.
 
-El servidor de desarrollo registró avisos `ResizeObserver loop completed with undelivered notifications` durante los recorridos. Playwright no los recibió como excepciones de página. Los observadores del proyecto están en los componentes de selección de escuelas, fuera de los componentes de cifras y acciones modificados aquí.
+The development server logged `ResizeObserver loop completed with undelivered notifications` warnings during the journeys. Playwright did not receive them as page exceptions. The project's observers are in the school-selection components, outside the metrics and actions components changed here.
